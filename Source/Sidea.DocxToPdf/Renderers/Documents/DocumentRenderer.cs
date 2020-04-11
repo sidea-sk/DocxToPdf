@@ -5,7 +5,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
 {
     internal class DocumentRenderer
     {
-        public PdfDocument Render(WordprocessingDocument wordDocument)
+        public PdfDocument Render(WordprocessingDocument docx)
         {
             var pdf = new PdfDocument();
             var page = pdf.AddPage();
