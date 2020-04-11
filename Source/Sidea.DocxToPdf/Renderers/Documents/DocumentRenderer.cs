@@ -4,18 +4,24 @@ using PdfSharp.Pdf;
 
 namespace Sidea.DocxToPdf.Renderers.Documents
 {
-    internal class DocumentRenderer
+    internal class DocumentRenderer : IRenderer
     {
-        public PdfDocument Render(WordprocessingDocument docx)
-        {
-            var pdf = new PdfDocument();
-            var page = this.CreatePage();
-            pdf.AddPage(page);
+        private readonly WordprocessingDocument _docx;
 
-            return pdf;
+        public DocumentRenderer(WordprocessingDocument docx)
+        {
+            _docx = docx;
         }
 
-        private PdfPage CreatePage()
+        private void RenderCore(PdfDocument pdf)
+        {
+            var currentPage = this.CreatePage(pdf);
+            foreach (var child in _docx.MainDocumentPart.Document.Body)
+            {
+            }
+        }
+
+        private PdfPage CreatePage(PdfDocument pdf)
         {
             var margin = XUnit.FromCentimeter(2.5);
 
@@ -31,7 +37,23 @@ namespace Sidea.DocxToPdf.Renderers.Documents
                 }
             };
 
+            pdf.AddPage(page);
+
+            var graphics = XGraphics.FromPdfPage(page);
+            graphics.DrawRectangle(XPens.Orange, new XRect(0,0, page.Width, page.Height));
+
             return page;
+        }
+
+        public PdfDocument GeneratedDocument { get; private set; }
+
+        public RenderingStatus Render()
+        {
+            var pdf = new PdfDocument();
+            this.RenderCore(pdf);
+            this.GeneratedDocument = pdf;
+
+            return RenderingStatus.Finished;
         }
     }
 }
