@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30001.183
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sidea.DocxToPdf", "Sidea.DocxToPdf\Sidea.DocxToPdf.csproj", "{48DF11FA-83FC-4622-9F10-8038F65D1EBC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sidea.DocxToPdf", "Sidea.DocxToPdf\Sidea.DocxToPdf.csproj", "{48DF11FA-83FC-4622-9F10-8038F65D1EBC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9ECB67EE-524F-404F-830F-EF6BB424D3D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sidea.DocxToPdf.Tests", "Sidea.DocxToPdf.Tests\Sidea.DocxToPdf.Tests.csproj", "{D268296F-5287-42AC-9909-BD65B61E314F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2DF1E0CF-ACA1-4688-90CC-D9369C746090}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +21,17 @@ Global
 		{48DF11FA-83FC-4622-9F10-8038F65D1EBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48DF11FA-83FC-4622-9F10-8038F65D1EBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48DF11FA-83FC-4622-9F10-8038F65D1EBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D268296F-5287-42AC-9909-BD65B61E314F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D268296F-5287-42AC-9909-BD65B61E314F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D268296F-5287-42AC-9909-BD65B61E314F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D268296F-5287-42AC-9909-BD65B61E314F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D268296F-5287-42AC-9909-BD65B61E314F} = {9ECB67EE-524F-404F-830F-EF6BB424D3D3}
+		{2DF1E0CF-ACA1-4688-90CC-D9369C746090} = {9ECB67EE-524F-404F-830F-EF6BB424D3D3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5E784434-CA44-4B62-B26A-9D13A6C9C181}
