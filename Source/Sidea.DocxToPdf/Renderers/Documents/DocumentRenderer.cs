@@ -13,6 +13,17 @@ namespace Sidea.DocxToPdf.Renderers.Documents
             _docx = docx;
         }
 
+        public PdfDocument GeneratedDocument { get; private set; }
+
+        public RenderingStatus Render()
+        {
+            var pdf = new PdfDocument();
+            this.RenderCore(pdf);
+            this.GeneratedDocument = pdf;
+
+            return RenderingStatus.Finished;
+        }
+
         private void RenderCore(PdfDocument pdf)
         {
             var currentPage = this.CreatePage(pdf);
@@ -40,20 +51,9 @@ namespace Sidea.DocxToPdf.Renderers.Documents
             pdf.AddPage(page);
 
             var graphics = XGraphics.FromPdfPage(page);
-            graphics.DrawRectangle(XPens.Orange, new XRect(0,0, page.Width, page.Height));
+            graphics.DrawRectangle(XPens.Orange, new XRect(0, 0, page.Width, page.Height));
 
             return page;
-        }
-
-        public PdfDocument GeneratedDocument { get; private set; }
-
-        public RenderingStatus Render()
-        {
-            var pdf = new PdfDocument();
-            this.RenderCore(pdf);
-            this.GeneratedDocument = pdf;
-
-            return RenderingStatus.Finished;
         }
     }
 }
