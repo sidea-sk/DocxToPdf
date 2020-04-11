@@ -7,3 +7,4 @@ Supported Docx elements:
 - table
 - header
 - footer
+- images
