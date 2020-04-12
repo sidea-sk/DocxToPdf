@@ -40,6 +40,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
                 var lineEnd = (XVector)line.Render(availableArea);
                 availableArea = availableArea.PanLeftDown(new XSize(0, lineEnd.Y));
+                endPoint = new XPoint(0, endPoint.Y + lineEnd.Y);
             }
 
             return new RenderingState(RenderingStatus.Done, endPoint);

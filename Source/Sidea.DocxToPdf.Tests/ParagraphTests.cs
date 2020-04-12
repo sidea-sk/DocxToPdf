@@ -14,5 +14,11 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(Paragraph));
         }
+
+        [TestMethod]
+        public void ParagraphAlignments()
+        {
+            this.Generate(nameof(ParagraphAlignments));
+        }
     }
 }

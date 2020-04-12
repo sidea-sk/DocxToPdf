@@ -49,6 +49,9 @@ namespace Sidea.DocxToPdf.Renderers.Documents
                             break;
                         case RenderingStatus.NotStarted:
                             throw new System.Exception("Unexpected rendering status");
+                        default:
+                            currentRenderingArea = currentRenderingArea.PanLeftDown(new XSize(0, renderingState.FinishedAtPosition.Y));
+                            break;
                     }
                 }
 
