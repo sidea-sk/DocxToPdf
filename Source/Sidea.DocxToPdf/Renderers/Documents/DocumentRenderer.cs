@@ -31,8 +31,9 @@ namespace Sidea.DocxToPdf.Renderers.Documents
 
         private RenderingState RenderCore(PdfDocument pdf)
         {
+            var documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
             var childRenderingStatus = new List<RenderingStatus>();
-            var currentRenderingArea = this.CreateNewPageRenderingArea(pdf);
+            var currentRenderingArea = this.CreateNewPageRenderingArea(pdf, documentFont);
             foreach (var child in _docx.MainDocumentPart.Document.Body.ChildElements.OfType<OpenXmlCompositeElement>())
             {
                 var activeRenderer = _factory.CreateRenderer(child);
@@ -44,7 +45,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
                     switch(renderingState.Status)
                     {
                         case RenderingStatus.ReachedEndOfArea:
-                            currentRenderingArea = this.CreateNewPageRenderingArea(pdf);
+                            currentRenderingArea = this.CreateNewPageRenderingArea(pdf, documentFont);
                             break;
                         case RenderingStatus.NotStarted:
                             throw new System.Exception("Unexpected rendering status");
@@ -62,7 +63,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
             return new RenderingState(aggregatedStatus, new XPoint(0, 0));
         }
 
-        private IRenderArea CreateNewPageRenderingArea(PdfDocument pdf)
+        private IRenderArea CreateNewPageRenderingArea(PdfDocument pdf, XFont documentDefaultFont)
         {
             var page = this.CreatePage(pdf);
             var graphics = XGraphics.FromPdfPage(page);
@@ -72,7 +73,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
             var margin = XUnit.FromCentimeter(2.5);
             var contentArea = new XRect(margin, margin, page.Width - 2 * margin, page.Height - 2 * margin);
             graphics.DrawRectangle(XPens.Orange, contentArea);
-            return new PageRenderArea(graphics, contentArea);
+            return new RenderArea(documentDefaultFont, graphics, contentArea);
         }
 
         private PdfPage CreatePage(PdfDocument pdf)
