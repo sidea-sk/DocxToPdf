@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Sidea.DocxToPdf.Renderers.Paragraphs;
 
 namespace Sidea.DocxToPdf.Renderers.Core
 {
@@ -14,7 +15,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
                 TableCell c => new UnknownElementRenderer(),
                 Header h => new UnknownElementRenderer(),
                 Footer f => new UnknownElementRenderer(),
-                Paragraph p => new UnknownElementRenderer(),
+                Paragraph p => new ParagraphRenderer(p),
                 Drawing d => new UnknownElementRenderer(),
                 _ => new UnknownElementRenderer()
             };

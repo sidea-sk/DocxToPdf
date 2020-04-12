@@ -1,7 +1,9 @@
-﻿namespace Sidea.DocxToPdf.Renderers.Core
+﻿using PdfSharp.Drawing;
+
+namespace Sidea.DocxToPdf.Renderers.Core
 {
     internal class UnknownElementRenderer : IRenderer
     {
-        public RenderingStatus Render() => RenderingStatus.Error;
+        public RenderingState Render(IRenderArea area) => new RenderingState(RenderingStatus.Error, new XPoint(0, 0));
     }
 }

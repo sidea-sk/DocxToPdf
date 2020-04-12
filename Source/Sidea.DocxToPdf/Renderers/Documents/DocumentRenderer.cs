@@ -20,68 +20,71 @@ namespace Sidea.DocxToPdf.Renderers.Documents
 
         public PdfDocument GeneratedDocument { get; private set; }
 
-        public RenderingStatus Render()
+        public RenderingState Render(IRenderArea renderArea)
         {
             var pdf = new PdfDocument();
-            this.RenderCore(pdf);
+            var state = this.RenderCore(pdf);
             this.GeneratedDocument = pdf;
 
-            return RenderingStatus.Done;
+            return state;
         }
 
-        private RenderingStatus RenderCore(PdfDocument pdf)
+        private RenderingState RenderCore(PdfDocument pdf)
         {
             var childRenderingStatus = new List<RenderingStatus>();
-            var currentPage = this.CreatePage(pdf);
+            var currentRenderingArea = this.CreateNewPageRenderingArea(pdf);
             foreach (var child in _docx.MainDocumentPart.Document.Body.ChildElements.OfType<OpenXmlCompositeElement>())
             {
                 var activeRenderer = _factory.CreateRenderer(child);
 
-                RenderingStatus renderingStatus;
-                do
+                RenderingState renderingState = new RenderingState(RenderingStatus.NotStarted, new XPoint(0, 0));
+                while(renderingState.Status.IsNotFinished())
                 {
-                    renderingStatus = activeRenderer.Render();
-                    switch(renderingStatus)
+                    renderingState = activeRenderer.Render(currentRenderingArea);
+                    switch(renderingState.Status)
                     {
                         case RenderingStatus.ReachedEndOfArea:
-                            // create new page
+                            currentRenderingArea = this.CreateNewPageRenderingArea(pdf);
                             break;
                         case RenderingStatus.NotStarted:
                             throw new System.Exception("Unexpected rendering status");
                     }
-                } while (renderingStatus.IsFinished());
+                }
 
-                childRenderingStatus.Add(renderingStatus);
+                childRenderingStatus.Add(renderingState.Status);
             }
 
-            return childRenderingStatus.All(rs => rs == RenderingStatus.Done)
+            
+            var aggregatedStatus = childRenderingStatus.All(rs => rs == RenderingStatus.Done)
                 ? RenderingStatus.Done
                 : RenderingStatus.Error;
+
+            return new RenderingState(aggregatedStatus, new XPoint(0, 0));
+        }
+
+        private IRenderArea CreateNewPageRenderingArea(PdfDocument pdf)
+        {
+            var page = this.CreatePage(pdf);
+            var graphics = XGraphics.FromPdfPage(page);
+
+            // render Header
+            // render Footer
+            var margin = XUnit.FromCentimeter(2.5);
+            var contentArea = new XRect(margin, margin, page.Width - 2 * margin, page.Height - 2 * margin);
+            graphics.DrawRectangle(XPens.Orange, contentArea);
+            return new PageRenderArea(graphics, contentArea);
         }
 
         private PdfPage CreatePage(PdfDocument pdf)
         {
-            var margin = XUnit.FromCentimeter(2.5);
-
             var page = new PdfPage
             {
                 Size = PdfSharp.PageSize.A4,
-                TrimMargins = new TrimMargins
-                {
-                    Top = margin,
-                    Right = margin,
-                    Bottom = margin,
-                    Left = margin,
-                }
             };
 
             pdf.AddPage(page);
 
-            var graphics = XGraphics.FromPdfPage(page);
-            graphics.DrawRectangle(XPens.Orange, new XRect(0, 0, page.Width, page.Height));
-
-            // render Header
-            // render Footer
+           
 
             return page;
         }
