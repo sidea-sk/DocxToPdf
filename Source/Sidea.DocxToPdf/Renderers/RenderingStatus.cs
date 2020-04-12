@@ -5,7 +5,12 @@
         NotStarted,
         // Prerendered,
         ReachedEndOfArea, //new page is necessary
-        Finished,
+        Done,
         Error
+    }
+
+    internal static class RenderingStatusExtensions
+    {
+        public static bool IsFinished(this RenderingStatus status) => status == RenderingStatus.Done || status == RenderingStatus.Error;
     }
 }
