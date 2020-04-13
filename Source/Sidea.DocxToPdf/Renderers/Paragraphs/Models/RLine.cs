@@ -17,7 +17,10 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
             double defaultHeight)
         {
             _words = words
-                // trim starting and ending spaces (not tabs)
+                .SkipWhile(w => w.IsSpace)
+                .Reverse()
+                .SkipWhile(w => w.IsSpace)
+                .Reverse()
                 .ToArray();
 
             _alignment = alignment;
@@ -70,7 +73,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
         private IEnumerable<OffsetWord> OffsetAlignWords(XPoint lineBottomLeft)
         {
             var x = lineBottomLeft.X;
-            var y = lineBottomLeft.Y;
+            var y = 0;
 
             return _words
                 .Select(word =>
@@ -93,17 +96,15 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
             var wordsJustifiedSpacing = (totalWidth - this.Width) / _words.Length;
 
             var x = lineBottomLeft.X;
-            var y = lineBottomLeft.Y;
 
             return _words
                 .Select(word =>
                 {
                     var xCoordinate = x;
                     x += word.Width + wordsJustifiedSpacing;
-                    return new OffsetWord(word, new XVector(xCoordinate, y));
+                    return new OffsetWord(word, new XVector(xCoordinate, 0));
                 })
                 .ToArray();
-
         }
 
         private class OffsetWord

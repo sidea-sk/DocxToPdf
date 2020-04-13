@@ -22,6 +22,8 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
             this.Size = _textMeasuringService.MeasureText(_content, _font);
         }
 
+        public bool IsSpace => _content == " ";
+
         public XSize Size { get; }
 
         public double Width => this.Size.Width;

@@ -39,7 +39,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
         public IRenderArea PanLeftDown(XSize size)
         {
             // check XRect methods Offset, Inflate, etc.
-            return new RenderArea(_font, _graphics, new XRect(_area.X + size.Width, _area.Y + size.Height, _area.Width - size.Width, _area.Height + size.Height));
+            return new RenderArea(_font, _graphics, new XRect(_area.X + size.Width, _area.Y + size.Height, _area.Width - size.Width, _area.Height - size.Height));
         }
     }
 }

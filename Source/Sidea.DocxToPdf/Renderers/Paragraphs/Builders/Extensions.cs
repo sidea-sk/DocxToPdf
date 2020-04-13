@@ -53,22 +53,22 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
         public static XFontStyle ToXFontStyle(this RunProperties properties)
         {
             var style = XFontStyle.Regular;
-            if (properties.Bold?.Val)
+            if (properties?.Bold?.Val ?? false)
             {
                 style |= XFontStyle.Bold;
             }
 
-            if (properties.Italic?.Val ?? false)
+            if (properties?.Italic?.Val ?? false)
             {
                 style |= XFontStyle.Italic;
             }
 
-            if (properties.Strike?.Val ?? false)
+            if (properties?.Strike?.Val ?? false)
             {
                 style |= XFontStyle.Strikeout;
             }
 
-            if ((properties.Underline?.Val.Value ?? UnderlineValues.None) != UnderlineValues.None)
+            if ((properties?.Underline?.Val.Value ?? UnderlineValues.None) != UnderlineValues.None)
             {
                 style |= XFontStyle.Underline;
             }

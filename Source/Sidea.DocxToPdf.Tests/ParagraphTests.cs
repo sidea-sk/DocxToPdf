@@ -20,5 +20,11 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(ParagraphAlignments));
         }
+
+        [TestMethod]
+        public void ParagraphFontStyles()
+        {
+            this.Generate(nameof(ParagraphFontStyles));
+        }
     }
 }
