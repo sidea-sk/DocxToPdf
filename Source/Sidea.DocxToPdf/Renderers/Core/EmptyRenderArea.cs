@@ -10,6 +10,10 @@ namespace Sidea.DocxToPdf.Renderers.Core
 
         public XFont AreaFont { get; } = new XFont("Arial", 10);
 
+        public void DrawLine(XPen pen, XPoint start, XPoint end)
+        {
+        }
+
         public void DrawText(string text, XFont font, XBrush brush, XPoint position)
         {
         }

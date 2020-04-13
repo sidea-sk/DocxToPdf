@@ -23,6 +23,11 @@ namespace Sidea.DocxToPdf.Renderers.Core
 
         public XFont AreaFont => _font;
 
+        public void DrawLine(XPen pen, XPoint start, XPoint end)
+        {
+            _graphics.DrawLine(pen, start + _translate, end + _translate);
+        }
+
         public void DrawText(string text, XFont font, XBrush brush, XPoint position)
         {
             _graphics.DrawString(text, font, brush, position + _translate);
