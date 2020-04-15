@@ -2,6 +2,7 @@
 {
     internal interface IRenderer
     {
+        RenderingState Prepare(IRenderArea renderArea);
         RenderingState Render(IRenderArea renderArea);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 
@@ -6,7 +7,15 @@ namespace Sidea.DocxToPdf.Renderers
 {
     internal static class Extensions
     {
-        public static XUnit ToXUnit(this TableCellWidth width)
+        public static XUnit ToXUnit(this StringValue value)
+        {
+            var v = Convert.ToInt32(value.Value);
+            return XUnit.FromPoint(v / 20d);
+        }
+
+        public static XUnit ToXUnit(this TableWidthType width) => width.ToXUnit(XUnit.Zero);
+
+        public static XUnit ToXUnit(this TableWidthType width, XUnit outOf)
         {
             // Nil = 0,
             // Summary:
@@ -27,7 +36,8 @@ namespace Sidea.DocxToPdf.Renderers
                 case TableWidthUnitValues.Nil:
                     break;
                 case TableWidthUnitValues.Pct: // Width in Fiftieths of a Percent
-                    break;
+                    var p = Convert.ToInt32(width.Width.Value);
+                    return outOf * p / 5000d; // (/ 50 / 100)
                 case TableWidthUnitValues.Dxa: // Width in Twentieths of a Point.
                     var v = Convert.ToInt32(width.Width.Value);
                     return XUnit.FromPoint(v / 20d);
@@ -37,14 +47,6 @@ namespace Sidea.DocxToPdf.Renderers
                     break;
             }
 
-            return XUnit.FromPoint(0);
-        }
-
-        public static XUnit ToXUnit(this TableWidthType width)
-        {
-
-            //var v = Convert.ToInt32(doublePoint);
-            //return XUnit.FromPoint(v / 2d);
             return XUnit.FromPoint(0);
         }
 

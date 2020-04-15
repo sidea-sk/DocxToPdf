@@ -18,6 +18,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
             _paragraph = paragraph;
         }
 
+        public RenderingState Prepare(IRenderArea renderArea)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public RenderingState Render(IRenderArea renderArea)
         {
             if (_lines == null)

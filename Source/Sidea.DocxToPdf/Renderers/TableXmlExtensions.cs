@@ -4,7 +4,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Renderers
 {
-    internal static class OpenXmlExtensions
+    internal static class TableXmlExtensions
     {
         public static TableProperties Properties(this Table table)
         {
@@ -28,10 +28,20 @@ namespace Sidea.DocxToPdf.Renderers
             return row.ChildElements.OfType<TableCell>();
         }
 
-        public static TableCellProperties Properties(this TableCell cell)
+        public static TableGrid Grid(this Table table)
         {
-            return cell.ChildElements.OfType<TableCellProperties>().Single();
+            return table.ChildElements.OfType<TableGrid>().Single();
         }
 
+        public static IEnumerable<GridColumn> Columns(this TableGrid grid)
+        {
+            return grid.ChildElements.OfType<GridColumn>();
+        }
+
+        public static GridSpan GridSpan(this TableCell cell)
+        {
+            var properties = cell.TableCellProperties;
+            return properties.GridSpan ?? new GridSpan() { Val = 1 };
+        }
     }
 }

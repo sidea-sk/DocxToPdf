@@ -34,6 +34,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
             var documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
             var childRenderingStatus = new List<RenderingStatus>();
             var currentRenderingArea = this.CreateNewPageRenderingArea(pdf, documentFont);
+
             foreach (var child in _docx.MainDocumentPart.Document.Body.ChildElements.OfType<OpenXmlCompositeElement>())
             {
                 var activeRenderer = _factory.CreateRenderer(child);
@@ -58,7 +59,6 @@ namespace Sidea.DocxToPdf.Renderers.Documents
                 childRenderingStatus.Add(renderingState.Status);
             }
 
-            
             var aggregatedStatus = childRenderingStatus.All(rs => rs == RenderingStatus.Done)
                 ? RenderingStatus.Done
                 : RenderingStatus.Error;
@@ -91,6 +91,11 @@ namespace Sidea.DocxToPdf.Renderers.Documents
            
 
             return page;
+        }
+
+        public RenderingState Prepare(IRenderArea renderArea)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

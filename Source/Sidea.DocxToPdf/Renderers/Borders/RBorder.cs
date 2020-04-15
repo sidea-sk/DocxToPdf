@@ -3,36 +3,43 @@ using Sidea.DocxToPdf.Renderers.Core;
 
 namespace Sidea.DocxToPdf.Renderers.Borders
 {
-    internal class RBorder : IRenderer
+    internal class RBorder
     {
         private readonly XPen _top;
         private readonly XPen _right;
         private readonly XPen _bottom;
         private readonly XPen _left;
-        private readonly XRect _rect;
 
         public RBorder(
             XPen top,
             XPen right,
             XPen bottom,
-            XPen left,
-            XRect rect)
+            XPen left)
         {
             _top = top;
             _right = right;
             _bottom = bottom;
             _left = left;
-            _rect = rect;
         }
 
         public RenderingState Render(IRenderArea renderArea)
         {
-            renderArea.DrawLine(_top, _rect.TopLeft, _rect.TopRight);
-            renderArea.DrawLine(_right, _rect.TopRight, _rect.BottomRight);
-            renderArea.DrawLine(_bottom, _rect.BottomRight, _rect.BottomLeft);
-            renderArea.DrawLine(_left, _rect.BottomLeft, _rect.TopLeft);
+            var rect = renderArea.AreaRectangle;
 
-            return new RenderingState(RenderingStatus.Done, new XPoint(_rect.X, _rect.Y));
+            renderArea.DrawLine(_top, rect.TopLeft, rect.TopRight);
+            renderArea.DrawLine(_right, rect.TopRight, rect.BottomRight);
+            renderArea.DrawLine(_bottom, rect.BottomRight, rect.BottomLeft);
+            renderArea.DrawLine(_left, rect.BottomLeft, rect.TopLeft);
+
+            return new RenderingState(RenderingStatus.Done, new XPoint(rect.X, rect.Y));
+        }
+
+        public void Render(IRenderArea renderArea, XRect rect)
+        {
+            renderArea.DrawLine(_top, rect.TopLeft, rect.TopRight);
+            renderArea.DrawLine(_right, rect.TopRight, rect.BottomRight);
+            renderArea.DrawLine(_bottom, rect.BottomRight, rect.BottomLeft);
+            renderArea.DrawLine(_left, rect.BottomLeft, rect.TopLeft);
         }
     }
 }

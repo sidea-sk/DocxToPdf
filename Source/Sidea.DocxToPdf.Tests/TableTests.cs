@@ -16,9 +16,9 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
-        public void TableWidth()
+        public void CellMergeWidth()
         {
-            this.Generate(nameof(TableWidth));
+            this.Generate(nameof(CellMergeWidth));
         }
 
         [TestMethod]
