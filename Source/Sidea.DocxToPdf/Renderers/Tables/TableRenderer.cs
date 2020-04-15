@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
+using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 using Sidea.DocxToPdf.Renderers.Tables.Builders;
 
 namespace Sidea.DocxToPdf.Renderers.Tables
@@ -14,7 +15,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables
             _table = table;
         }
 
-        public RenderingState Prepare(IRenderArea renderArea)
+        public RenderingState Prepare(IPrerenderArea renderArea)
         {
             return new RenderingState(RenderingStatus.Done, new XPoint(0d, 0d));
         }

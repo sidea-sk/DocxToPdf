@@ -5,13 +5,16 @@ using DocumentFormat.OpenXml.Packaging;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using Sidea.DocxToPdf.Renderers.Core;
+using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Documents
 {
-    internal class DocumentRenderer : IRenderer
+    internal class DocumentRenderer
     {
         private readonly WordprocessingDocument _docx;
         private readonly RendererFactory _factory = new RendererFactory();
+        private readonly List<IRenderer> _renderers = new List<IRenderer>();
+        private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
 
         public DocumentRenderer(WordprocessingDocument docx)
         {
@@ -20,7 +23,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
 
         public PdfDocument GeneratedDocument { get; private set; }
 
-        public RenderingState Render(IRenderArea renderArea)
+        public RenderingState Render()
         {
             var pdf = new PdfDocument();
             var state = this.RenderCore(pdf);
@@ -31,9 +34,8 @@ namespace Sidea.DocxToPdf.Renderers.Documents
 
         private RenderingState RenderCore(PdfDocument pdf)
         {
-            var documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
             var childRenderingStatus = new List<RenderingStatus>();
-            var currentRenderingArea = this.CreateNewPageRenderingArea(pdf, documentFont);
+            var currentRenderingArea = this.CreateNewPageRenderingArea(pdf, _documentFont);
 
             foreach (var child in _docx.MainDocumentPart.Document.Body.ChildElements.OfType<OpenXmlCompositeElement>())
             {
@@ -46,7 +48,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
                     switch(renderingState.Status)
                     {
                         case RenderingStatus.ReachedEndOfArea:
-                            currentRenderingArea = this.CreateNewPageRenderingArea(pdf, documentFont);
+                            currentRenderingArea = this.CreateNewPageRenderingArea(pdf, _documentFont);
                             break;
                         case RenderingStatus.NotStarted:
                             throw new System.Exception("Unexpected rendering status");
@@ -91,11 +93,6 @@ namespace Sidea.DocxToPdf.Renderers.Documents
            
 
             return page;
-        }
-
-        public RenderingState Prepare(IRenderArea renderArea)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

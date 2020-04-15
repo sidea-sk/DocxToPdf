@@ -2,6 +2,7 @@
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Borders;
 using Sidea.DocxToPdf.Renderers.Core;
+using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
@@ -24,7 +25,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             _positionService = positionService;
         }
 
-        public RenderingState Prepare(IRenderArea renderArea)
+        public RenderingState Prepare(IPrerenderArea renderArea)
         {
             var width = _positionService.CalculateWidth(_gridPosition);
             return new RenderingState(RenderingStatus.Done, new XPoint(width, XUnit.FromPoint(10)));

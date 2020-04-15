@@ -3,6 +3,7 @@ using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
+using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Builders;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Models;
 
@@ -18,7 +19,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
             _paragraph = paragraph;
         }
 
-        public RenderingState Prepare(IRenderArea renderArea)
+        public RenderingState Prepare(IPrerenderArea renderArea)
         {
             throw new System.NotImplementedException();
         }

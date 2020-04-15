@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
+using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 {

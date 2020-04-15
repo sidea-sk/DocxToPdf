@@ -19,7 +19,7 @@ namespace Sidea.DocxToPdf
         public PdfDocument Generate(WordprocessingDocument docx)
         {
             var renderer = new DocumentRenderer(docx);
-            renderer.Render(new EmptyRenderArea());
+            renderer.Render();
             return renderer.GeneratedDocument;
         }
     }
