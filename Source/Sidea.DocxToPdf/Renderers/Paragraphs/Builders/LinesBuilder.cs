@@ -11,7 +11,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 {
     internal static class LinesBuilder
     {
-        public static IEnumerable<RLine> ToRenderingLines(this Paragraph paragraph, IRenderArea renderArea)
+        public static IEnumerable<RLine> ToRenderingLines(this Paragraph paragraph, IRenderingAreaBase renderArea)
         {
             var lineAlignment = paragraph.GetLinesAlignment();
 

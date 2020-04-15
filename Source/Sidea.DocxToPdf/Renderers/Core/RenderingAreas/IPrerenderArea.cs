@@ -2,14 +2,9 @@
 
 namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 {
-    internal interface IPrerenderArea : ITextMeasuringService
+    internal interface IPrerenderArea : IRenderingAreaBase
     {
-        XFont AreaFont { get; }
-        double Width { get; }
-        double Height { get; }
-        XRect AreaRectangle { get; }
-
-        IPrerenderArea PanLeft(double x);
+        IPrerenderArea PanLeft(XUnit unit);
         IPrerenderArea PanLeftDown(XSize size);
     }
 }
