@@ -43,7 +43,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
                 var renderer = _factory.CreateRenderer(child);
                 _renderers.Add(renderer);
 
-                RenderingState renderingState = new RenderingState(RenderingStatus.NotStarted, new XPoint(0, 0));
+                var renderingState = RenderingState.NotStarted;
                 while (renderingState.Status.IsNotFinished())
                 {
                     renderingState = renderer.Prepare(prerenderArea);
@@ -71,7 +71,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
 
             foreach(var renderer in _renderers)
             {
-                RenderingState renderingState = new RenderingState(RenderingStatus.NotStarted, new XPoint(0, 0));
+                var renderingState = RenderingState.NotStarted;
                 while (renderingState.Status.IsNotFinished())
                 {
                     renderingState = renderer.Render(currentRenderingArea);
@@ -91,35 +91,11 @@ namespace Sidea.DocxToPdf.Renderers.Documents
                 childRenderingStatus.Add(renderingState.Status);
             }
 
-            //foreach (var child in _docx.MainDocumentPart.Document.Body.ChildElements.OfType<OpenXmlCompositeElement>())
-            //{
-            //    var activeRenderer = _factory.CreateRenderer(child);
-
-            //    RenderingState renderingState = new RenderingState(RenderingStatus.NotStarted, new XPoint(0, 0));
-            //    while(renderingState.Status.IsNotFinished())
-            //    {
-            //        renderingState = activeRenderer.Render(currentRenderingArea);
-            //        switch(renderingState.Status)
-            //        {
-            //            case RenderingStatus.ReachedEndOfArea:
-            //                currentRenderingArea = this.CreateNewPageRenderingArea(pdf, _documentFont);
-            //                break;
-            //            case RenderingStatus.NotStarted:
-            //                throw new System.Exception("Unexpected rendering status");
-            //            default:
-            //                currentRenderingArea = currentRenderingArea.PanLeftDown(new XSize(0, renderingState.FinishedAtPosition.Y));
-            //                break;
-            //        }
-            //    }
-
-            //    childRenderingStatus.Add(renderingState.Status);
-            //}
-
             var aggregatedStatus = childRenderingStatus.All(rs => rs == RenderingStatus.Done)
                 ? RenderingStatus.Done
                 : RenderingStatus.Error;
 
-            return new RenderingState(aggregatedStatus, new XPoint(0, 0));
+            return RenderingState.FromStatus(aggregatedStatus, XRect.Empty);
         }
 
         private IRenderArea CreateNewPageRenderingArea(PdfDocument pdf, XFont documentDefaultFont)

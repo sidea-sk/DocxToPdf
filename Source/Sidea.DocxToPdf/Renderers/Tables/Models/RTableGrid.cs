@@ -11,7 +11,12 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         public RTableGrid(IEnumerable<XUnit> gridColumns)
         {
             _gridColumns = gridColumns.ToArray();
+            this.TotalWidth = _gridColumns.Aggregate(new XUnit(0), (c, a) => a + c);
         }
+
+        public XUnit TotalWidth { get; }
+
+        public int ColumnsCount => _gridColumns.Length;
 
         public XUnit CalculateLeftOffset(GridPosition gridPosition)
         {

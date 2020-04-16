@@ -1,4 +1,5 @@
 ﻿using PdfSharp.Drawing;
+using Sidea.DocxToPdf.Renderers.Core.Serices;
 
 namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 {

@@ -20,8 +20,9 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
 
         public static IEnumerable<RCell> RCells(this TableRow row, int rowIndex, IGridPositionService gridPositionService)
         {
-            var cells = new List<RCell>();
+            var rowHeight = row.RowHeight();
 
+            var cells = new List<RCell>();
             var pen = new XPen(XPens.Black)
             {
                 Width = 0.5
@@ -35,10 +36,22 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
                 var gridDescription = cell.GetGridDescription(rowIndex, rowColIndex);
                 rowColIndex += gridDescription.Span;
 
-                cells.Add(new RCell(cell, gridDescription, border, gridPositionService));
+                cells.Add(new RCell(cell, gridDescription, border, rowHeight, gridPositionService));
             }
 
             return cells;
+        }
+
+        private static XUnit RowHeight(this TableRow row)
+        {
+            // examine height rule
+            var rowHeight = row
+                .TableRowProperties?
+                .ChildsOfType<TableRowHeight>()
+                .FirstOrDefault()
+                ?.Val ?? 200;
+
+            return XUnit.FromPoint(rowHeight / 20);
         }
     }
 }

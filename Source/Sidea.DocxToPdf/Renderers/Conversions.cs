@@ -5,7 +5,7 @@ using PdfSharp.Drawing;
 
 namespace Sidea.DocxToPdf.Renderers
 {
-    internal static class Extensions
+    internal static class Conversions
     {
         public static XUnit ToXUnit(this StringValue value)
         {

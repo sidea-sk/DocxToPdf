@@ -13,10 +13,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
     {
         private readonly Paragraph _paragraph;
 
-        // private List<RLine> _preparedLines = new List<RLine>();
         private List<RLine> _remainingLines = null;
 
         private Queue<RLinesPage> _linesPages = new Queue<RLinesPage>();
+
+        public XSize TotalArea { get; private set; }
 
         public ParagraphRenderer(Paragraph paragraph)
         {
@@ -37,14 +38,14 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
             _linesPages.Enqueue(page);
 
-            return new RenderingState(status, new XPoint(0, page.Height));
+            return RenderingState.FromStatus(status, 0, page.Height);
         }
 
         public RenderingState Render(IRenderArea renderArea)
         {
             if(_linesPages.Count == 0)
             {
-                return new RenderingState(RenderingStatus.Done, new XPoint(0,0));
+                return RenderingState.DoneEmpty;
             }
 
             var page = _linesPages.Dequeue();
@@ -61,8 +62,8 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
             var status = _linesPages.Count == 0
                 ? RenderingStatus.Done
                 : RenderingStatus.ReachedEndOfArea;
-
-            return new RenderingState(status, new XPoint(0, page.Height));
+            
+            return RenderingState.FromStatus(status, 0, page.Height);
         }
 
         private void PrepareRemainingLines(IPrerenderArea renderArea)
@@ -92,26 +93,6 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
             return new RLinesPage(0, linesInPage, _remainingLines.Count == 0);
         }
-
-        //private void PrepareRenderingLines(IPrerenderArea renderArea)
-        //{
-        //    // add smart page breaking - on the new page (area) there must be at least two lines)
-        //    _preparedLines = new List<RLine>();
-
-        //    var aggregatedHeight = 0d;
-        //    while(_remainingLines.Count > 0)
-        //    {
-        //        var line = _remainingLines.First();
-        //        if (aggregatedHeight + line.Height > renderArea.Height)
-        //        {
-        //            break;
-        //        }
-
-        //        aggregatedHeight += line.Height;
-        //        _preparedLines.Add(line);
-        //        _remainingLines.Remove(line);
-        //    }
-        //}
 
         private class RLinesPage
         {

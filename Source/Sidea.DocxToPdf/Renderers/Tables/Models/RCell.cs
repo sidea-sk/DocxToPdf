@@ -9,44 +9,60 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
     internal class RCell : IRenderer
     {
         private readonly TableCell _cell;
-        private readonly GridPosition _gridPosition;
-        private readonly RBorder _border;
+        private readonly XUnit _minimalHeight;
+        private XUnit _width;
         private readonly IGridPositionService _positionService;
 
         public RCell(
             TableCell cell,
             GridPosition gridPosition,
             RBorder border,
+            XUnit minimalHeight,
             IGridPositionService positionService)
         {
             _cell = cell;
-            _gridPosition = gridPosition;
-            _border = border;
             _positionService = positionService;
+            _width = _positionService.CalculateWidth(gridPosition);
+            _minimalHeight = minimalHeight;
+
+            this.GridPosition = gridPosition;
+            this.Border = border;
+            this.TotalArea = new XSize(_width, 0);
         }
+
+        public GridPosition GridPosition { get; }
+
+        public RBorder Border { get; }
+
+        public XSize TotalArea { get; private set; }
 
         public RenderingState Prepare(IPrerenderArea renderArea)
         {
-            var width = _positionService.CalculateWidth(_gridPosition);
-            return new RenderingState(RenderingStatus.Done, new XPoint(width, XUnit.FromPoint(10)));
+            if (this.GridPosition.RowSpan == 0)
+            {
+                this.TotalArea = new XSize(0, 0);
+                return RenderingState.DoneEmpty;
+            }
+
+            this.TotalArea = this.TotalArea.ExpandHeight(_minimalHeight);
+            return RenderingState.Done(_width, _minimalHeight);
         }
 
         public RenderingState Render(IRenderArea renderArea)
         {
-            if(_gridPosition.RowSpan == 0)
+            if(this.GridPosition.RowSpan == 0)
             {
-                return new RenderingState(RenderingStatus.Done, new XPoint(0 ,0));
+                return RenderingState.DoneEmpty;
             }
 
-            var dx = _positionService.CalculateLeftOffset(_gridPosition);
-            var dy = _gridPosition.Row * XUnit.FromPoint(10);
-            var width = _positionService.CalculateWidth(_gridPosition);
-            var height = XUnit.FromPoint(10);
+            // var dx = _positionService.CalculateLeftOffset(this.GridPosition);
+            // var dy = XUnit.FromPoint(10);
+            // var width = _positionService.CalculateWidth(this.GridPosition);
 
-            var cellArea = renderArea.PanLeftDown(new XSize(dx, dy));
-            _border.Render(cellArea, new XRect(0, 0, width, height));
+            // var cellArea = renderArea.PanLeftDown(new XSize(dx, dy));
+            // Border.Render(cellArea, new XRect(0, 0, width, _minimalHeight));
 
-            return new RenderingState(RenderingStatus.Done, new XPoint(height, width));
+            return RenderingState.Done(_width, _minimalHeight);
         }
     }
 }

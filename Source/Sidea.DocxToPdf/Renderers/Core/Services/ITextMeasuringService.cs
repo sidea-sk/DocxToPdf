@@ -1,6 +1,6 @@
 ﻿using PdfSharp.Drawing;
 
-namespace Sidea.DocxToPdf.Renderers.Core
+namespace Sidea.DocxToPdf.Renderers.Core.Serices
 {
     internal interface ITextMeasuringService
     {

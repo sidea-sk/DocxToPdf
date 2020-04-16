@@ -23,17 +23,17 @@ namespace Sidea.DocxToPdf.Renderers.Borders
             _left = left;
         }
 
-        public RenderingState Render(IRenderArea renderArea)
-        {
-            var rect = renderArea.AreaRectangle;
+        //public RenderingState Render(IRenderArea renderArea)
+        //{
+        //    var rect = renderArea.AreaRectangle;
 
-            renderArea.DrawLine(_top, rect.TopLeft, rect.TopRight);
-            renderArea.DrawLine(_right, rect.TopRight, rect.BottomRight);
-            renderArea.DrawLine(_bottom, rect.BottomRight, rect.BottomLeft);
-            renderArea.DrawLine(_left, rect.BottomLeft, rect.TopLeft);
+        //    renderArea.DrawLine(_top, rect.TopLeft, rect.TopRight);
+        //    renderArea.DrawLine(_right, rect.TopRight, rect.BottomRight);
+        //    renderArea.DrawLine(_bottom, rect.BottomRight, rect.BottomLeft);
+        //    renderArea.DrawLine(_left, rect.BottomLeft, rect.TopLeft);
 
-            return new RenderingState(RenderingStatus.Done, new XPoint(rect.X, rect.Y));
-        }
+        //    return RenderingState.Done(new XPoint(rect.X, rect.Y));
+        //}
 
         public void Render(IRenderArea renderArea, XRect rect)
         {

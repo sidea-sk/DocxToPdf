@@ -9,8 +9,4 @@
     <PackageReference Include="PDFsharpNetStandard2" Version="1.51.4845" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Renderers\Core\Services\" />
-  </ItemGroup>
-
 </Project>

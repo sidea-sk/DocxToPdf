@@ -1,40 +1,70 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
+﻿using System.Collections.Generic;
+using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 using Sidea.DocxToPdf.Renderers.Tables.Builders;
+using Sidea.DocxToPdf.Renderers.Tables.Models;
 
 namespace Sidea.DocxToPdf.Renderers.Tables
 {
     internal class TableRenderer : IRenderer
     {
         private readonly Table _table;
+        private readonly RTableGrid _grid;
+        private readonly List<RCell> _cells = new List<RCell>();
+
+        private RTableLayout _layout = null;
 
         public TableRenderer(Table table)
         {
             _table = table;
+            _grid = _table.InitializeGrid();
         }
+
+        public XSize TotalArea { get; } = new XSize(0, 0);
 
         public RenderingState Prepare(IPrerenderArea renderArea)
         {
-            return new RenderingState(RenderingStatus.Done, new XPoint(0d, 0d));
-        }
-
-        public RenderingState Render(IRenderArea renderArea)
-        {
-            var tableGrid = _table.InitializeGrid();
             var rowIndex = 0;
+
             foreach (var row in _table.Rows())
             {
-                foreach (var cell in row.RCells(rowIndex, tableGrid))
+                foreach (var cell in row.RCells(rowIndex, _grid))
                 {
-                    var state = cell.Render(renderArea);
+                    _cells.Add(cell);
+                    var state = cell.Prepare(renderArea);
                 }
 
                 rowIndex++;
             }
 
-            return new RenderingState(RenderingStatus.Done, new XPoint(0, rowIndex * XUnit.FromPoint(10)));
+            return RenderingState.Done(new XRect(new XSize(0,0)));
+        }
+
+        public RenderingState Render(IRenderArea renderArea)
+        {
+            if(_layout == null)
+            {
+                _layout = new RTableLayout(_grid, _cells);
+            }
+
+            _layout.Render(renderArea);
+
+
+            //var tableGrid = _table.InitializeGrid();
+            //var rowIndex = 0;
+            //foreach (var row in _table.Rows())
+            //{
+            //    foreach (var cell in row.RCells(rowIndex, tableGrid))
+            //    {
+            //        var state = cell.Render(renderArea);
+            //    }
+
+            //    rowIndex++;
+            //}
+
+            return RenderingState.Done(new XRect(_layout.TotalSize));
         }
     }
 }
