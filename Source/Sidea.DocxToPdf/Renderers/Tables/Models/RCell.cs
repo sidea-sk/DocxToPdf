@@ -7,7 +7,7 @@ using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
-    internal class RCell : IRenderer
+    internal class RCell : RendererBase
     {
         private readonly TableCell _cell;
         private readonly RendererFactory _factory = new RendererFactory();
@@ -32,18 +32,16 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
             this.GridPosition = gridPosition;
             this.Border = border;
-            this.TotalArea = new XSize(0, 0);
         }
 
         public GridPosition GridPosition { get; }
 
         public RBorder Border { get; }
 
-        public XSize TotalArea { get; private set; }
-
-        public XSize CalculateContentSize(IPrerenderArea prerenderArea)
+        protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            this.TotalArea = new XSize(_width, _padding.VerticalPaddings);
+            var size = new XSize(_width, _padding.VerticalPaddings);
+
             var cellPrerenderArea = prerenderArea
                 .Restrict(_width - _padding.HorizonalPaddings);
 
@@ -53,13 +51,13 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 _childRenderers.Add(renderer);
                 var childContent = renderer.CalculateContentSize(cellPrerenderArea);
 
-                this.TotalArea = this.TotalArea.ExpandHeight(childContent.Height);
+                size = size.ExpandHeight(childContent.Height);
             }
 
-            return this.TotalArea;
+            return size;
         }
 
-        public RenderingState Render(IRenderArea renderArea)
+        protected override sealed RenderingState RenderCore(IRenderArea renderArea)
         {
             if(this.GridPosition.RowSpan == 0)
             {

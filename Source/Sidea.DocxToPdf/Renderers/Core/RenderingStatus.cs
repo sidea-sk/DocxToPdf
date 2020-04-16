@@ -2,8 +2,8 @@
 {
     internal enum RenderingStatus
     {
+        Unprepared,
         NotStarted,
-        // Prerendered,
         ReachedEndOfArea, //new page is necessary
         Done,
         Error

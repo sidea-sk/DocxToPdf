@@ -8,7 +8,7 @@ using Sidea.DocxToPdf.Renderers.Tables.Models;
 
 namespace Sidea.DocxToPdf.Renderers.Tables
 {
-    internal class TableRenderer : IRenderer
+    internal class TableRenderer : RendererBase
     {
         private readonly Table _table;
         private readonly RenderingOptions _renderingOptions;
@@ -24,9 +24,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables
             _grid = _table.InitializeGrid();
         }
 
-        public XSize TotalArea { get; } = new XSize(0, 0);
-
-        public XSize CalculateContentSize(IPrerenderArea prerenderArea)
+        protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
             var rowIndex = 0;
 
@@ -45,16 +43,10 @@ namespace Sidea.DocxToPdf.Renderers.Tables
             return size;
         }
 
-        public RenderingState Render(IRenderArea renderArea)
+        protected override sealed RenderingState RenderCore(IRenderArea renderArea)
         {
-            if(_layout == null)
-            {
-                _layout = new RLayout(_grid, _cells);
-            }
-
-            _layout.Render(renderArea);
-
-            return RenderingState.Done(new XRect(_layout.TotalArea));
+            var renderingState = _layout.Render(renderArea);
+            return renderingState;
         }
     }
 }

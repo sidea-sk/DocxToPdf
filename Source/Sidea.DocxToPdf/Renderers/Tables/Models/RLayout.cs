@@ -6,7 +6,7 @@ using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
-    internal class RLayout : IRenderer
+    internal class RLayout : RendererBase
     {
         private readonly RGrid _grid;
         private readonly RCell[] _orderedCells = new RCell[0];
@@ -20,29 +20,20 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 .OrderBy(c => c.GridPosition.Row)
                 .ThenBy(c => c.GridPosition.Column)
                 .ToArray();
-
-            this.TotalArea = new XSize(0, 0);
         }
 
-        public XSize TotalArea { get; private set; }
-
-        public XSize CalculateContentSize(IPrerenderArea prerenderArea)
+        protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
             foreach(var cell in _orderedCells)
             {
                 cell.CalculateContentSize(prerenderArea);
             }
 
-            this.PrepareData();
-            return this.TotalArea;
+            var size =  this.PrepareData();
+            return size;
         }
 
-        public RenderingState Prepare(IPrerenderArea prerenderArea)
-        {
-            return RenderingState.DoneEmpty;
-        }
-
-        public RenderingState Render(IRenderArea renderArea)
+        protected override sealed RenderingState RenderCore(IRenderArea renderArea)
         {
             for (var rowIndex = 0; rowIndex < _grid.RowsCount; rowIndex++)
             {
@@ -61,14 +52,14 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             return RenderingState.DoneEmpty;
         }
 
-        private void PrepareData()
+        private XSize PrepareData()
         {
             _rowHeights = this.CalculateRowHeights();
             var totalWidth = _orderedCells
                 .Where(c => c.GridPosition.Row == 0)
                 .Aggregate(0d, (agg, c) => agg + c.TotalArea.Width);
 
-            this.TotalArea = this.TotalArea.Expand(totalWidth, _rowHeights.Sum());
+            return new XSize(totalWidth, _rowHeights.Sum());
         }
 
         private IEnumerable<RCell> CellsInRow(int rowIndex)

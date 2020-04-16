@@ -4,6 +4,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
 {
     internal class RenderingState
     {
+        public static readonly RenderingState Unprepared = new RenderingState(RenderingStatus.Unprepared, new XRect(0, 0, 0, 0));
         public static readonly RenderingState Error = new RenderingState(RenderingStatus.Error, new XRect(0,0,0,0));
         public static readonly RenderingState NotStarted = new RenderingState(RenderingStatus.NotStarted, new XRect(0, 0, 0, 0));
         public static readonly RenderingState DoneEmpty = new RenderingState(RenderingStatus.Done, new XRect(0, 0, 0, 0));

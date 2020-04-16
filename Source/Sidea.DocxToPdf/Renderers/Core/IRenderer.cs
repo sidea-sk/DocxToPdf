@@ -7,6 +7,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
     {
         XSize TotalArea { get; }
         XSize CalculateContentSize(IPrerenderArea prerenderArea);
+        RenderingState CurrentRenderingState { get; }
         RenderingState Render(IRenderArea renderArea);
     }
 }
