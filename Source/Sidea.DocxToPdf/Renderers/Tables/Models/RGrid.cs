@@ -4,19 +4,34 @@ using PdfSharp.Drawing;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
-    internal class RTableGrid : IGridPositionService
+    internal class RGrid : IGridPositionService
     {
         private readonly XUnit[] _gridColumns;
+        private readonly RGridRow[] _gridRows;
 
-        public RTableGrid(IEnumerable<XUnit> gridColumns)
+        public RGrid(
+            IEnumerable<XUnit> gridColumns,
+            IEnumerable<RGridRow> gridRows)
         {
             _gridColumns = gridColumns.ToArray();
-            this.TotalWidth = _gridColumns.Aggregate(new XUnit(0), (c, a) => a + c);
+            _gridRows = gridRows.ToArray();
+
+            this.PredefinedHeight = _gridRows
+                .Select(r => r.Height)
+                .Sum();
+
+            this.TotalWidth = _gridColumns.Sum();
         }
 
         public XUnit TotalWidth { get; }
 
+        public XUnit PredefinedHeight { get; }
+
         public int ColumnsCount => _gridColumns.Length;
+
+        public int RowsCount => _gridRows.Length;
+
+        public XUnit RowHeight(int rowIndex) => _gridRows[rowIndex].Height;
 
         public XUnit CalculateLeftOffset(GridPosition gridPosition)
         {

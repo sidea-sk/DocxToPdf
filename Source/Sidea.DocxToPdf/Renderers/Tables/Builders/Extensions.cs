@@ -49,6 +49,19 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
             return new GridPosition(rowIndex, rowGridColIndex, rowSpan, colSpan);
         }
 
+        public static RGridRow ToGridRow(this TableRow row)
+        {
+            var trh = row
+                .TableRowProperties?
+                .ChildsOfType<TableRowHeight>()
+                .FirstOrDefault();
+
+            var rowHeight = trh?.Val ?? 200;
+            var rule = trh?.HeightType?.Value ?? HeightRuleValues.Auto;
+
+            return new RGridRow(new XUnit(rowHeight / 20), rule);
+        }
+
         private static int ToRowSpan(this VerticalMerge verticalMerge)
         {
             if(verticalMerge == null)

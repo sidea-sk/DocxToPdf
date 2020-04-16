@@ -11,10 +11,10 @@ namespace Sidea.DocxToPdf.Renderers.Tables
     internal class TableRenderer : IRenderer
     {
         private readonly Table _table;
-        private readonly RTableGrid _grid;
+        private readonly RGrid _grid;
         private readonly List<RCell> _cells = new List<RCell>();
 
-        private RTableLayout _layout = null;
+        private RLayout _layout = null;
 
         public TableRenderer(Table table)
         {
@@ -46,7 +46,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables
         {
             if(_layout == null)
             {
-                _layout = new RTableLayout(_grid, _cells);
+                _layout = new RLayout(_grid, _cells);
             }
 
             _layout.Render(renderArea);

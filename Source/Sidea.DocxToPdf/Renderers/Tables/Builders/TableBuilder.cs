@@ -9,18 +9,21 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
 {
     internal static class TableBuilder
     {
-        public static RTableGrid InitializeGrid(this Table table)
+        public static RGrid InitializeGrid(this Table table)
         {
             var columnWidths = table
-               .GetGridColumnWidths()
-               .ToArray();
+               .GetGridColumnWidths();
 
-            return new RTableGrid(columnWidths);
+            var rowHeights = table
+                .ChildsOfType<TableRow>()
+                .Select(r => r.ToGridRow());
+
+            return new RGrid(columnWidths, rowHeights);
         }
 
         public static IEnumerable<RCell> RCells(this TableRow row, int rowIndex, IGridPositionService gridPositionService)
         {
-            var rowHeight = row.RowHeight();
+            var gridRow = row.ToGridRow();
 
             var cells = new List<RCell>();
             var pen = new XPen(XPens.Black)
@@ -36,22 +39,10 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
                 var gridDescription = cell.GetGridDescription(rowIndex, rowColIndex);
                 rowColIndex += gridDescription.Span;
 
-                cells.Add(new RCell(cell, gridDescription, border, rowHeight, gridPositionService));
+                cells.Add(new RCell(cell, gridDescription, border, gridRow.Height, gridPositionService));
             }
 
             return cells;
-        }
-
-        private static XUnit RowHeight(this TableRow row)
-        {
-            // examine height rule
-            var rowHeight = row
-                .TableRowProperties?
-                .ChildsOfType<TableRowHeight>()
-                .FirstOrDefault()
-                ?.Val ?? 200;
-
-            return XUnit.FromPoint(rowHeight / 20);
         }
     }
 }
