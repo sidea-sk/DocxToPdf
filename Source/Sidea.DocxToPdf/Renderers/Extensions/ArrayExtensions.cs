@@ -7,9 +7,8 @@ namespace Sidea.DocxToPdf.Renderers
     {
         public static IEnumerable<(T value, int index)> SelectWithIndeces<T>(this IEnumerable<T> source, params int[] indeces)
         {
-            return source
-                .Where((item, index) => indeces.Contains(index))
-                .Select((item, index) => (item, index));
+            var temp = source.ToArray();
+            return indeces.Select(i => (temp[i], i));
         }
 
         public static IEnumerable<T> SelectByIndeces<T>(this IEnumerable<T> source, params int[] indeces)

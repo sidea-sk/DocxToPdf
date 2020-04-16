@@ -22,6 +22,12 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        public void TableWithContent()
+        {
+            this.Generate(nameof(TableWithContent));
+        }
+
+        [TestMethod]
         public void TableAlignment()
         {
             this.Generate(nameof(TableAlignment));

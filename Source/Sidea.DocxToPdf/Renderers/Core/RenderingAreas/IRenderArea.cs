@@ -9,5 +9,6 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         IRenderArea PanLeft(XUnit unit);
         IRenderArea PanLeftDown(XSize size);
+        IRenderArea Restrict(XUnit width);
     }
 }

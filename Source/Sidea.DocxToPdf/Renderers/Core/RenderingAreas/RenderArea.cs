@@ -47,6 +47,10 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         IPrerenderArea IPrerenderArea.PanLeftDown(XSize size) => this.PanLeftDownCore(size);
 
+        IPrerenderArea IPrerenderArea.Restrict(XUnit width) => this.RestricCore(width);
+
+        IRenderArea IRenderArea.Restrict(XUnit width) => this.RestricCore(width);
+
         private RenderArea PanLeftCore(XUnit unit)
         {
             return new RenderArea(_font, _graphics, new XRect(_area.X + unit, _area.Y, _area.Width - unit, _area.Height));
@@ -56,6 +60,14 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         {
             // check XRect methods Offset, Inflate, etc.
             return new RenderArea(_font, _graphics, new XRect(_area.X + size.Width, _area.Y + size.Height, _area.Width - size.Width, _area.Height - size.Height));
+        }
+
+        private RenderArea RestricCore(XUnit width)
+        {
+            return new RenderArea(
+                 _font,
+                 _graphics,
+                 new XRect(_area.X, _area.Y, width, _area.Height));
         }
     }
 }

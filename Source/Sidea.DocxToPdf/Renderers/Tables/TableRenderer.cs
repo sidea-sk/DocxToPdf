@@ -51,7 +51,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables
 
             _layout.Render(renderArea);
 
-
             //var tableGrid = _table.InitializeGrid();
             //var rowIndex = 0;
             //foreach (var row in _table.Rows())

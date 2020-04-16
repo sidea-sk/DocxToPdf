@@ -37,7 +37,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                         continue;
                     }
 
-                    this.RenderCellBorders(cell, renderArea);
+                    this.RenderCell(cell, renderArea);
                 }
             }
         }
@@ -55,7 +55,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         private IEnumerable<RCell> CellsInRow(int rowIndex)
             => _orderedCells.Where(c => c.GridPosition.Row == rowIndex && c.GridPosition.RowSpan > 0);
 
-        private void RenderCellBorders(RCell cell, IRenderArea renderArea)
+        private void RenderCell(RCell cell, IRenderArea renderArea)
         {
             var leftOffset = _grid.CalculateLeftOffset(cell.GridPosition);
             var topOffset = _rowHeights
@@ -77,6 +77,12 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             renderArea.DrawLine(XPens.Black, rect.TopRight, rect.BottomRight);
             renderArea.DrawLine(XPens.Black, rect.BottomRight, rect.BottomLeft);
             renderArea.DrawLine(XPens.Black, rect.BottomLeft, rect.TopLeft);
+
+            var cellArea = renderArea
+                .PanLeftDown(new XSize(leftOffset, topOffset))
+                .Restrict(cell.TotalArea.Width);
+
+            cell.Render(cellArea);
         }
 
         private XUnit[] CalculateRowHeights()
@@ -110,7 +116,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         private int[] RowIndecesOfCell(RCell cell)
         {
             var x = _orderedCells
-                .SkipWhile(c => c.GridPosition.Row < cell.GridPosition.Row && c.GridPosition.Column < cell.GridPosition.Column)
+                .SkipWhile(c => c != cell) // c.GridPosition.Row < cell.GridPosition.Row && c.GridPosition.Column < cell.GridPosition.Column)
                 .Where(c => c.GridPosition.Column == cell.GridPosition.Column)
                 .TakeWhile(c => c == cell || c.GridPosition.RowSpan == 0)
                 .Select(c => c.GridPosition.Row)
@@ -132,7 +138,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 {
                     var newValue = i < currentValues.Count - 1
                         ? new XUnit(v.value + perItem)
-                        : new XUnit(totalValueToDistribute - (i * perItem));
+                        : new XUnit(v.value + (totalValueToDistribute - (i * perItem)));
 
                     return (newValue, v.index);
                 });
