@@ -73,10 +73,13 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 .Sum();
 
             var rect = new XRect(leftOffset, topOffset, cell.TotalArea.Width, height);
-            renderArea.DrawLine(XPens.Black, rect.TopLeft, rect.TopRight);
-            renderArea.DrawLine(XPens.Black, rect.TopRight, rect.BottomRight);
-            renderArea.DrawLine(XPens.Black, rect.BottomRight, rect.BottomLeft);
-            renderArea.DrawLine(XPens.Black, rect.BottomLeft, rect.TopLeft);
+            var pen = new XPen(XPens.Black);
+            pen.Width = XUnit.FromPoint(0.5d);
+
+            renderArea.DrawLine(pen, rect.TopLeft, rect.TopRight);
+            renderArea.DrawLine(pen, rect.TopRight, rect.BottomRight);
+            renderArea.DrawLine(pen, rect.BottomRight, rect.BottomLeft);
+            renderArea.DrawLine(pen, rect.BottomLeft, rect.TopLeft);
 
             var cellArea = renderArea
                 .PanLeftDown(new XSize(leftOffset, topOffset))

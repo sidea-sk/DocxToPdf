@@ -23,8 +23,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
 
         public static IEnumerable<RCell> RCells(this TableRow row, int rowIndex, IGridPositionService gridPositionService)
         {
-            var gridRow = row.ToGridRow();
-
             var cells = new List<RCell>();
             var pen = new XPen(XPens.Black)
             {
@@ -39,7 +37,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
                 var gridDescription = cell.GetGridDescription(rowIndex, rowColIndex);
                 rowColIndex += gridDescription.Span;
 
-                cells.Add(new RCell(cell, gridDescription, border, gridRow.Height, gridPositionService));
+                cells.Add(new RCell(cell, gridDescription, border, gridPositionService));
             }
 
             return cells;
