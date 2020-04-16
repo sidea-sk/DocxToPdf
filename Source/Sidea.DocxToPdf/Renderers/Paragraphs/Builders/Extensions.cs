@@ -14,11 +14,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
         public static bool OverridesFont(this RunProperties properties)
         {
             return !(
-                properties.FontSize == null
-                && properties.Bold == null
-                && properties.Italic == null
-                && properties.Underline == null
-                && properties.Strike == null)
+                properties?.FontSize == null
+                && properties?.Bold == null
+                && properties?.Italic == null
+                && properties?.Underline == null
+                && properties?.Strike == null)
                 ;
         }
 

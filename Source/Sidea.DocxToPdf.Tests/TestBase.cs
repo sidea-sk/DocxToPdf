@@ -19,10 +19,14 @@ namespace Sidea.DocxToPdf.Tests
 
         protected void Generate(string docxSampleFileName)
         {
+            var options = new RenderingOptions(
+                renderParagraphCharacter: true
+                );
+
             var inputFileName = $"{_samplesFolder}/{docxSampleFileName}.docx";
             var document = WordprocessingDocument.Open(inputFileName, false);
             var pdfGenerator = new PdfGenerator();
-            var pdf = pdfGenerator.Generate(document);
+            var pdf = pdfGenerator.Generate(document, options);
 
             if (!Directory.Exists(_outputFolder))
             {

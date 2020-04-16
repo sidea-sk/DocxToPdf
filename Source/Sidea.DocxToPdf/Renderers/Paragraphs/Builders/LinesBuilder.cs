@@ -32,7 +32,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
         private static IEnumerable<RWord> ToWords(this Run run, XFont defaultFont, ITextMeasuringService textMeasuringService)
         {
             XFont font = run.RunProperties.CreateRunFont(defaultFont);
-            XBrush brush = run.RunProperties.Color.ToXBrush();
+            XBrush brush = run.RunProperties?.Color.ToXBrush() ?? XBrushes.Black;
 
             var xtexts = run
                 .ChildElements

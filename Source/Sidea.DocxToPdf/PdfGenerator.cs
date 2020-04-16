@@ -9,16 +9,17 @@ namespace Sidea.DocxToPdf
 {
     public class PdfGenerator
     {
-        public PdfDocument Generate(Stream docxStream)
+        public PdfDocument Generate(Stream docxStream, RenderingOptions options = null)
         {
             using var docx = WordprocessingDocument.Open(docxStream, false);
-            var pdf = this.Generate(docx);
+            var pdf = this.Generate(docx, options);
             return pdf;
         }
 
-        public PdfDocument Generate(WordprocessingDocument docx)
+        public PdfDocument Generate(WordprocessingDocument docx, RenderingOptions options = null)
         {
-            var renderer = new DocumentRenderer(docx);
+            var renderingOptions = options ?? RenderingOptions.Default;
+            var renderer = new DocumentRenderer(docx, renderingOptions);
             renderer.Render();
             return renderer.GeneratedDocument;
         }

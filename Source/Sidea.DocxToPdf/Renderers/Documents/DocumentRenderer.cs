@@ -12,13 +12,15 @@ namespace Sidea.DocxToPdf.Renderers.Documents
     internal class DocumentRenderer
     {
         private readonly WordprocessingDocument _docx;
+        private readonly RenderingOptions _renderingOptions;
         private readonly RendererFactory _factory = new RendererFactory();
         private readonly List<IRenderer> _renderers = new List<IRenderer>();
         private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
 
-        public DocumentRenderer(WordprocessingDocument docx)
+        public DocumentRenderer(WordprocessingDocument docx, RenderingOptions renderingOptions)
         {
             _docx = docx;
+            _renderingOptions = renderingOptions;
         }
 
         public PdfDocument GeneratedDocument { get; private set; }
@@ -26,39 +28,53 @@ namespace Sidea.DocxToPdf.Renderers.Documents
         public RenderingState Render()
         {
             var pdf = new PdfDocument();
-            this.Prepare(pdf);
+            this.PrepareContent(pdf);
             var state = this.RenderCore(pdf);
             this.GeneratedDocument = pdf;
 
             return state;
         }
 
-        private void Prepare(PdfDocument pdf)
+        //private void Prepare(PdfDocument pdf)
+        //{
+        //    var prerenderPage = this.CreateNewPagePrerenderArea(pdf, _documentFont);
+        //    var prerenderArea = prerenderPage;
+
+        //    foreach (var child in _docx.MainDocumentPart.Document.Body.ChildElements.OfType<OpenXmlCompositeElement>())
+        //    {
+        //        var renderer = _factory.CreateRenderer(child);
+        //        _renderers.Add(renderer);
+
+        //        var renderingState = RenderingState.NotStarted;
+        //        while (renderingState.Status.IsNotFinished())
+        //        {
+        //            renderingState = renderer.Prepare(prerenderArea);
+        //            switch (renderingState.Status)
+        //            {
+        //                case RenderingStatus.ReachedEndOfArea:
+        //                    prerenderArea = prerenderPage;
+        //                    break;
+        //                case RenderingStatus.NotStarted:
+        //                    throw new System.Exception("Unexpected rendering status");
+        //                default:
+        //                    prerenderArea = prerenderArea.PanLeftDown(new XSize(0, renderingState.FinishedAtPosition.Y));
+        //                    break;
+        //            }
+        //        }
+        //    }
+
+        //    this.DeletePrerenderPage(pdf);
+        //}
+
+        private void PrepareContent(PdfDocument pdf)
         {
             var prerenderPage = this.CreateNewPagePrerenderArea(pdf, _documentFont);
             var prerenderArea = prerenderPage;
-
-            foreach (var child in _docx.MainDocumentPart.Document.Body.ChildElements.OfType<OpenXmlCompositeElement>())
+            foreach(var child in _docx.MainDocumentPart.Document.Body.RenderableChildren())
             {
-                var renderer = _factory.CreateRenderer(child);
+                var renderer = _factory.CreateRenderer(child, _renderingOptions);
                 _renderers.Add(renderer);
-
-                var renderingState = RenderingState.NotStarted;
-                while (renderingState.Status.IsNotFinished())
-                {
-                    renderingState = renderer.Prepare(prerenderArea);
-                    switch (renderingState.Status)
-                    {
-                        case RenderingStatus.ReachedEndOfArea:
-                            prerenderArea = prerenderPage;
-                            break;
-                        case RenderingStatus.NotStarted:
-                            throw new System.Exception("Unexpected rendering status");
-                        default:
-                            prerenderArea = prerenderArea.PanLeftDown(new XSize(0, renderingState.FinishedAtPosition.Y));
-                            break;
-                    }
-                }
+                renderer.CalculateContentSize(prerenderArea);
             }
 
             this.DeletePrerenderPage(pdf);

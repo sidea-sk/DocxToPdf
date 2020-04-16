@@ -11,7 +11,10 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 {
     internal class ParagraphRenderer : IRenderer
     {
+        // "¶"
         private readonly Paragraph _paragraph;
+        private readonly RenderingOptions _renderingOptions;
+        private XUnit _width = XUnit.Zero;
 
         private List<RLine> _remainingLines = null;
 
@@ -19,9 +22,34 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
         public XSize TotalArea { get; private set; }
 
-        public ParagraphRenderer(Paragraph paragraph)
+        public ParagraphRenderer(Paragraph paragraph, RenderingOptions renderingOptions)
         {
             _paragraph = paragraph;
+            _renderingOptions = renderingOptions;
+        }
+
+        public XSize CalculateContentSize(IPrerenderArea renderArea)
+        {
+            this.PrepareRemainingLines(renderArea);
+
+            if(_remainingLines.Count == 0)
+            {
+                return new XSize(0, 0);
+            }
+
+            _width = _remainingLines
+                .Select(l => (double)l.Width)
+                .Max();
+
+            var height = _remainingLines
+                .Select(l => l.Height)
+                .Sum();
+
+            var width = _remainingLines
+                .Select(l => (double)l.Width)
+                .Max();
+
+            return new XSize(width, height);
         }
 
         public RenderingState Prepare(IPrerenderArea renderArea)
@@ -43,27 +71,59 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
         public RenderingState Render(IRenderArea renderArea)
         {
-            if(_linesPages.Count == 0)
+            if(_remainingLines.Count == 0)
             {
                 return RenderingState.DoneEmpty;
             }
 
-            var page = _linesPages.Dequeue();
             var availableArea = renderArea;
-            var endPoint = new XPoint(0, 0);
+            var aggregatedHeight = 0d;
 
-            foreach(var line in page.Lines)
+            var lastLineEnd = XUnit.Zero;
+
+            while (_remainingLines.Count > 0)
             {
-                var lineEnd = (XVector)line.Render(availableArea);
-                availableArea = availableArea.PanLeftDown(new XSize(0, line.Height));
-                endPoint = new XPoint(0, endPoint.Y + line.Height);
+                var line = _remainingLines[0];
+                if (aggregatedHeight + line.Height > renderArea.Height)
+                {
+                    return RenderingState.EndOfRenderArea(renderArea.Width, aggregatedHeight);
+                }
+
+                _remainingLines.RemoveAt(0);
+                var lineEnd = line.Render(availableArea.PanLeftDown(new XSize(0, aggregatedHeight)));
+                lastLineEnd = lineEnd.X;
+                aggregatedHeight += line.Height;
+                // availableArea = availableArea.PanLeftDown(new XSize(0, line.Height));
             }
 
-            var status = _linesPages.Count == 0
-                ? RenderingStatus.Done
-                : RenderingStatus.ReachedEndOfArea;
-            
-            return RenderingState.FromStatus(status, 0, page.Height);
+            if (_renderingOptions.RenderParagraphCharacter)
+            {
+                availableArea.DrawText("¶", renderArea.AreaFont, XBrushes.Black, new XPoint(lastLineEnd, aggregatedHeight));
+            }
+
+            return RenderingState.Done(_width, aggregatedHeight);
+
+            //if(_linesPages.Count == 0)
+            //{
+            //    return RenderingState.DoneEmpty;
+            //}
+
+            //var page = _linesPages.Dequeue();
+            //var availableArea = renderArea;
+            //var endPoint = new XPoint(0, 0);
+
+            //foreach(var line in page.Lines)
+            //{
+            //    var lineEnd = (XVector)line.Render(availableArea);
+            //    availableArea = availableArea.PanLeftDown(new XSize(0, line.Height));
+            //    endPoint = new XPoint(0, endPoint.Y + line.Height);
+            //}
+
+            //var status = _linesPages.Count == 0
+            //    ? RenderingStatus.Done
+            //    : RenderingStatus.ReachedEndOfArea;
+
+            //return RenderingState.FromStatus(status, 0, page.Height);
         }
 
         private void PrepareRemainingLines(IPrerenderArea renderArea)

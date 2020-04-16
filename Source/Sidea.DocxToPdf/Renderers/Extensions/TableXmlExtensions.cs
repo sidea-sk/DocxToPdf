@@ -7,6 +7,7 @@ namespace Sidea.DocxToPdf.Renderers
 {
     internal static class TableXmlExtensions
     {
+
         public static TableProperties Properties(this Table table)
         {
             return table.ChildElements.OfType<TableProperties>().Single();

@@ -21,10 +21,21 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 .ThenBy(c => c.GridPosition.Column)
                 .ToArray();
 
-            this.PrepareData();
+            this.TotalArea = new XSize(0, 0);
         }
 
-        public XSize TotalArea { get; private set; } = new XSize(0, 0);
+        public XSize TotalArea { get; private set; }
+
+        public XSize CalculateContentSize(IPrerenderArea prerenderArea)
+        {
+            foreach(var cell in _orderedCells)
+            {
+                cell.CalculateContentSize(prerenderArea);
+            }
+
+            this.PrepareData();
+            return this.TotalArea;
+        }
 
         public RenderingState Prepare(IPrerenderArea prerenderArea)
         {

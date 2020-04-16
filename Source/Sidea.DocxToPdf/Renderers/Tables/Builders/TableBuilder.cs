@@ -21,7 +21,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
             return new RGrid(columnWidths, rowHeights);
         }
 
-        public static IEnumerable<RCell> RCells(this TableRow row, int rowIndex, IGridPositionService gridPositionService)
+        public static IEnumerable<RCell> RCells(this TableRow row, int rowIndex, IGridPositionService gridPositionService, RenderingOptions renderingOptions)
         {
             var cells = new List<RCell>();
             var pen = new XPen(XPens.Black)
@@ -37,7 +37,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
                 var gridDescription = cell.GetGridDescription(rowIndex, rowColIndex);
                 rowColIndex += gridDescription.Span;
 
-                cells.Add(new RCell(cell, gridDescription, border, gridPositionService));
+                cells.Add(new RCell(cell, gridDescription, border, gridPositionService, renderingOptions));
             }
 
             return cells;

@@ -22,9 +22,21 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
-        public void TableWithParagraphs()
+        public void TableWithParagraphsSM()
         {
-            this.Generate(nameof(TableWithParagraphs));
+            this.Generate(nameof(TableWithParagraphsSM));
+        }
+
+        [TestMethod]
+        public void TableWithParagraphsXL()
+        {
+            this.Generate(nameof(TableWithParagraphsXL));
+        }
+
+        [TestMethod]
+        public void TableWithParagraphsXXL()
+        {
+            this.Generate(nameof(TableWithParagraphsXXL));
         }
 
         [TestMethod]
