@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using PdfSharp.Drawing;
+using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
-    internal class RLayout
+    internal class RLayout : IRenderer
     {
         private readonly RGrid _grid;
         private readonly RCell[] _orderedCells = new RCell[0];
@@ -23,9 +24,14 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             this.PrepareData();
         }
 
-        public XSize TotalSize { get; private set; } = new XSize(0, 0);
+        public XSize TotalArea { get; private set; } = new XSize(0, 0);
 
-        public void Render(IRenderArea renderArea)
+        public RenderingState Prepare(IPrerenderArea prerenderArea)
+        {
+            return RenderingState.DoneEmpty;
+        }
+
+        public RenderingState Render(IRenderArea renderArea)
         {
             for (var rowIndex = 0; rowIndex < _grid.RowsCount; rowIndex++)
             {
@@ -40,6 +46,8 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                     this.RenderCell(cell, renderArea);
                 }
             }
+
+            return RenderingState.DoneEmpty;
         }
 
         private void PrepareData()
@@ -49,7 +57,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 .Where(c => c.GridPosition.Row == 0)
                 .Aggregate(0d, (agg, c) => agg + c.TotalArea.Width);
 
-            this.TotalSize = this.TotalSize.Expand(totalWidth, _rowHeights.Sum());
+            this.TotalArea = this.TotalArea.Expand(totalWidth, _rowHeights.Sum());
         }
 
         private IEnumerable<RCell> CellsInRow(int rowIndex)
