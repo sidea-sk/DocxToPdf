@@ -35,37 +35,6 @@ namespace Sidea.DocxToPdf.Renderers.Documents
             return state;
         }
 
-        //private void Prepare(PdfDocument pdf)
-        //{
-        //    var prerenderPage = this.CreateNewPagePrerenderArea(pdf, _documentFont);
-        //    var prerenderArea = prerenderPage;
-
-        //    foreach (var child in _docx.MainDocumentPart.Document.Body.ChildElements.OfType<OpenXmlCompositeElement>())
-        //    {
-        //        var renderer = _factory.CreateRenderer(child);
-        //        _renderers.Add(renderer);
-
-        //        var renderingState = RenderingState.NotStarted;
-        //        while (renderingState.Status.IsNotFinished())
-        //        {
-        //            renderingState = renderer.Prepare(prerenderArea);
-        //            switch (renderingState.Status)
-        //            {
-        //                case RenderingStatus.ReachedEndOfArea:
-        //                    prerenderArea = prerenderPage;
-        //                    break;
-        //                case RenderingStatus.NotStarted:
-        //                    throw new System.Exception("Unexpected rendering status");
-        //                default:
-        //                    prerenderArea = prerenderArea.PanLeftDown(new XSize(0, renderingState.FinishedAtPosition.Y));
-        //                    break;
-        //            }
-        //        }
-        //    }
-
-        //    this.DeletePrerenderPage(pdf);
-        //}
-
         private void PrepareContent(PdfDocument pdf)
         {
             var prerenderPage = this.CreateNewPagePrerenderArea(pdf, _documentFont);

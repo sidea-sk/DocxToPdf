@@ -59,42 +59,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             return this.TotalArea;
         }
 
-        public RenderingState Prepare(IPrerenderArea prerenderArea)
-        {
-            if (this.GridPosition.RowSpan == 0)
-            {
-                this.TotalArea = new XSize(0, 0);
-                return RenderingState.DoneEmpty;
-            }
-
-            var left = _positionService.CalculateLeftOffset(this.GridPosition);
-
-            var prerenderedHeight = XUnit.Zero;
-
-            var cellPrerenderArea = prerenderArea
-                .PanLeft(left + _padding.Left)
-                .Restrict(_width - _padding.HorizonalPaddings);
-
-            foreach(var child in _cell.RenderableChildren())
-            {
-                var renderer = _factory.CreateRenderer(child, _renderingOptions);
-                _childRenderers.Add(renderer);
-                
-                var renderingState = renderer.Prepare(cellPrerenderArea);
-                prerenderedHeight += renderingState.RenderedArea.Height;
-
-                if(renderingState.Status == RenderingStatus.ReachedEndOfArea)
-                {
-                    break;
-                }
-
-                cellPrerenderArea.PanLeftDown(new XSize(0, renderingState.RenderedArea.Height));
-            }
-
-            this.TotalArea = this.TotalArea.ExpandHeight(prerenderedHeight);
-            return RenderingState.Done(_width, prerenderedHeight);
-        }
-
         public RenderingState Render(IRenderArea renderArea)
         {
             if(this.GridPosition.RowSpan == 0)

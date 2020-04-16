@@ -45,24 +45,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables
             return size;
         }
 
-        public RenderingState Prepare(IPrerenderArea renderArea)
-        {
-            var rowIndex = 0;
-
-            foreach (var row in _table.Rows())
-            {
-                foreach (var cell in row.RCells(rowIndex, _grid, _renderingOptions))
-                {
-                    _cells.Add(cell);
-                    var state = cell.Prepare(renderArea);
-                }
-
-                rowIndex++;
-            }
-
-            return RenderingState.Done(new XRect(new XSize(0,0)));
-        }
-
         public RenderingState Render(IRenderArea renderArea)
         {
             if(_layout == null)
