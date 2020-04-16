@@ -75,7 +75,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 renderedHeight += renderingState.RenderedArea.Height;
                 if(renderingState.Status == RenderingStatus.ReachedEndOfArea)
                 {
-                    break;
+                    return RenderingState.EndOfRenderArea(renderArea.AreaRectangle);
                 }
 
                 cellRenderArea = cellRenderArea
