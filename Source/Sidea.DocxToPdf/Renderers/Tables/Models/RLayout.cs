@@ -84,8 +84,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 .Take(rowSpan)
                 .Sum();
 
-            
-
             var cellArea = renderArea
                 .PanLeftDown(new XSize(leftOffset, topOffset))
                 .Restrict(cell.TotalArea.Width);
