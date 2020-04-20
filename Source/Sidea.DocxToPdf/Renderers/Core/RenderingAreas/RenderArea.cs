@@ -55,9 +55,9 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         IRenderArea IRenderArea.PanLeftDown(XSize size) => this.PanLeftDownCore(size);
 
-        IPrerenderArea IPrerenderArea.PanLeft(XUnit unit) => this.PanLeftCore(unit);
+        //IPrerenderArea IPrerenderArea.PanLeft(XUnit unit) => this.PanLeftCore(unit);
 
-        IPrerenderArea IPrerenderArea.PanLeftDown(XSize size) => this.PanLeftDownCore(size);
+        //IPrerenderArea IPrerenderArea.PanLeftDown(XSize size) => this.PanLeftDownCore(size);
 
         IPrerenderArea IPrerenderArea.Restrict(XUnit width) => this.RestricCore(width);
 
