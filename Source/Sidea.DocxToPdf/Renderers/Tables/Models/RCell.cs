@@ -15,7 +15,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         private XUnit _width;
         private readonly IGridPositionService _positionService;
         private readonly RenderingOptions _renderingOptions;
-        private readonly RPadding _padding;
+        private readonly RPadding _padding; 
 
         public RCell(
             TableCell cell,
@@ -25,7 +25,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             RenderingOptions renderingOptions)
         {
             _cell = cell;
-            _padding =  RPadding.Padding(XUnit.FromPoint(1), XUnit.FromPoint(3), XUnit.FromPoint(5), XUnit.FromPoint(3));
+            _padding =  RPadding.Padding(XUnit.FromPoint(1), XUnit.FromPoint(3), XUnit.FromPoint(1), XUnit.FromPoint(3));
             _positionService = positionService;
             _renderingOptions = renderingOptions;
             _width = _positionService.CalculateWidth(gridPosition);
