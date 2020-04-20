@@ -52,7 +52,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 return RenderingState.EndOfRenderArea(renderArea.AreaRectangle);
             }
 
-            return RenderingState.DoneEmpty;
+            return RenderingState.Done(new XRect(new XSize(this.TotalArea.Width, this.TotalArea.Height - _alreadyRendered)));
         }
 
         private IEnumerable<RCell> GetCellsToRenderer()
