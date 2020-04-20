@@ -6,26 +6,24 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         IPrerenderArea,
         IRenderArea
     {
-        private readonly XFont _font;
         private readonly XGraphics _graphics;
-        private readonly XRect _area;
         private readonly XVector _translate;
 
         public RenderArea(XFont font, XGraphics graphics, XRect area)
         {
-            _font = font;
+            AreaFont = font;
             _graphics = graphics;
-            _area = area;
+            AreaRectangle = area;
             _translate = new XVector(area.X, area.Y);
         }
 
-        public double Width => _area.Width;
+        public double Width => AreaRectangle.Width;
 
-        public double Height => _area.Height;
+        public double Height => AreaRectangle.Height;
 
-        public XFont AreaFont => _font;
+        public XFont AreaFont { get; }
 
-        public XRect AreaRectangle => _area;
+        public XRect AreaRectangle { get; }
 
         public void DrawLine(XPen pen, XPoint start, XPoint end)
         {
@@ -37,9 +35,23 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
             _graphics.DrawString(text, font, brush, position + _translate);
         }
 
+        public void DrawText(string text, XFont font, XBrush brush, XRect layout, XStringFormat stringFormat)
+        {
+            _graphics.DrawString(text, font, brush, XRect.Offset(layout, _translate), stringFormat);
+        }
+
+        public void DrawRectangle(XPen pen, XBrush brush, XRect rect)
+        {
+            _graphics.DrawRectangle(pen, brush, XRect.Offset(rect, _translate));
+        }
+
         public XSize MeasureText(string text, XFont font) => _graphics.MeasureString(text, font);
 
         IRenderArea IRenderArea.PanLeft(XUnit unit) => this.PanLeftCore(unit);
+
+        IRenderArea IRenderArea.PanDown(XUnit height) => this.PanLeftDownCore(new XSize(0, height));
+
+        IRenderArea IRenderArea.PanLeftDown(XUnit width, XUnit height) => this.PanLeftDownCore(new XSize(width, height));
 
         IRenderArea IRenderArea.PanLeftDown(XSize size) => this.PanLeftDownCore(size);
 
@@ -53,21 +65,25 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         private RenderArea PanLeftCore(XUnit unit)
         {
-            return new RenderArea(_font, _graphics, new XRect(_area.X + unit, _area.Y, _area.Width - unit, _area.Height));
+            return new RenderArea(AreaFont, _graphics, new XRect(AreaRectangle.X + unit, AreaRectangle.Y, AreaRectangle.Width - unit, AreaRectangle.Height));
         }
 
         private RenderArea PanLeftDownCore(XSize size)
         {
             // check XRect methods Offset, Inflate, etc.
-            return new RenderArea(_font, _graphics, new XRect(_area.X + size.Width, _area.Y + size.Height, _area.Width - size.Width, _area.Height - size.Height));
+            return new RenderArea(AreaFont, _graphics, new XRect(AreaRectangle.X + size.Width, AreaRectangle.Y + size.Height, AreaRectangle.Width - size.Width, AreaRectangle.Height - size.Height));
         }
 
         private RenderArea RestricCore(XUnit width)
         {
             return new RenderArea(
-                 _font,
+                 AreaFont,
                  _graphics,
-                 new XRect(_area.X, _area.Y, width, _area.Height));
+                 new XRect(AreaRectangle.X, AreaRectangle.Y, width, AreaRectangle.Height));
         }
+
+       
+
+        
     }
 }
