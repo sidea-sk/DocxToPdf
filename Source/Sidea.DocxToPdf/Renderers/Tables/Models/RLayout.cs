@@ -102,7 +102,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             var height = Math.Min(totalCellHeight - cell.CurrentRenderingState.RenderedArea.Height, renderArea.Height);
             var rect = new XRect(0,0, renderArea.AreaRectangle.Width, height);
 
-            if (cell.CurrentRenderingState.Status == RenderingStatus.NotStarted)
+            if (cell.CurrentRenderingState.Status == RenderingStatus.NotStarted && cell.GridPosition.RowSpan > 0)
             {
                 renderArea.DrawLine(pen, rect.TopLeft, rect.TopRight);
             }

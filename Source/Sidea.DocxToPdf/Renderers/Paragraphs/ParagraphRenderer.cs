@@ -51,9 +51,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
                 aggregatedHeight += line.Height;
             }
 
-            if (_renderingOptions.RenderParagraphCharacter)
+            if (_renderingOptions.RenderParagraphCharacter && _remainingLines.Count == 0)
             {
-                availableArea.DrawText("¶", renderArea.AreaFont, XBrushes.Black, new XPoint(lastLineEnd, aggregatedHeight));
+                // TODO: use some property of Font to position paragraph corectly
+                var y = aggregatedHeight - renderArea.AreaFont.Height / 4d;
+                availableArea.DrawText("¶", renderArea.AreaFont, XBrushes.Black, new XPoint(lastLineEnd, y));
             }
 
             return RenderingState.Done(_width, aggregatedHeight);

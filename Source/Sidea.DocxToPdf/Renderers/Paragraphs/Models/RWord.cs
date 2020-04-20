@@ -33,7 +33,8 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 
         public XPoint Render(IRenderArea toArea, XPoint offset)
         {
-            toArea.DrawText(_content, _font, _brush, offset);
+            var rect = new XRect(offset.X, offset.Y - this.Height, this.Width, this.Height);
+            toArea.DrawText(_content, _font, _brush, rect, XStringFormats.TopLeft);
             return offset + this.Size;
         }
 

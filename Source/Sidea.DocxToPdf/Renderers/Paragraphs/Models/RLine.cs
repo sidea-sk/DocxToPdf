@@ -14,7 +14,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
         public RLine(
             IEnumerable<RWord> words,
             LineAlignment alignment,
-            double defaultHeight)
+            XUnit defaultHeight)
         {
             _words = words
                 .SkipWhile(w => w.IsSpace)
@@ -39,12 +39,13 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
         {
             var wordsArea = toArea;
             var position = new XPoint(0, this.Height);
+            var lastWordPosition = new XPoint(0, 0);
             foreach (var word in this.AlignWords(toArea.Width))
             {
-                word.Render(wordsArea, position);
+                lastWordPosition = word.Render(wordsArea, position);
             }
 
-            return new XPoint(_size.Width, _size.Height);
+            return lastWordPosition;
         }
 
         private IEnumerable<OffsetWord> AlignWords(double totalWidth)
@@ -118,8 +119,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
                 _offset = offset;
             }
 
-            public void Render(IRenderArea renderArea, XPoint position) => _word.Render(renderArea, _offset + position);
+            public XPoint Render(IRenderArea renderArea, XPoint position) => _word.Render(renderArea, _offset + position);
         }
-
     }
 }
