@@ -9,6 +9,11 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
     internal class RLayout : RendererBase
     {
+        private readonly XPen _cellBorderPen = new XPen(XPens.Black)
+        {
+            Width = XUnit.FromPoint(0.5d)
+        };
+
         private readonly RGrid _grid;
         private readonly RCell[] _orderedCells = new RCell[0];
         private XUnit _alreadyRendered = XUnit.Zero;
@@ -94,27 +99,24 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
         private void RenderCellBorder(RCell cell, IRenderArea renderArea, XUnit totalCellHeight)
         {
-            var pen = new XPen(XPens.Black)
-            {
-                Width = XUnit.FromPoint(0.5d)
-            };
+            
 
             var height = Math.Min(totalCellHeight - cell.CurrentRenderingState.RenderedArea.Height, renderArea.Height);
             var rect = new XRect(0,0, renderArea.AreaRectangle.Width, height);
 
             if (cell.CurrentRenderingState.Status == RenderingStatus.NotStarted && cell.GridPosition.RowSpan > 0)
             {
-                renderArea.DrawLine(pen, rect.TopLeft, rect.TopRight);
+                renderArea.DrawLine(_cellBorderPen, rect.TopLeft, rect.TopRight);
             }
 
-            renderArea.DrawLine(pen, rect.TopRight, rect.BottomRight);
+            renderArea.DrawLine(_cellBorderPen, rect.TopRight, rect.BottomRight);
 
             if(totalCellHeight - cell.CurrentRenderingState.RenderedArea.Height <= renderArea.Height)
             {
-                renderArea.DrawLine(pen, rect.BottomRight, rect.BottomLeft);
+                renderArea.DrawLine(_cellBorderPen, rect.BottomRight, rect.BottomLeft);
             }
 
-            renderArea.DrawLine(pen, rect.BottomLeft, rect.TopLeft);
+            renderArea.DrawLine(_cellBorderPen, rect.BottomLeft, rect.TopLeft);
         }
 
         private XUnit[] CalculateRowHeights()
