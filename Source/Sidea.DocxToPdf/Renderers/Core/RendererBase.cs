@@ -11,14 +11,13 @@ namespace Sidea.DocxToPdf.Renderers.Core
 
         public RenderingState CurrentRenderingState { get; private set; } = RenderingState.Unprepared;
 
-        public XSize CalculateContentSize(IPrerenderArea prerenderArea)
+        public void CalculateContentSize(IPrerenderArea prerenderArea)
         {
             this.PrecalulatedSize = this.CalculateContentSizeCore(prerenderArea);
             this.CurrentRenderingState = RenderingState.NotStarted;
-            return this.PrecalulatedSize;
         }
 
-        public RenderingState Render(IRenderArea renderArea)
+        public void Render(IRenderArea renderArea)
         {
             if(this.CurrentRenderingState.Status == RenderingStatus.Unprepared)
             {
@@ -27,8 +26,6 @@ namespace Sidea.DocxToPdf.Renderers.Core
 
             this.CurrentRenderingState = this.RenderCore(renderArea);
             this.RenderedSize = UpdateRenderedSize(this.RenderedSize, this.CurrentRenderingState.RenderedArea);
-
-            return this.CurrentRenderingState;
         }
 
         protected abstract XSize CalculateContentSizeCore(IPrerenderArea prerenderArea);

@@ -39,14 +39,14 @@ namespace Sidea.DocxToPdf.Renderers.Tables
             }
 
             _layout = new RLayout(_grid, _cells);
-            var size = _layout.CalculateContentSize(prerenderArea);
-            return size;
+            _layout.CalculateContentSize(prerenderArea);
+            return _layout.PrecalulatedSize;
         }
 
         protected override sealed RenderingState RenderCore(IRenderArea renderArea)
         {
-            var renderingState = _layout.Render(renderArea);
-            return renderingState;
+            _layout.Render(renderArea);
+            return _layout.CurrentRenderingState;
         }
     }
 }

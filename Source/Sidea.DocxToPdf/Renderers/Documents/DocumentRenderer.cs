@@ -59,7 +59,8 @@ namespace Sidea.DocxToPdf.Renderers.Documents
                 var renderingState = RenderingState.NotStarted;
                 while (renderingState.Status.IsNotFinished())
                 {
-                    renderingState = renderer.Render(currentRenderingArea);
+                    renderer.Render(currentRenderingArea);
+                    renderingState = renderer.CurrentRenderingState;
                     switch (renderingState.Status)
                     {
                         case RenderingStatus.ReachedEndOfArea:

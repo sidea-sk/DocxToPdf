@@ -17,8 +17,6 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
         private List<RLine> _remainingLines = null;
 
-        // private Queue<RLinesPage> _linesPages = new Queue<RLinesPage>();
-
         public ParagraphRenderer(Paragraph paragraph, RenderingOptions renderingOptions)
         {
             _paragraph = paragraph;
@@ -91,50 +89,5 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
                 .ToRenderingLines(renderArea)
                 .ToList();
         }
-
-        //private RLinesPage PrepareLinesPage(IPrerenderArea renderArea)
-        //{
-        //    var linesInPage = new List<RLine>();
-
-        //    var aggregatedHeight = 0d;
-        //    while (_remainingLines.Count > 0)
-        //    {
-        //        var line = _remainingLines.First();
-        //        if (aggregatedHeight + line.Height > renderArea.Height)
-        //        {
-        //            break;
-        //        }
-
-        //        aggregatedHeight += line.Height;
-        //        linesInPage.Add(line);
-        //        _remainingLines.Remove(line);
-        //    }
-
-        //    return new RLinesPage(0, linesInPage, _remainingLines.Count == 0);
-        //}
-
-        //private class RLinesPage
-        //{
-        //    private RLine[] _lines;
-
-        //    public RLinesPage(
-        //        int pageNumber,
-        //        IEnumerable<RLine> lines,
-        //        bool isLastPage)
-        //    {
-        //        this.PageNumber = pageNumber;
-        //        _lines = lines.ToArray();
-
-        //        this.IsLastPage = isLastPage;
-        //        this.Height = _lines.Length == 0
-        //            ? 0d
-        //            : _lines.Sum(l => l.Height);
-        //    }
-
-        //    public int PageNumber { get; }
-        //    public IEnumerable<RLine> Lines => _lines;
-        //    public bool IsLastPage { get; }
-        //    public XUnit Height { get; }
-        //}
     }
 }

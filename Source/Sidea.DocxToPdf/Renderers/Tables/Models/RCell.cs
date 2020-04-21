@@ -47,9 +47,8 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             {
                 var renderer = _factory.CreateRenderer(child, _renderingOptions);
                 _childRenderers.Add(renderer);
-                var childContent = renderer.CalculateContentSize(cellPrerenderArea);
-
-                size = size.ExpandHeight(childContent.Height);
+                renderer.CalculateContentSize(cellPrerenderArea);
+                size = size.ExpandHeight(renderer.PrecalulatedSize.Height);
             }
 
             return size;
@@ -69,7 +68,8 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             var renderedHeight = XUnit.Zero;
             foreach (var renderer in _childRenderers)
             {
-                var renderingState = renderer.Render(cellRenderArea);
+                renderer.Render(cellRenderArea);
+                var renderingState = renderer.CurrentRenderingState;
                 renderedHeight += renderingState.RenderedArea.Height;
                 if(renderingState.Status == RenderingStatus.ReachedEndOfArea)
                 {

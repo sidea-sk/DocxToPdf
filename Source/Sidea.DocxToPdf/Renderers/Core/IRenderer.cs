@@ -24,10 +24,8 @@ namespace Sidea.DocxToPdf.Renderers.Core
         /// </summary>
         RenderingState CurrentRenderingState { get; }
 
-        // TODO: change to void, rename to PrecalculateSize
-        XSize CalculateContentSize(IPrerenderArea prerenderArea);
+        void CalculateContentSize(IPrerenderArea prerenderArea);
 
-        // TODO: change to void
-        RenderingState Render(IRenderArea renderArea);
+        void Render(IRenderArea renderArea);
     }
 }
