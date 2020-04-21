@@ -5,15 +5,17 @@ namespace Sidea.DocxToPdf.Renderers.Core
 {
     internal abstract class RendererBase : IRenderer
     {
-        public XSize TotalArea { get; private set; } = new XSize(0, 0);
+        public XSize PrecalulatedSize { get; private set; } = new XSize(0, 0);
+
+        public XSize RenderedSize { get; private set; } = new XSize(0, 0);
 
         public RenderingState CurrentRenderingState { get; private set; } = RenderingState.Unprepared;
 
         public XSize CalculateContentSize(IPrerenderArea prerenderArea)
         {
-            this.TotalArea = this.CalculateContentSizeCore(prerenderArea);
+            this.PrecalulatedSize = this.CalculateContentSizeCore(prerenderArea);
             this.CurrentRenderingState = RenderingState.NotStarted;
-            return this.TotalArea;
+            return this.PrecalulatedSize;
         }
 
         public RenderingState Render(IRenderArea renderArea)
@@ -24,11 +26,23 @@ namespace Sidea.DocxToPdf.Renderers.Core
             }
 
             this.CurrentRenderingState = this.RenderCore(renderArea);
+            this.RenderedSize = UpdateRenderedSize(this.RenderedSize, this.CurrentRenderingState.RenderedArea);
+
             return this.CurrentRenderingState;
         }
 
         protected abstract XSize CalculateContentSizeCore(IPrerenderArea prerenderArea);
 
         protected abstract RenderingState RenderCore(IRenderArea renderArea);
+
+        private static XSize UpdateRenderedSize(XSize currentRenderedSize, XRect renderedArea)
+        {
+            if (renderedArea.Width > currentRenderedSize.Width)
+            {
+                currentRenderedSize = new XSize(renderedArea.Width, currentRenderedSize.Height);
+            }
+
+            return currentRenderedSize.ExpandHeight(renderedArea.Height);
+        }
     }
 }

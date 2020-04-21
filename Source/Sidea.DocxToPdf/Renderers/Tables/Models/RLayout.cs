@@ -38,17 +38,14 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             _rowHeights = this.CalculateRowHeights();
             var totalWidth = _orderedCells
                 .Where(c => c.GridPosition.Row == 0)
-                .Aggregate(0d, (agg, c) => agg + c.TotalArea.Width);
+                .Aggregate(0d, (agg, c) => agg + c.PrecalulatedSize.Width);
 
             return new XSize(totalWidth, _rowHeights.Sum());
         }
 
         protected override sealed RenderingState RenderCore(IRenderArea renderArea)
         {
-            foreach(var cell in this.GetCellsToRenderer())
-            {
-                RenderCell(cell, renderArea);
-            }
+            this.RenderCells(renderArea);
 
             var unfinished = this.GetCellsToRenderer();
             if(unfinished.Any())
@@ -57,7 +54,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 return RenderingState.EndOfRenderArea(renderArea.AreaRectangle);
             }
 
-            return RenderingState.Done(new XRect(new XSize(this.TotalArea.Width, this.TotalArea.Height - _alreadyRendered)));
+            return RenderingState.Done(new XRect(new XSize(this.PrecalulatedSize.Width, this.PrecalulatedSize.Height - _alreadyRendered)));
         }
 
         private IEnumerable<RCell> GetCellsToRenderer()
@@ -65,58 +62,128 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             return _orderedCells.Where(c => c.CurrentRenderingState.Status.IsNotFinished());
         }
 
-        private void RenderCell(RCell cell, IRenderArea renderArea)
+        private void RenderCells(IRenderArea renderArea)
         {
+            var infos = this.GetCellsToRenderer()
+                .Select(cell => this.RenderCell(cell, renderArea))
+                .ToArray();
+
+            foreach (var info in infos.Where(i => i.WasRendered))
+            {
+                this.RenderCellBorders(info, renderArea);
+            }
+        }
+
+        private CellRenderInfo RenderCell(RCell cell, IRenderArea renderArea)
+        {
+            var (leftOffset, topOffset) = this.CalculateCellLayoutOffset(cell, true);
+            if (topOffset > renderArea.Height)
+            {
+                return CellRenderInfo.NotRendered(cell);
+            }
+
+            // var rowSpan = this.CellRowSpan(cell);
+
+            // total height for cell defined by grid - height already rendered
+            // var minimalCellBoxHeight = this.CellRowsHeightSum(cell);
+            //     - cell.RenderedSize.Height;
+
+            var cellArea = renderArea
+                .PanLeftDown(new XSize(leftOffset, topOffset))
+                .Restrict(cell.PrecalulatedSize.Width);
+
+            var renderTopBorder = cell.CurrentRenderingState.Status == RenderingStatus.NotStarted
+                && cell.GridPosition.RowSpan != 0;
+
+            // this.RenderCellTopBorder(cell, cellArea);
+
+            var previousRenderedHeight = cell.RenderedSize.Height;
+
+            cell.Render(cellArea);
+            this.JustifyRowHeights(cell);
+
+            var renderBottomBorder = cell.CurrentRenderingState.Status == RenderingStatus.Done;
+
+            // this.RenderCellSideAndBottomBorders(cell, cellArea, minimalCellBoxHeight);
+
+            return CellRenderInfo.Rendered(cell, previousRenderedHeight, renderTopBorder, renderBottomBorder);
+        }
+
+        private void RenderCellBorders(CellRenderInfo cellInfo, IRenderArea renderArea)
+        {
+            var (leftOffset, topOffset) = this.CalculateCellLayoutOffset(cellInfo.Cell, false);
+
+            // total height for cell defined by grid - height already rendered
+            var minimalCellBoxHeight = this.CellRowsHeightSum(cellInfo.Cell)
+                 - cellInfo.PreviousRenderedHeight;
+
+            var cellRenderArea = renderArea
+                .PanLeftDown(new XSize(leftOffset, topOffset))
+                .Restrict(cellInfo.Cell.PrecalulatedSize.Width);
+
+            if (cellInfo.RenderTopBorder)
+            {
+                cellRenderArea.DrawLine(_cellBorderPen, new XPoint(0, 0), new XPoint(cellRenderArea.AreaRectangle.Width, 0));
+            }
+
+            this.RenderCellSideAndBottomBorders(cellInfo.Cell, cellRenderArea, minimalCellBoxHeight);
+        }
+
+        //private void RenderCellTopBorder(RCell cell, IRenderArea cellRenderArea)
+        //{
+        //    if (cell.CurrentRenderingState.Status != RenderingStatus.NotStarted && cell.GridPosition.RowSpan == 0)
+        //    {
+        //        return;
+        //    }
+
+        //    cellRenderArea.DrawLine(_cellBorderPen, new XPoint(0, 0), new XPoint(cellRenderArea.AreaRectangle.Width, 0));
+        //}
+
+        private void RenderCellSideAndBottomBorders(RCell cell, IRenderArea cellRenderArea, XUnit minimalCellBoxHeight)
+        {
+            var height = Math.Min(
+                Math.Max(cell.CurrentRenderingState.RenderedArea.Height, minimalCellBoxHeight),
+                cellRenderArea.Height);
+            
+            var rect = new XRect(0, 0, cellRenderArea.AreaRectangle.Width, height);
+
+            cellRenderArea.DrawLine(_cellBorderPen, rect.TopRight, rect.BottomRight);
+            cellRenderArea.DrawLine(_cellBorderPen, rect.BottomLeft, rect.TopLeft);
+            if (cell.CurrentRenderingState.Status == RenderingStatus.Done)
+            {
+                cellRenderArea.DrawLine(_cellBorderPen, rect.BottomRight, rect.BottomLeft);
+            }
+        }
+
+        //private void RenderCellBorder(RCell cell, IRenderArea cellRenderArea, XUnit totalCellHeight)
+        //{
+        //    var height = Math.Min(totalCellHeight - cell.CurrentRenderingState.RenderedArea.Height, cellRenderArea.Height);
+        //    var rect = new XRect(0,0, cellRenderArea.AreaRectangle.Width, height);
+
+        //    cellRenderArea.DrawLine(_cellBorderPen, rect.TopRight, rect.BottomRight);
+
+        //    if(totalCellHeight - cell.CurrentRenderingState.RenderedArea.Height <= cellRenderArea.Height)
+        //    {
+        //        cellRenderArea.DrawLine(_cellBorderPen, rect.BottomRight, rect.BottomLeft);
+        //    }
+
+        //    cellRenderArea.DrawLine(_cellBorderPen, rect.BottomLeft, rect.TopLeft);
+        //}
+
+        private (XUnit leftOffset, XUnit topOffset) CalculateCellLayoutOffset(RCell cell, bool onCellRender)
+        {
+            var renderedPartOfCellOffset = onCellRender
+                ? cell.RenderedSize.Height
+                : cell.RenderedSize.Height - cell.CurrentRenderingState.RenderedArea.Height;
+
             var leftOffset = _grid.CalculateLeftOffset(cell.GridPosition);
             var topOffset = _rowHeights
                 .Take(cell.GridPosition.Row)
                 .Sum()
                 - _alreadyRendered
-                + cell.CurrentRenderingState.RenderedArea.Height;
+                + renderedPartOfCellOffset;
 
-            if(topOffset > renderArea.Height)
-            {
-                return;
-            }
-
-            var rowSpan = _orderedCells
-                .Where(c => c.GridPosition.Column == cell.GridPosition.Column && c.GridPosition.Row >= cell.GridPosition.Row)
-                .TakeWhile(c => c == cell || c.GridPosition.RowSpan == 0)
-                .Count();
-
-            var height = _rowHeights
-                .Skip(cell.GridPosition.Row)
-                .Take(rowSpan)
-                .Sum();
-
-            var cellArea = renderArea
-                .PanLeftDown(new XSize(leftOffset, topOffset))
-                .Restrict(cell.TotalArea.Width);
-
-            RenderCellBorder(cell, cellArea, height);
-            cell.Render(cellArea);
-        }
-
-        private void RenderCellBorder(RCell cell, IRenderArea renderArea, XUnit totalCellHeight)
-        {
-            
-
-            var height = Math.Min(totalCellHeight - cell.CurrentRenderingState.RenderedArea.Height, renderArea.Height);
-            var rect = new XRect(0,0, renderArea.AreaRectangle.Width, height);
-
-            if (cell.CurrentRenderingState.Status == RenderingStatus.NotStarted && cell.GridPosition.RowSpan > 0)
-            {
-                renderArea.DrawLine(_cellBorderPen, rect.TopLeft, rect.TopRight);
-            }
-
-            renderArea.DrawLine(_cellBorderPen, rect.TopRight, rect.BottomRight);
-
-            if(totalCellHeight - cell.CurrentRenderingState.RenderedArea.Height <= renderArea.Height)
-            {
-                renderArea.DrawLine(_cellBorderPen, rect.BottomRight, rect.BottomLeft);
-            }
-
-            renderArea.DrawLine(_cellBorderPen, rect.BottomLeft, rect.TopLeft);
+            return (leftOffset, topOffset);
         }
 
         private XUnit[] CalculateRowHeights()
@@ -128,7 +195,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
             foreach(var cell in _orderedCells)
             {
-                var cellHeight = new XUnit(cell.TotalArea.Height);
+                var cellHeight = new XUnit(cell.PrecalulatedSize.Height);
                 var cellRowIndeces = this.RowIndecesOfCell(cell);
                 var cellRows = rowHeights
                     .SelectWithIndeces(cellRowIndeces)
@@ -145,6 +212,38 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             }
 
             return rowHeights;
+        }
+
+        private void JustifyRowHeights(RCell cell)
+        {
+            if(cell.CurrentRenderingState.Status != RenderingStatus.Done)
+            {
+                return;
+            }
+
+            var rowsHeightForCell = this.CellRowsHeightSum(cell);
+            if(rowsHeightForCell >= cell.RenderedSize.Height)
+            {
+                return;
+            }
+
+            var lastRowOfCell = cell.GridPosition.Row + cell.GridPosition.RowSpan - 1;
+            _rowHeights[lastRowOfCell] += cell.RenderedSize.Height - rowsHeightForCell;
+        }
+
+        private XUnit CellRowsHeightSum(RCell cell)
+        {
+            var rowSpan = _orderedCells
+                .Where(c => c.GridPosition.Column == cell.GridPosition.Column && c.GridPosition.Row >= cell.GridPosition.Row)
+                .TakeWhile(c => c == cell || c.GridPosition.RowSpan == 0)
+                .Count();
+
+            var sum = _rowHeights
+               .Skip(cell.GridPosition.Row)
+               .Take(rowSpan)
+               .Sum();
+
+            return sum;
         }
 
         private int[] RowIndecesOfCell(RCell cell)
@@ -178,6 +277,39 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 });
 
             return copy.ToArray();
+        }
+
+        private class CellRenderInfo
+        {
+            private CellRenderInfo(
+                RCell cell,
+                XUnit previousRenderedHeight,
+                bool wasRendered,
+                bool renderTopBorder,
+                bool renderBottomBorder)
+            {
+                this.Cell = cell;
+                this.PreviousRenderedHeight = previousRenderedHeight;
+                this.WasRendered = wasRendered;
+                this.RenderTopBorder = renderTopBorder;
+                this.RenderBottomBorder = renderBottomBorder;
+            }
+
+            public RCell Cell { get; }
+            public XUnit PreviousRenderedHeight { get; }
+            public bool WasRendered { get; }
+            public bool RenderTopBorder { get; }
+            public bool RenderBottomBorder { get; }
+
+            public static CellRenderInfo Rendered(RCell cell, XUnit previousRenderedHeight, bool topBorder, bool bottomBorder)
+            {
+                return new CellRenderInfo(cell, previousRenderedHeight, true, topBorder, bottomBorder);
+            }
+
+            public static CellRenderInfo NotRendered(RCell cell)
+            {
+                return new CellRenderInfo(cell, XUnit.Zero, false, false, false);
+            }
         }
     }
 }

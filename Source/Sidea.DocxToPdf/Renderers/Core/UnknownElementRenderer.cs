@@ -5,7 +5,9 @@ namespace Sidea.DocxToPdf.Renderers.Core
 {
     internal class UnknownElementRenderer : IRenderer
     {
-        public XSize TotalArea => new XSize(0, 0);
+        public XSize PrecalulatedSize => new XSize(0, 0);
+
+        public XSize RenderedSize => new XSize(0, 0);
 
         public RenderingState CurrentRenderingState => RenderingState.Unprepared;
 

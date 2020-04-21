@@ -82,6 +82,8 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                     .PanLeftDown(new XSize(0, renderingState.RenderedArea.Height));
             }
 
+            renderedHeight += _padding.Bottom;
+
             return RenderingState.Done(_width, renderedHeight);
         }
     }
