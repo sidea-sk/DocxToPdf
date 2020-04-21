@@ -29,15 +29,15 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
                 Width = 0.5
             };
 
-            var border = new RBorder(pen, pen, pen, pen);
+            var border = new BorderStyle(pen, pen, pen, pen);
 
             var rowColIndex = 0;
             foreach(var cell in row.Cells())
             {
-                var gridDescription = cell.GetGridDescription(rowIndex, rowColIndex);
-                rowColIndex += gridDescription.Span;
-
-                cells.Add(new RCell(cell, gridDescription, border, gridPositionService, renderingOptions));
+                var gridPosition = cell.GetGridDescription(rowIndex, rowColIndex);
+                rowColIndex += gridPosition.ColumnSpan;
+                var outerWidth = gridPositionService.CalculateWidth(gridPosition);
+                cells.Add(new RCell(cell, gridPosition, border, outerWidth, renderingOptions));
             }
 
             return cells;

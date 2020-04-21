@@ -1,7 +1,12 @@
-﻿namespace Sidea.DocxToPdf.Renderers.Tables.Models
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
     internal class GridPosition
     {
+        private int[] _rowIndeces;
+
         public GridPosition(
             int row,
             int column,
@@ -11,12 +16,34 @@
             this.Row = row;
             this.Column = column;
             this.RowSpan = rowSpan;
-            this.Span = columnSpan;
+            this.ColumnSpan = columnSpan;
+
+            _rowIndeces = Enumerable
+                .Range(row, rowSpan)
+                .ToArray();
         }
 
-        public int Row { get; }
         public int Column { get; }
+        public int ColumnSpan { get; }
+        public int Row { get; }
         public int RowSpan { get; }
-        public int Span { get; }
+
+        public IReadOnlyCollection<int> RowIndeces => _rowIndeces;
+
+        public bool IsInRow(int rowIndex)
+        {
+            return this.Row == rowIndex || _rowIndeces.Contains(rowIndex);
+        }
+
+        public bool IsInColumn(int column)
+        {
+            return this.Column <= column
+                && this.Column + this.ColumnSpan - 1 >= column;
+        }
+
+        public bool IsFirstVerticalCellOfRow(int rowIndex)
+        {
+            return this.Row == rowIndex;
+        }
     }
 }

@@ -16,7 +16,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
         private readonly RGrid _grid;
         private readonly RCell[] _orderedCells = new RCell[0];
-        private XUnit _alreadyRendered = XUnit.Zero;
         private XUnit[] _rowHeights = new XUnit[0];
 
         public RLayout(RGrid grid, IEnumerable<RCell> cells)
@@ -35,7 +34,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 cell.CalculateContentSize(prerenderArea);
             }
 
-            _rowHeights = this.CalculateRowHeights();
+            _rowHeights = this.PrecalculateRowHeights();
             var totalWidth = _orderedCells
                 .Where(c => c.GridPosition.Row == 0)
                 .Aggregate(0d, (agg, c) => agg + c.PrecalulatedSize.Width);
@@ -50,12 +49,11 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             var unfinished = this.GetCellsToRenderer();
             if(unfinished.Any())
             {
-                _alreadyRendered += renderArea.AreaRectangle.Height;
                 return RenderingState.EndOfRenderArea(renderArea.AreaRectangle);
             }
 
             var totalHeight = _rowHeights.Sum();
-            return RenderingState.Done(new XRect(new XSize(this.PrecalulatedSize.Width, totalHeight - _alreadyRendered)));
+            return RenderingState.Done(new XRect(new XSize(this.PrecalulatedSize.Width, totalHeight - this.RenderedSize.Height)));
         }
 
         private IEnumerable<RCell> GetCellsToRenderer()
@@ -67,11 +65,20 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         {
             var infos = this.GetCellsToRenderer()
                 .Select(cell => this.RenderCell(cell, renderArea))
+                .Where(i => i.WasRendered)
                 .ToArray();
 
-            foreach (var info in infos.Where(i => i.WasRendered))
+            var rowIndeces = infos
+                .SelectMany(i => i.Cell.GridPosition.RowIndeces)
+                .Distinct()
+                .OrderBy(r => r)
+                .ToArray();
+
+            foreach(var rowIndex in rowIndeces)
             {
-                this.RenderCellBorders(info, renderArea);
+                this.RenderCellTopBorders(rowIndex, renderArea);
+                this.RenderCellSideBorders(rowIndex, renderArea);
+                this.RenderCellBottomBorders(rowIndex, renderArea);
             }
         }
 
@@ -83,66 +90,85 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 return CellRenderInfo.NotRendered(cell);
             }
 
-            // var rowSpan = this.CellRowSpan(cell);
-
-            // total height for cell defined by grid - height already rendered
-            // var minimalCellBoxHeight = this.CellRowsHeightSum(cell);
-            //     - cell.RenderedSize.Height;
-
             var cellArea = renderArea
                 .PanLeftDown(new XSize(leftOffset, topOffset))
                 .Restrict(cell.PrecalulatedSize.Width);
 
-            var renderTopBorder = cell.CurrentRenderingState.Status == RenderingStatus.NotStarted
-                && cell.GridPosition.RowSpan != 0;
-
-            // this.RenderCellTopBorder(cell, cellArea);
-
-            var previousRenderedHeight = cell.RenderedSize.Height;
-
             cell.Render(cellArea);
             this.JustifyRowHeights(cell);
 
-            var renderBottomBorder = cell.CurrentRenderingState.Status == RenderingStatus.Done;
-
-            // this.RenderCellSideAndBottomBorders(cell, cellArea, minimalCellBoxHeight);
-
-            return CellRenderInfo.Rendered(cell, previousRenderedHeight, renderTopBorder, renderBottomBorder);
+            return CellRenderInfo.Rendered(cell);
         }
 
-        private void RenderCellBorders(CellRenderInfo cellInfo, IRenderArea renderArea)
+        private void RenderCellTopBorders(int rowIndex, IRenderArea renderArea)
         {
-            var (leftOffset, topOffset) = this.CalculateCellLayoutOffset(cellInfo.Cell, false);
+            var rowOffset = this.RowOffset(rowIndex)
+                - this.RenderedSize.Height;
 
-            // total height for cell defined by grid - height already rendered
-            var minimalCellBoxHeight = this.CellRowsHeightSum(cellInfo.Cell)
-                 - cellInfo.PreviousRenderedHeight;
-
-            var cellRenderArea = renderArea
-                .PanLeftDown(new XSize(leftOffset, topOffset))
-                .Restrict(cellInfo.Cell.PrecalulatedSize.Width);
-
-            if (cellInfo.RenderTopBorder)
+            if (rowOffset < 0)
             {
-                cellRenderArea.DrawLine(_cellBorderPen, new XPoint(0, 0), new XPoint(cellRenderArea.AreaRectangle.Width, 0));
+                return;
             }
 
-            this.RenderCellSideAndBottomBorders(cellInfo.Cell, cellRenderArea, minimalCellBoxHeight);
+            var cells = _orderedCells
+                .VerticalFirstCellsOfRow(rowIndex);
+
+            foreach (var cell in cells)
+            {
+                var (leftOffset, topOffset) = this.CalculateCellLayoutOffset(cell, false);
+                var cellRenderArea = renderArea.PanLeftDown(leftOffset, topOffset);
+                cellRenderArea.DrawLine(_cellBorderPen, new XPoint(0, 0), new XPoint(cell.PrecalulatedSize.Width, 0));
+            }
         }
 
-        private void RenderCellSideAndBottomBorders(RCell cell, IRenderArea cellRenderArea, XUnit minimalCellBoxHeight)
+        private void RenderCellSideBorders(int rowIndex, IRenderArea renderArea)
         {
-            var height = Math.Min(
-                Math.Max(cell.CurrentRenderingState.RenderedArea.Height, minimalCellBoxHeight),
-                cellRenderArea.Height);
-            
-            var rect = new XRect(0, 0, cellRenderArea.AreaRectangle.Width, height);
-
-            cellRenderArea.DrawLine(_cellBorderPen, rect.TopRight, rect.BottomRight);
-            cellRenderArea.DrawLine(_cellBorderPen, rect.BottomLeft, rect.TopLeft);
-            if (cell.CurrentRenderingState.Status == RenderingStatus.Done)
+            var rowOffset = this.RowOffset(rowIndex);
+            var remainingHeight = _rowHeights[rowIndex];
+            if (this.RenderedSize.Height > rowOffset)
             {
-                cellRenderArea.DrawLine(_cellBorderPen, rect.BottomRight, rect.BottomLeft);
+                remainingHeight = remainingHeight + rowOffset - this.RenderedSize.Height;
+            }
+
+            var cellsOfRow = _orderedCells
+                .CellsOfRow(rowIndex)
+                .ToArray();
+
+            foreach(var cell in cellsOfRow)
+            {
+                var (leftOffset, topOffset) = this.CalculateCellLayoutOffset(cell, false);
+                var cellRenderArea = renderArea
+                    .PanLeftDown(leftOffset, topOffset);
+
+                var height = Math.Min(remainingHeight, cellRenderArea.Height);
+                var rect = new XRect(0, 0, cell.PrecalulatedSize.Width, height);
+                cellRenderArea.DrawLine(_cellBorderPen, rect.TopLeft, rect.BottomLeft);
+                cellRenderArea.DrawLine(_cellBorderPen, rect.TopRight, rect.BottomRight);
+            }
+        }
+
+        private void RenderCellBottomBorders(int rowIndex, IRenderArea renderArea)
+        {
+            var rowOffset = this.RowOffset(rowIndex);
+            var remainingHeight = _rowHeights[rowIndex];
+            if (this.RenderedSize.Height > rowOffset)
+            {
+                remainingHeight = remainingHeight + rowOffset - this.RenderedSize.Height;
+            }
+
+            var cells = _orderedCells
+                .LastCellsOfRow(rowIndex);
+
+            foreach (var cell in cells)
+            {
+                var (leftOffset, topOffset) = this.CalculateCellLayoutOffset(cell, false);
+                var cellRenderArea = renderArea.PanLeftDown(leftOffset, topOffset);
+                if (remainingHeight > cellRenderArea.Height)
+                {
+                    continue;
+                }
+
+                cellRenderArea.DrawLine(_cellBorderPen, new XPoint(0, remainingHeight), new XPoint(cell.PrecalulatedSize.Width, remainingHeight));
             }
         }
 
@@ -156,13 +182,22 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             var topOffset = _rowHeights
                 .Take(cell.GridPosition.Row)
                 .Sum()
-                - _alreadyRendered
+                - this.RenderedSize.Height
                 + renderedPartOfCellOffset;
 
+            topOffset = Math.Max(0, topOffset);
             return (leftOffset, topOffset);
         }
 
-        private XUnit[] CalculateRowHeights()
+        private XUnit RowOffset(int rowIndex)
+        {
+            var o = _rowHeights
+                .Take(rowIndex)
+                .Sum();
+            return o;
+        }
+
+        private XUnit[] PrecalculateRowHeights()
         {
             var rowHeights = Enumerable
                 .Range(0, _grid.RowsCount)
@@ -172,9 +207,8 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             foreach(var cell in _orderedCells)
             {
                 var cellHeight = new XUnit(cell.PrecalulatedSize.Height);
-                var cellRowIndeces = this.RowIndecesOfCell(cell);
                 var cellRows = rowHeights
-                    .SelectWithIndeces(cellRowIndeces)
+                    .SelectWithIndeces(cell.GridPosition.RowIndeces.ToArray())
                     .ToArray();
 
                 var rowsSum = cellRows.Select(r => r.value).Sum();
@@ -222,18 +256,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             return sum;
         }
 
-        private int[] RowIndecesOfCell(RCell cell)
-        {
-            var x = _orderedCells
-                .SkipWhile(c => c != cell) // c.GridPosition.Row < cell.GridPosition.Row && c.GridPosition.Column < cell.GridPosition.Column)
-                .Where(c => c.GridPosition.Column == cell.GridPosition.Column)
-                .TakeWhile(c => c == cell || c.GridPosition.RowSpan == 0)
-                .Select(c => c.GridPosition.Row)
-                .ToArray();
-
-            return x;
-        }
-
         private static (XUnit value, int index)[] Distribute(IReadOnlyCollection<(XUnit value, int index)> currentValues, XUnit totalValueToDistribute)
         {
             if(totalValueToDistribute <= 0)
@@ -259,32 +281,23 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         {
             private CellRenderInfo(
                 RCell cell,
-                XUnit previousRenderedHeight,
-                bool wasRendered,
-                bool renderTopBorder,
-                bool renderBottomBorder)
+                bool wasRendered)
             {
                 this.Cell = cell;
-                this.PreviousRenderedHeight = previousRenderedHeight;
                 this.WasRendered = wasRendered;
-                this.RenderTopBorder = renderTopBorder;
-                this.RenderBottomBorder = renderBottomBorder;
             }
 
             public RCell Cell { get; }
-            public XUnit PreviousRenderedHeight { get; }
             public bool WasRendered { get; }
-            public bool RenderTopBorder { get; }
-            public bool RenderBottomBorder { get; }
 
-            public static CellRenderInfo Rendered(RCell cell, XUnit previousRenderedHeight, bool topBorder, bool bottomBorder)
+            public static CellRenderInfo Rendered(RCell cell)
             {
-                return new CellRenderInfo(cell, previousRenderedHeight, true, topBorder, bottomBorder);
+                return new CellRenderInfo(cell, true);
             }
 
             public static CellRenderInfo NotRendered(RCell cell)
             {
-                return new CellRenderInfo(cell, XUnit.Zero, false, false, false);
+                return new CellRenderInfo(cell, false);
             }
         }
     }

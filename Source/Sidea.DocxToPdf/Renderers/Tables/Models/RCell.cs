@@ -12,23 +12,21 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         private readonly TableCell _cell;
         private readonly RendererFactory _factory = new RendererFactory();
         private readonly List<IRenderer> _childRenderers = new List<IRenderer>();
-        private XUnit _width;
-        private readonly IGridPositionService _positionService;
+        private readonly XUnit _outerWidth;
         private readonly RenderingOptions _renderingOptions;
         private readonly RPadding _padding; 
 
         public RCell(
             TableCell cell,
             GridPosition gridPosition,
-            RBorder border,
-            IGridPositionService positionService,
+            BorderStyle border,
+            XUnit outerWidth,
             RenderingOptions renderingOptions)
         {
             _cell = cell;
             _padding =  RPadding.Padding(XUnit.FromPoint(1), XUnit.FromPoint(3), XUnit.FromPoint(1), XUnit.FromPoint(3));
-            _positionService = positionService;
+            _outerWidth = outerWidth;
             _renderingOptions = renderingOptions;
-            _width = _positionService.CalculateWidth(gridPosition);
 
             this.GridPosition = gridPosition;
             this.Border = border;
@@ -36,14 +34,14 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
         public GridPosition GridPosition { get; }
 
-        public RBorder Border { get; }
+        public BorderStyle Border { get; }
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            var size = new XSize(_width, _padding.VerticalPaddings);
+            var size = new XSize(_outerWidth, _padding.VerticalPaddings);
 
             var cellPrerenderArea = prerenderArea
-                .Restrict(_width - _padding.HorizonalPaddings);
+                .Restrict(_outerWidth - _padding.HorizonalPaddings);
 
             foreach (var child in _cell.RenderableChildren())
             {
@@ -84,7 +82,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
             renderedHeight += _padding.Bottom;
 
-            return RenderingState.Done(_width, renderedHeight);
+            return RenderingState.Done(_outerWidth, renderedHeight);
         }
     }
 }

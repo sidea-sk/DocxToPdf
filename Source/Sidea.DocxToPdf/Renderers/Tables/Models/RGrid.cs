@@ -46,7 +46,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         {
             var width = _gridColumns
                .Skip(description.Column)
-               .Take(description.Span)
+               .Take(description.ColumnSpan)
                .Aggregate(XUnit.Zero, (col, acc) => acc + col);
 
             return width;
