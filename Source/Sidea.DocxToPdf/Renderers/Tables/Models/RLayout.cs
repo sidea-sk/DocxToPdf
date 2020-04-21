@@ -54,7 +54,8 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 return RenderingState.EndOfRenderArea(renderArea.AreaRectangle);
             }
 
-            return RenderingState.Done(new XRect(new XSize(this.PrecalulatedSize.Width, this.PrecalulatedSize.Height - _alreadyRendered)));
+            var totalHeight = _rowHeights.Sum();
+            return RenderingState.Done(new XRect(new XSize(this.PrecalulatedSize.Width, totalHeight - _alreadyRendered)));
         }
 
         private IEnumerable<RCell> GetCellsToRenderer()
@@ -129,16 +130,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             this.RenderCellSideAndBottomBorders(cellInfo.Cell, cellRenderArea, minimalCellBoxHeight);
         }
 
-        //private void RenderCellTopBorder(RCell cell, IRenderArea cellRenderArea)
-        //{
-        //    if (cell.CurrentRenderingState.Status != RenderingStatus.NotStarted && cell.GridPosition.RowSpan == 0)
-        //    {
-        //        return;
-        //    }
-
-        //    cellRenderArea.DrawLine(_cellBorderPen, new XPoint(0, 0), new XPoint(cellRenderArea.AreaRectangle.Width, 0));
-        //}
-
         private void RenderCellSideAndBottomBorders(RCell cell, IRenderArea cellRenderArea, XUnit minimalCellBoxHeight)
         {
             var height = Math.Min(
@@ -154,21 +145,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 cellRenderArea.DrawLine(_cellBorderPen, rect.BottomRight, rect.BottomLeft);
             }
         }
-
-        //private void RenderCellBorder(RCell cell, IRenderArea cellRenderArea, XUnit totalCellHeight)
-        //{
-        //    var height = Math.Min(totalCellHeight - cell.CurrentRenderingState.RenderedArea.Height, cellRenderArea.Height);
-        //    var rect = new XRect(0,0, cellRenderArea.AreaRectangle.Width, height);
-
-        //    cellRenderArea.DrawLine(_cellBorderPen, rect.TopRight, rect.BottomRight);
-
-        //    if(totalCellHeight - cell.CurrentRenderingState.RenderedArea.Height <= cellRenderArea.Height)
-        //    {
-        //        cellRenderArea.DrawLine(_cellBorderPen, rect.BottomRight, rect.BottomLeft);
-        //    }
-
-        //    cellRenderArea.DrawLine(_cellBorderPen, rect.BottomLeft, rect.TopLeft);
-        //}
 
         private (XUnit leftOffset, XUnit topOffset) CalculateCellLayoutOffset(RCell cell, bool onCellRender)
         {
