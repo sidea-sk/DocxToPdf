@@ -41,14 +41,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
             return width;
         }
 
-        public static GridPosition GetGridDescription(this TableCell cell, int rowIndex, int rowGridColIndex)
-        {
-            var rowSpan = cell.TableCellProperties.VerticalMerge.ToRowSpan();
-            var gridSpan = cell.GridSpan();
-            var colSpan = Convert.ToInt32(gridSpan.Val.Value);
-            return new GridPosition(rowIndex, rowGridColIndex, rowSpan, colSpan);
-        }
-
         public static RGridRow ToGridRow(this TableRow row)
         {
             var trh = row
@@ -60,6 +52,14 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
             var rule = trh?.HeightType?.Value ?? HeightRuleValues.Auto;
 
             return new RGridRow(new XUnit(rowHeight / 20), rule);
+        }
+
+        public static (int rowSpan, int colSpan) GetCellSpans(this TableCell cell)
+        {
+            var rowSpan = cell.TableCellProperties.VerticalMerge.ToRowSpan();
+            var gridSpan = cell.GridSpan();
+            var colSpan = Convert.ToInt32(gridSpan.Val.Value);
+            return (rowSpan, colSpan);
         }
 
         private static int ToRowSpan(this VerticalMerge verticalMerge)

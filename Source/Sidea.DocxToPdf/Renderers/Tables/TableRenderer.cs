@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
@@ -13,7 +14,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables
         private readonly Table _table;
         private readonly RenderingOptions _renderingOptions;
         private readonly RGrid _grid;
-        private readonly List<RCell> _cells = new List<RCell>();
+        private RCell[] _cells = new RCell[0];
 
         private RLayout _layout = null;
 
@@ -26,17 +27,9 @@ namespace Sidea.DocxToPdf.Renderers.Tables
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            var rowIndex = 0;
-
-            foreach (var row in _table.Rows())
-            {
-                foreach (var cell in row.RCells(rowIndex, _grid, _renderingOptions))
-                {
-                    _cells.Add(cell);
-                }
-
-                rowIndex++;
-            }
+            _cells = _table
+                .RCells(_grid, _renderingOptions)
+                .ToArray();
 
             _layout = new RLayout(_grid, _cells);
             _layout.CalculateContentSize(prerenderArea);

@@ -204,13 +204,12 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 .Select(i => _grid.RowHeight(i))
                 .ToArray();
 
-            foreach(var cell in _orderedCells)
+            foreach(var cell in _orderedCells.Where(c => c.GridPosition.RowSpan > 0).OrderBy(c => c.GridPosition.RowSpan))
             {
                 var cellHeight = new XUnit(cell.PrecalulatedSize.Height);
                 var cellRows = rowHeights
-                    .SelectWithIndeces(cell.GridPosition.RowIndeces.ToArray())
-                    .ToArray();
-
+                        .SelectWithIndeces(cell.GridPosition.RowIndeces.ToArray())
+                        .ToArray();
                 var rowsSum = cellRows.Select(r => r.value).Sum();
                 if (rowsSum >= cellHeight)
                 {
@@ -245,7 +244,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         {
             var rowSpan = _orderedCells
                 .Where(c => c.GridPosition.Column == cell.GridPosition.Column && c.GridPosition.Row >= cell.GridPosition.Row)
-                .TakeWhile(c => c == cell || c.GridPosition.RowSpan == 0)
+                .TakeWhile(c => c == cell || c.GridPosition.IsRowMergedCell)
                 .Count();
 
             var sum = _rowHeights
