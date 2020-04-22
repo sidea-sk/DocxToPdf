@@ -111,8 +111,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             }
 
             var cells = _orderedCells
-                .Where(c => c.GridPosition.IsFirstVerticalCell);
-                // .VerticalFirstCellsOfRow(rowIndex);
+                .VerticalFirstCellsOfRow(rowIndex);
 
             foreach (var cell in cells)
             {
@@ -158,8 +157,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             }
 
             var cells = _orderedCells
-                .Where(c => c.GridPosition.IsLastVerticalCellOfRow(rowIndex));
-                // .LastCellsOfRow(rowIndex);
+                .LastCellsOfRow(rowIndex);
 
             foreach (var cell in cells)
             {
