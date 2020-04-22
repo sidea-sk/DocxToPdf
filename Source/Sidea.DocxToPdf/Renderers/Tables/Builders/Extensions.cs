@@ -41,14 +41,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
             return width;
         }
 
-        public static GridPosition GetGridPosition(this TableCell cell, int rowIndex, int rowGridColIndex)
-        {
-            var rowSpan = cell.TableCellProperties.VerticalMerge.ToRowSpan();
-            var gridSpan = cell.GridSpan();
-            var colSpan = Convert.ToInt32(gridSpan.Val.Value);
-            return new GridPosition(rowIndex, rowGridColIndex, rowSpan, colSpan, false);
-        }
-
         public static RGridRow ToGridRow(this TableRow row)
         {
             var trh = row

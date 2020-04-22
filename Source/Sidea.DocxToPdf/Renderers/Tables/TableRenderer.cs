@@ -27,21 +27,9 @@ namespace Sidea.DocxToPdf.Renderers.Tables
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            // var rowIndex = 0;
-
             _cells = _table
                 .RCells(_grid, _renderingOptions)
                 .ToArray();
-
-            //foreach (var row in _table.Rows())
-            //{
-            //    foreach (var cell in row.RCells(rowIndex, _grid, _renderingOptions))
-            //    {
-            //        _cells.Add(cell);
-            //    }
-
-            //    rowIndex++;
-            //}
 
             _layout = new RLayout(_grid, _cells);
             _layout.CalculateContentSize(prerenderArea);
