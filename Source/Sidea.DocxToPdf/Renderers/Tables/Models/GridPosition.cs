@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Models
@@ -11,24 +12,29 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             int row,
             int column,
             int rowSpan,
-            int columnSpan)
+            int columnSpan,
+            bool isLastVerticalCell)
         {
             this.Row = row;
             this.Column = column;
             this.RowSpan = rowSpan;
             this.ColumnSpan = columnSpan;
-
-            _rowIndeces = Enumerable
-                .Range(row, rowSpan)
-                .ToArray();
+            this.IsLastVerticalCell = isLastVerticalCell;
+            _rowIndeces = rowSpan > 0
+                ? Enumerable.Range(row, rowSpan).ToArray()
+                : new int[0];
         }
 
         public int Column { get; }
         public int ColumnSpan { get; }
+        public bool IsFirstVerticalCell => this.RowSpan > 0;
+        public bool IsLastVerticalCell { get; }
         public int Row { get; }
         public int RowSpan { get; }
 
         public IReadOnlyCollection<int> RowIndeces => _rowIndeces;
+
+        public bool IsRowMergedCell => this.RowSpan <= 0;
 
         public bool IsInRow(int rowIndex)
         {
@@ -43,7 +49,12 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
         public bool IsFirstVerticalCellOfRow(int rowIndex)
         {
-            return this.Row == rowIndex;
+            return this.Row == rowIndex && this.IsFirstVerticalCell;
+        }
+
+        public bool IsLastVerticalCellOfRow(int rowIndex)
+        {
+            return this.Row == rowIndex && this.IsLastVerticalCell;
         }
     }
 }

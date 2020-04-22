@@ -56,7 +56,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
         protected override sealed RenderingState RenderCore(IRenderArea renderArea)
         {
-            if(this.GridPosition.RowSpan == 0)
+            if(this.GridPosition.IsRowMergedCell)
             {
                 return RenderingState.DoneEmpty;
             }
