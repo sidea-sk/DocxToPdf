@@ -32,5 +32,11 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(FirstEvenOddEvenOdd));
         }
+
+        [TestMethod]
+        public void FirstEvenOddXXL()
+        {
+            this.Generate(nameof(FirstEvenOddXXL));
+        }
     }
 }

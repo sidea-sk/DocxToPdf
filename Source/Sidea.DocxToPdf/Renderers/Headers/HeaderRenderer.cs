@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using DocumentFormat.OpenXml.Packaging;
+
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
@@ -10,24 +9,36 @@ namespace Sidea.DocxToPdf.Renderers.Headers
 {
     internal class HeaderRenderer : CompositeRenderer, IHeaderRenderer
     {
-        private readonly XUnit _minimumMargin = XUnit.FromCentimeter(2.5);
-        private readonly int _pageNumber;
+        private readonly XUnit _topMargin;
+        private readonly XUnit _toHeaderMargin;
 
-        public HeaderRenderer(Header header, int pageNumber, RenderingOptions renderingOptions) : base(header, renderingOptions)
+        public HeaderRenderer(
+            Header header,
+            PageMargin pageMargin,
+            RenderingOptions renderingOptions) : base(header, renderingOptions)
         {
-            _pageNumber = pageNumber;
+            _toHeaderMargin = pageMargin.Header.ToXUnit();
+            _topMargin = pageMargin.Top.ToXUnit();
         }
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
             var contentSize = base.CalculateContentSizeCore(prerenderArea);
-            return contentSize.ExpandToMax(new XSize(prerenderArea.Width, _minimumMargin));
+            return contentSize.ExpandToMax(new XSize(prerenderArea.Width, _topMargin));
         }
 
         protected override RenderingState RenderCore(IRenderArea renderArea)
         {
-            var state = base.RenderCore(renderArea);
-            var size = state.RenderedSize.ExpandToMax(new XSize(renderArea.Width, _minimumMargin));
+            var headerContentArea = renderArea
+                .PanDown(_toHeaderMargin);
+
+            var state = base.RenderCore(headerContentArea);
+
+            var t = Math.Max(state.RenderedHeight + _toHeaderMargin, _topMargin);
+
+            var size = state.RenderedSize
+                .ExpandToMax(new XSize(renderArea.Width, t));
+
             return RenderingState.FromStatus(state.Status, size);
         }
     }

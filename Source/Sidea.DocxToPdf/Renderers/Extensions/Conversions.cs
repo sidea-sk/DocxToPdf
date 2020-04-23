@@ -7,6 +7,26 @@ namespace Sidea.DocxToPdf.Renderers
 {
     internal static class Conversions
     {
+        public static XUnit ToXUnit(this UInt32Value value)
+        {
+            if (!value.HasValue)
+            {
+                return XUnit.Zero;
+            }
+
+            return value.Value.TwentiethToUnit();
+        }
+
+        public static XUnit ToXUnit(this Int32Value value)
+        {
+            if (!value.HasValue)
+            {
+                return XUnit.Zero;
+            }
+
+            return value.Value.TwentiethToUnit();
+        }
+
         public static XUnit ToXUnit(this StringValue value)
         {
             var v = Convert.ToInt32(value.Value);
@@ -60,5 +80,20 @@ namespace Sidea.DocxToPdf.Renderers
             XBrush brush = new XSolidBrush(XColor.FromArgb(r, g, b));
             return brush;
         }
+
+        private static XUnit TwentiethToUnit(this uint value)
+        {
+            return value / 20d;
+        }
+
+        private static XUnit TwentiethToUnit(this int value)
+        {
+            return value / 20d;
+        }
+
+        //private static XUnit TwentiethToUnit(this double value)
+        //{
+        //    return value / 20d;
+        //}
     }
 }

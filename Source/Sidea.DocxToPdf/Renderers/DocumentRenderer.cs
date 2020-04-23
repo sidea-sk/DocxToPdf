@@ -94,28 +94,13 @@ namespace Sidea.DocxToPdf.Renderers
         private IHeaderRenderer CreateHeaderRenderer(int pageNumber)
         {
             var header = _docx.MainDocumentPart.FindHeaderForPage(pageNumber);
-            if(header == null)
+            var pageMargin = _docx.MainDocumentPart.GetPageMargin();
+            if (header == null)
             {
-                return new NoHeaderRenderer();
+                return new NoHeaderRenderer(pageMargin);
             }
 
-            //var headerParts = _docx.MainDocumentPart.HeaderParts.ToArray();
-            //if(headerParts.Length == 0)
-            //{
-            //    return new NoHeaderRenderer();
-            //}
-
-            //// string rId = _docx.MainDocumentPart.GetIdOfPart(headerPart);
-            //var evenOdd = _docx.MainDocumentPart.DocumentSettingsPart.Settings.UseEvenOdHeaders()
-            //    ? 2
-            //    : 1;
-
-            //var header = evenOdd == 1 || headerParts.Length < 2
-            //    ? headerParts[0]
-            //    : headerParts[pageNumber % evenOdd];
-
-                // _docx.MainDocumentPart.HeaderParts.First().Header;
-            return new HeaderRenderer(header, pageNumber, _renderingOptions);
+            return new HeaderRenderer(header, pageMargin, _renderingOptions);
         }
 
         private IPrerenderArea CreateNewPagePrerenderArea(PdfDocument pdf, XFont documentDefaultFont)
