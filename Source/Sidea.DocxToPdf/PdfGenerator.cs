@@ -2,8 +2,6 @@
 using DocumentFormat.OpenXml.Packaging;
 using PdfSharp.Pdf;
 using Sidea.DocxToPdf.Renderers;
-using Sidea.DocxToPdf.Renderers.Core;
-using Sidea.DocxToPdf.Renderers.Documents;
 
 namespace Sidea.DocxToPdf
 {
@@ -20,8 +18,8 @@ namespace Sidea.DocxToPdf
         {
             var renderingOptions = options ?? RenderingOptions.Default;
             var renderer = new DocumentRenderer(docx, renderingOptions);
-            renderer.Render();
-            return renderer.GeneratedDocument;
+            var pdfDocument = renderer.Render();
+            return pdfDocument;
         }
     }
 }

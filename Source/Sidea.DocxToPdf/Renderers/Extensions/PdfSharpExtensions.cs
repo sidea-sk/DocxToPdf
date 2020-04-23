@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using PdfSharp.Drawing;
 
@@ -24,5 +25,10 @@ namespace Sidea.DocxToPdf.Renderers
 
         public static XSize ExpandWidth(this XSize size, XUnit width)
          => size.Expand(width, 0);
+
+        public static XSize ExpandToMax(this XSize size, XSize other)
+        {
+            return new XSize(Math.Max(size.Width, other.Width), Math.Max(size.Height, other.Height));
+        }
     }
 }

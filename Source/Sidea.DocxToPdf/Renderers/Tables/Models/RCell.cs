@@ -70,14 +70,14 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             {
                 renderer.Render(cellRenderArea);
                 var renderingState = renderer.CurrentRenderingState;
-                renderedHeight += renderingState.RenderedArea.Height;
+                renderedHeight += renderingState.RenderedSize.Height;
                 if(renderingState.Status == RenderingStatus.ReachedEndOfArea)
                 {
                     return RenderingState.EndOfRenderArea(renderArea.AreaRectangle);
                 }
 
                 cellRenderArea = cellRenderArea
-                    .PanLeftDown(new XSize(0, renderingState.RenderedArea.Height));
+                    .PanLeftDown(new XSize(0, renderingState.RenderedSize.Height));
             }
 
             renderedHeight += _padding.Bottom;
