@@ -20,8 +20,8 @@ namespace Sidea.DocxToPdf
         {
             var renderingOptions = options ?? RenderingOptions.Default;
             var renderer = new DocumentRenderer(docx, renderingOptions);
-            renderer.Render();
-            return renderer.GeneratedDocument;
+            var pdfDocument = renderer.Render();
+            return pdfDocument;
         }
     }
 }

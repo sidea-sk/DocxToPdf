@@ -13,6 +13,8 @@ namespace Sidea.DocxToPdf.Renderers.Documents
     {
         private readonly WordprocessingDocument _docx;
         private readonly RenderingOptions _renderingOptions;
+        private BodyRenderer _bodyRenderer;
+
         private readonly RendererFactory _factory = new RendererFactory();
         private readonly List<IRenderer> _renderers = new List<IRenderer>();
         private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
@@ -23,65 +25,40 @@ namespace Sidea.DocxToPdf.Renderers.Documents
             _renderingOptions = renderingOptions;
         }
 
-        public PdfDocument GeneratedDocument { get; private set; }
-
-        public RenderingState Render()
+        public PdfDocument Render()
         {
             var pdf = new PdfDocument();
             this.PrepareContent(pdf);
-            var state = this.RenderCore(pdf);
-            this.GeneratedDocument = pdf;
-
-            return state;
+            this.RenderCore(pdf);
+            return pdf;
         }
 
         private void PrepareContent(PdfDocument pdf)
         {
             var prerenderPage = this.CreateNewPagePrerenderArea(pdf, _documentFont);
             var prerenderArea = prerenderPage;
-            foreach(var child in _docx.MainDocumentPart.Document.Body.RenderableChildren())
-            {
-                var renderer = _factory.CreateRenderer(child, _renderingOptions);
-                _renderers.Add(renderer);
-                renderer.CalculateContentSize(prerenderArea);
-            }
+
+            _bodyRenderer = new BodyRenderer(_docx.MainDocumentPart.Document.Body, _renderingOptions);
+            _bodyRenderer.CalculateContentSize(prerenderArea);
 
             this.DeletePrerenderPage(pdf);
         }
 
-        private RenderingState RenderCore(PdfDocument pdf)
+        private void RenderCore(PdfDocument pdf)
         {
-            var childRenderingStatus = new List<RenderingStatus>();
             var currentRenderingArea = this.CreateNewPageRenderingArea(pdf, _documentFont);
 
-            foreach(var renderer in _renderers)
+            while(_bodyRenderer.CurrentRenderingState.Status != RenderingStatus.Done)
             {
-                var renderingState = RenderingState.NotStarted;
-                while (renderingState.Status.IsNotFinished())
+                // TODO: render header
+                // TODO: render footer
+                _bodyRenderer.Render(currentRenderingArea);
+
+                if(_bodyRenderer.CurrentRenderingState.Status == RenderingStatus.ReachedEndOfArea)
                 {
-                    renderer.Render(currentRenderingArea);
-                    renderingState = renderer.CurrentRenderingState;
-                    switch (renderingState.Status)
-                    {
-                        case RenderingStatus.ReachedEndOfArea:
-                            currentRenderingArea = this.CreateNewPageRenderingArea(pdf, _documentFont);
-                            break;
-                        case RenderingStatus.NotStarted:
-                            throw new System.Exception("Unexpected rendering status");
-                        default:
-                            currentRenderingArea = currentRenderingArea.PanLeftDown(new XSize(0, renderingState.RenderedSize.Height));
-                            break;
-                    }
+                    currentRenderingArea = this.CreateNewPageRenderingArea(pdf, _documentFont);
                 }
-
-                childRenderingStatus.Add(renderingState.Status);
             }
-
-            var aggregatedStatus = childRenderingStatus.All(rs => rs == RenderingStatus.Done)
-                ? RenderingStatus.Done
-                : RenderingStatus.Error;
-
-            return RenderingState.FromStatus(aggregatedStatus, new XSize(0,0));
         }
 
         private IRenderArea CreateNewPageRenderingArea(PdfDocument pdf, XFont documentDefaultFont)
