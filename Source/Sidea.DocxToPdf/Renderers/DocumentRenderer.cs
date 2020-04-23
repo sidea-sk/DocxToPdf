@@ -6,6 +6,7 @@ using PdfSharp.Pdf;
 using Sidea.DocxToPdf.Renderers.Bodies;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
+using Sidea.DocxToPdf.Renderers.Footers;
 using Sidea.DocxToPdf.Renderers.Headers;
 
 namespace Sidea.DocxToPdf.Renderers
@@ -14,8 +15,8 @@ namespace Sidea.DocxToPdf.Renderers
     {
         private readonly WordprocessingDocument _docx;
         private readonly RenderingOptions _renderingOptions;
-
         private readonly List<IHeaderRenderer> _headerRenderers = new List<IHeaderRenderer>();
+        private readonly List<IFooterRenderer> _footerRenderers = new List<IFooterRenderer>();
         private BodyRenderer _bodyRenderer;
 
         private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
@@ -53,7 +54,6 @@ namespace Sidea.DocxToPdf.Renderers
 
             while(_bodyRenderer.CurrentRenderingState.Status != RenderingStatus.Done)
             {
-                // TODO: render footer
                 _bodyRenderer.Render(currentRenderingArea);
 
                 if(_bodyRenderer.CurrentRenderingState.Status == RenderingStatus.ReachedEndOfArea)
@@ -68,8 +68,10 @@ namespace Sidea.DocxToPdf.Renderers
             var page = this.CreatePage(pdf);
             var graphics = XGraphics.FromPdfPage(page);
 
-            var margin = XUnit.FromCentimeter(2.5);
-            var renderArea = new RenderArea(documentDefaultFont, graphics, new XRect(margin, 0, page.Width - 2 * margin, page.Height - margin));
+            var pageMargin = _docx.MainDocumentPart.GetPageMargin();
+            var leftMargin = pageMargin.Left.ToXUnit();
+            var rightMargin = pageMargin.Right.ToXUnit();
+            var renderArea = new RenderArea(documentDefaultFont, graphics, new XRect(leftMargin, 0, page.Width - leftMargin - rightMargin, page.Height));
 
             IRenderArea bodyRenderArea = this.RenderHeaderAndFooter(renderArea);
             graphics.DrawRectangle(XPens.Orange, bodyRenderArea.AreaRectangle);
@@ -80,27 +82,47 @@ namespace Sidea.DocxToPdf.Renderers
         {
             var page = _headerRenderers.Count;
 
-            var headerRenderer = this.CreateHeaderRenderer(page + 1);
-            headerRenderer.CalculateContentSize(renderArea);
-            headerRenderer.Render(renderArea);
+            var headerRenderer = this.CreateAndRenderHeader(renderArea, page + 1);
             _headerRenderers.Add(headerRenderer);
 
+            var footerRenderer = this.CreateAndRenderFooter(renderArea, page + 1);
+            _footerRenderers.Add(footerRenderer);
+
             var bodyRenderArea = ((IRenderArea)renderArea)
-                .PanDown(headerRenderer.RenderedSize.Height);
+                .PanDown(headerRenderer.RenderedSize.Height)
+                .RestrictFromBottom(footerRenderer.RenderedSize.Height);
 
             return bodyRenderArea;
         }
 
-        private IHeaderRenderer CreateHeaderRenderer(int pageNumber)
+        private IHeaderRenderer CreateAndRenderHeader(RenderArea renderArea, int pageNumber)
         {
             var header = _docx.MainDocumentPart.FindHeaderForPage(pageNumber);
             var pageMargin = _docx.MainDocumentPart.GetPageMargin();
-            if (header == null)
-            {
-                return new NoHeaderRenderer(pageMargin);
-            }
 
-            return new HeaderRenderer(header, pageMargin, _renderingOptions);
+            var renderer = header == null
+                ? (IHeaderRenderer)new NoHeaderRenderer(pageMargin)
+                : new HeaderRenderer(header, pageMargin, _renderingOptions);
+
+            renderer.CalculateContentSize(renderArea);
+            renderer.Render(renderArea);
+
+            return renderer;
+        }
+
+        private IFooterRenderer CreateAndRenderFooter(RenderArea renderArea, int pageNumber)
+        {
+            var footer = _docx.MainDocumentPart.FindFooterForPage(pageNumber);
+            var pageMargin = _docx.MainDocumentPart.GetPageMargin();
+
+            var renderer = footer == null
+                ? (IFooterRenderer)new NoFooterRenderer(pageMargin)
+                : new FooterRenderer(footer, pageMargin, _renderingOptions);
+
+            renderer.CalculateContentSize(renderArea);
+            renderer.Render(renderArea);
+
+            return renderer;
         }
 
         private IPrerenderArea CreateNewPagePrerenderArea(PdfDocument pdf, XFont documentDefaultFont)

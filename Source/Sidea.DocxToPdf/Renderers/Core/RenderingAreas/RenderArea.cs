@@ -59,6 +59,12 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         IRenderArea IRenderArea.Restrict(XUnit width) => this.RestricCore(width);
 
+        IRenderArea IRenderArea.RestrictFromBottom(XUnit height)
+        {
+            var r = new XRect(this.AreaRectangle.X, this.AreaRectangle.Y, this.AreaRectangle.Width, this.AreaRectangle.Height - height);
+            return new RenderArea(this.AreaFont, _graphics, r);
+        }
+
         private RenderArea PanLeftCore(XUnit unit)
         {
             return new RenderArea(AreaFont, _graphics, new XRect(AreaRectangle.X + unit, AreaRectangle.Y, AreaRectangle.Width - unit, AreaRectangle.Height));
