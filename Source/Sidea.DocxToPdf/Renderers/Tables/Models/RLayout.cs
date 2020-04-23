@@ -176,7 +176,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         {
             var renderedPartOfCellOffset = onCellRender
                 ? cell.RenderedSize.Height
-                : cell.RenderedSize.Height - cell.CurrentRenderingState.RenderedArea.Height;
+                : cell.RenderedSize.Height - cell.CurrentRenderingState.RenderedSize.Height;
 
             var leftOffset = _grid.CalculateLeftOffset(cell.GridPosition);
             var topOffset = _rowHeights

@@ -27,5 +27,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
         void CalculateContentSize(IPrerenderArea prerenderArea);
 
         void Render(IRenderArea renderArea);
+
+        // void Finalize(RenderingInfo info); //e.g. total page count
     }
 }

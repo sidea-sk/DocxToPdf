@@ -69,7 +69,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
                         case RenderingStatus.NotStarted:
                             throw new System.Exception("Unexpected rendering status");
                         default:
-                            currentRenderingArea = currentRenderingArea.PanLeftDown(new XSize(0, renderingState.FinishedAtPosition.Y));
+                            currentRenderingArea = currentRenderingArea.PanLeftDown(new XSize(0, renderingState.RenderedSize.Height));
                             break;
                     }
                 }
@@ -81,7 +81,7 @@ namespace Sidea.DocxToPdf.Renderers.Documents
                 ? RenderingStatus.Done
                 : RenderingStatus.Error;
 
-            return RenderingState.FromStatus(aggregatedStatus, XRect.Empty);
+            return RenderingState.FromStatus(aggregatedStatus, new XSize(0,0));
         }
 
         private IRenderArea CreateNewPageRenderingArea(PdfDocument pdf, XFont documentDefaultFont)
