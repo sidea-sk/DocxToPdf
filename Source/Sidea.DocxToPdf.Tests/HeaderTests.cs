@@ -14,5 +14,11 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(Header));
         }
+
+        [TestMethod]
+        public void HeaderXXL()
+        {
+            this.Generate(nameof(HeaderXXL));
+        }
     }
 }

@@ -21,6 +21,16 @@ namespace Sidea.DocxToPdf.Renderers.Core
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
+            return this.CalculateChildrenSize(prerenderArea);
+        }
+
+        protected override RenderingState RenderCore(IRenderArea renderArea)
+        {
+            return this.RenderChildren(renderArea);
+        }
+
+        protected XSize CalculateChildrenSize(IPrerenderArea prerenderArea)
+        {
             // TODO: padding
             // TODO: margin
             var size = new XSize(prerenderArea.Width, 0);
@@ -35,20 +45,24 @@ namespace Sidea.DocxToPdf.Renderers.Core
             return size;
         }
 
-        protected override RenderingState RenderCore(IRenderArea renderArea)
+        protected RenderingState RenderChildren(IRenderArea renderArea)
         {
             var renderedHeight = XUnit.Zero;
             var status = RenderingStatus.Done;
+            var currentRenderArea = renderArea;
+
             foreach (var renderer in _renderers.Where(r => r.CurrentRenderingState.Status != RenderingStatus.Done))
             {
-                renderer.Render(renderArea);
+                renderer.Render(currentRenderArea);
                 status = renderer.CurrentRenderingState.Status;
                 renderedHeight += renderer.CurrentRenderingState.RenderedHeight;
 
-                if(status == RenderingStatus.ReachedEndOfArea)
+                if (status == RenderingStatus.ReachedEndOfArea)
                 {
                     break;
                 }
+
+                currentRenderArea = currentRenderArea.PanDown(renderer.CurrentRenderingState.RenderedHeight);
             }
 
             return RenderingState.FromStatus(status, renderArea.Width, renderedHeight);

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
@@ -14,7 +15,7 @@ namespace Sidea.DocxToPdf.Renderers
         private readonly WordprocessingDocument _docx;
         private readonly RenderingOptions _renderingOptions;
 
-        private readonly List<HeaderRenderer> _headerRenderers = new List<HeaderRenderer>();
+        private readonly List<IHeaderRenderer> _headerRenderers = new List<IHeaderRenderer>();
         private BodyRenderer _bodyRenderer;
 
         private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
@@ -52,7 +53,6 @@ namespace Sidea.DocxToPdf.Renderers
 
             while(_bodyRenderer.CurrentRenderingState.Status != RenderingStatus.Done)
             {
-                // TODO: render header
                 // TODO: render footer
                 _bodyRenderer.Render(currentRenderingArea);
 
@@ -67,19 +67,40 @@ namespace Sidea.DocxToPdf.Renderers
         {
             var page = this.CreatePage(pdf);
             var graphics = XGraphics.FromPdfPage(page);
-            var margin = XUnit.FromCentimeter(2.5);
 
+            var margin = XUnit.FromCentimeter(2.5);
             var renderArea = new RenderArea(documentDefaultFont, graphics, new XRect(margin, 0, page.Width - 2 * margin, page.Height - margin));
 
-            var headerRenderer = new HeaderRenderer(_docx, _renderingOptions);
+            IRenderArea bodyRenderArea = this.RenderHeaderAndFooter(renderArea);
+            graphics.DrawRectangle(XPens.Orange, bodyRenderArea.AreaRectangle);
+            return bodyRenderArea;
+        }
+
+        private IRenderArea RenderHeaderAndFooter(RenderArea renderArea)
+        {
+            var page = _headerRenderers.Count;
+
+            var headerRenderer = this.CreateHeaderRenderer(page + 1);
             headerRenderer.CalculateContentSize(renderArea);
             headerRenderer.Render(renderArea);
             _headerRenderers.Add(headerRenderer);
 
-            IRenderArea bodyRenderArea = renderArea;
-            bodyRenderArea = bodyRenderArea.PanDown(headerRenderer.RenderedSize.Height);
-            graphics.DrawRectangle(XPens.Orange, bodyRenderArea.AreaRectangle);
+            var bodyRenderArea = ((IRenderArea)renderArea)
+                .PanDown(headerRenderer.RenderedSize.Height);
+
             return bodyRenderArea;
+        }
+
+        private IHeaderRenderer CreateHeaderRenderer(int pageNumber)
+        {
+            var headers = _docx.MainDocumentPart.HeaderParts.ToArray();
+            if(headers.Length == 0)
+            {
+                return new NoHeaderRenderer();
+            }
+
+            var header = _docx.MainDocumentPart.HeaderParts.First().Header;
+            return new HeaderRenderer(header, pageNumber, _renderingOptions);
         }
 
         private IPrerenderArea CreateNewPagePrerenderArea(PdfDocument pdf, XFont documentDefaultFont)

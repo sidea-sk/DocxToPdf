@@ -23,17 +23,23 @@ namespace Sidea.DocxToPdf.Tests
                 renderParagraphCharacter: true
                 );
 
-            var inputFileName = $"{_samplesFolder}/{docxSampleFileName}.docx";
-            var document = WordprocessingDocument.Open(inputFileName, false);
-            var pdfGenerator = new PdfGenerator();
-            var pdf = pdfGenerator.Generate(document, options);
-
             if (!Directory.Exists(_outputFolder))
             {
                 Directory.CreateDirectory(_outputFolder);
             }
 
-            pdf.Save($"{_outputFolder}/{docxSampleFileName}.pdf");
+            var outputFileName = $"{_outputFolder}/{docxSampleFileName}.pdf";
+            if (File.Exists(outputFileName))
+            {
+                File.Delete(outputFileName);
+            }
+
+            var inputFileName = $"{_samplesFolder}/{docxSampleFileName}.docx";
+            var document = WordprocessingDocument.Open(inputFileName, false);
+            var pdfGenerator = new PdfGenerator();
+            var pdf = pdfGenerator.Generate(document, options);
+
+            pdf.Save(outputFileName);
         }
     }
 }
