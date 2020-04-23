@@ -1,7 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
 using Sidea.DocxToPdf.Renderers.Core;
 
-namespace Sidea.DocxToPdf.Renderers.Documents
+namespace Sidea.DocxToPdf.Renderers.Bodies
 {
     internal class BodyRenderer : CompositeRenderer
     {

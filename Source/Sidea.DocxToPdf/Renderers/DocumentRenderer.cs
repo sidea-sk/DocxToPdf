@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
+using Sidea.DocxToPdf.Renderers.Bodies;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
-namespace Sidea.DocxToPdf.Renderers.Documents
+namespace Sidea.DocxToPdf.Renderers
 {
     internal class DocumentRenderer
     {
@@ -15,8 +14,6 @@ namespace Sidea.DocxToPdf.Renderers.Documents
         private readonly RenderingOptions _renderingOptions;
         private BodyRenderer _bodyRenderer;
 
-        private readonly RendererFactory _factory = new RendererFactory();
-        private readonly List<IRenderer> _renderers = new List<IRenderer>();
         private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
 
         public DocumentRenderer(WordprocessingDocument docx, RenderingOptions renderingOptions)

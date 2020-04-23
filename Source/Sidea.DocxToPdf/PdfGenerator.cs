@@ -2,8 +2,6 @@
 using DocumentFormat.OpenXml.Packaging;
 using PdfSharp.Pdf;
 using Sidea.DocxToPdf.Renderers;
-using Sidea.DocxToPdf.Renderers.Core;
-using Sidea.DocxToPdf.Renderers.Documents;
 
 namespace Sidea.DocxToPdf
 {
