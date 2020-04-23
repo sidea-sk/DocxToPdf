@@ -17,9 +17,9 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
             _translate = new XVector(area.X, area.Y);
         }
 
-        public double Width => AreaRectangle.Width;
+        public XUnit Width => AreaRectangle.Width;
 
-        public double Height => AreaRectangle.Height;
+        public XUnit Height => AreaRectangle.Height;
 
         public XFont AreaFont { get; }
 
@@ -55,10 +55,6 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         IRenderArea IRenderArea.PanLeftDown(XSize size) => this.PanLeftDownCore(size);
 
-        //IPrerenderArea IPrerenderArea.PanLeft(XUnit unit) => this.PanLeftCore(unit);
-
-        //IPrerenderArea IPrerenderArea.PanLeftDown(XSize size) => this.PanLeftDownCore(size);
-
         IPrerenderArea IPrerenderArea.Restrict(XUnit width) => this.RestricCore(width);
 
         IRenderArea IRenderArea.Restrict(XUnit width) => this.RestricCore(width);
@@ -81,9 +77,5 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
                  _graphics,
                  new XRect(AreaRectangle.X, AreaRectangle.Y, width, AreaRectangle.Height));
         }
-
-       
-
-        
     }
 }

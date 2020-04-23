@@ -23,13 +23,12 @@ namespace Sidea.DocxToPdf.Renderers.Headers
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-
-            return new XSize(0, 0);
+            return new XSize(prerenderArea.Width, XUnit.FromCentimeter(2.5));
         }
 
         protected override RenderingState RenderCore(IRenderArea renderArea)
         {
-            return RenderingState.DoneEmpty;
+            return RenderingState.Done(renderArea.Width, XUnit.FromCentimeter(2.5));
         }
     }
 }

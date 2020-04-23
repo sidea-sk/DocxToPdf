@@ -13,9 +13,9 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         public XFont AreaFont { get; }
 
-        public double Width => this.AreaRectangle.Width;
+        public XUnit Width => this.AreaRectangle.Width;
 
-        public double Height => this.AreaRectangle.Height;
+        public XUnit Height => this.AreaRectangle.Height;
 
         public XRect AreaRectangle { get; }
 

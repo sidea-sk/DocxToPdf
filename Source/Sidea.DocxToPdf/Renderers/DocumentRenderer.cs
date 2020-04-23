@@ -5,6 +5,7 @@ using PdfSharp.Pdf;
 using Sidea.DocxToPdf.Renderers.Bodies;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
+using Sidea.DocxToPdf.Renderers.Headers;
 
 namespace Sidea.DocxToPdf.Renderers
 {
@@ -12,6 +13,8 @@ namespace Sidea.DocxToPdf.Renderers
     {
         private readonly WordprocessingDocument _docx;
         private readonly RenderingOptions _renderingOptions;
+
+        private readonly List<HeaderRenderer> _headerRenderers = new List<HeaderRenderer>();
         private BodyRenderer _bodyRenderer;
 
         private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
@@ -35,6 +38,8 @@ namespace Sidea.DocxToPdf.Renderers
             var prerenderPage = this.CreateNewPagePrerenderArea(pdf, _documentFont);
             var prerenderArea = prerenderPage;
 
+            _headerRenderers.Clear();
+
             _bodyRenderer = new BodyRenderer(_docx.MainDocumentPart.Document.Body, _renderingOptions);
             _bodyRenderer.CalculateContentSize(prerenderArea);
 
@@ -43,7 +48,7 @@ namespace Sidea.DocxToPdf.Renderers
 
         private void RenderCore(PdfDocument pdf)
         {
-            var currentRenderingArea = this.CreateNewPageRenderingArea(pdf, _documentFont);
+            var currentRenderingArea = this.PrepareNewPageRenderingArea(pdf, _documentFont);
 
             while(_bodyRenderer.CurrentRenderingState.Status != RenderingStatus.Done)
             {
@@ -53,22 +58,28 @@ namespace Sidea.DocxToPdf.Renderers
 
                 if(_bodyRenderer.CurrentRenderingState.Status == RenderingStatus.ReachedEndOfArea)
                 {
-                    currentRenderingArea = this.CreateNewPageRenderingArea(pdf, _documentFont);
+                    currentRenderingArea = this.PrepareNewPageRenderingArea(pdf, _documentFont);
                 }
             }
         }
 
-        private IRenderArea CreateNewPageRenderingArea(PdfDocument pdf, XFont documentDefaultFont)
+        private IRenderArea PrepareNewPageRenderingArea(PdfDocument pdf, XFont documentDefaultFont)
         {
             var page = this.CreatePage(pdf);
             var graphics = XGraphics.FromPdfPage(page);
-
-            // render Header
-            // render Footer
             var margin = XUnit.FromCentimeter(2.5);
-            var contentArea = new XRect(margin, margin, page.Width - 2 * margin, page.Height - 2 * margin);
-            graphics.DrawRectangle(XPens.Orange, contentArea);
-            return new RenderArea(documentDefaultFont, graphics, contentArea);
+
+            var renderArea = new RenderArea(documentDefaultFont, graphics, new XRect(margin, 0, page.Width - 2 * margin, page.Height - margin));
+
+            var headerRenderer = new HeaderRenderer(_docx, _renderingOptions);
+            headerRenderer.CalculateContentSize(renderArea);
+            headerRenderer.Render(renderArea);
+            _headerRenderers.Add(headerRenderer);
+
+            IRenderArea bodyRenderArea = renderArea;
+            bodyRenderArea = bodyRenderArea.PanDown(headerRenderer.RenderedSize.Height);
+            graphics.DrawRectangle(XPens.Orange, bodyRenderArea.AreaRectangle);
+            return bodyRenderArea;
         }
 
         private IPrerenderArea CreateNewPagePrerenderArea(PdfDocument pdf, XFont documentDefaultFont)
