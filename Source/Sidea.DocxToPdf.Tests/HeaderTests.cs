@@ -10,15 +10,27 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
-        public void Header()
+        public void HelloWorld()
         {
-            this.Generate(nameof(Header));
+            this.Generate(nameof(HelloWorld));
         }
 
         [TestMethod]
-        public void HeaderXXL()
+        public void XXL()
         {
-            this.Generate(nameof(HeaderXXL));
+            this.Generate(nameof(XXL));
+        }
+
+        [TestMethod]
+        public void OddEven()
+        {
+            this.Generate(nameof(OddEven));
+        }
+
+        [TestMethod]
+        public void FirstEvenOddEvenOdd()
+        {
+            this.Generate(nameof(FirstEvenOddEvenOdd));
         }
     }
 }

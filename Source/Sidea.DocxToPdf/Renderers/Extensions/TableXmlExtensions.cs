@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Renderers
 {
     internal static class TableXmlExtensions
     {
-
         public static TableProperties Properties(this Table table)
         {
             return table.ChildElements.OfType<TableProperties>().Single();

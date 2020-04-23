@@ -93,13 +93,28 @@ namespace Sidea.DocxToPdf.Renderers
 
         private IHeaderRenderer CreateHeaderRenderer(int pageNumber)
         {
-            var headers = _docx.MainDocumentPart.HeaderParts.ToArray();
-            if(headers.Length == 0)
+            var header = _docx.MainDocumentPart.FindHeaderForPage(pageNumber);
+            if(header == null)
             {
                 return new NoHeaderRenderer();
             }
 
-            var header = _docx.MainDocumentPart.HeaderParts.First().Header;
+            //var headerParts = _docx.MainDocumentPart.HeaderParts.ToArray();
+            //if(headerParts.Length == 0)
+            //{
+            //    return new NoHeaderRenderer();
+            //}
+
+            //// string rId = _docx.MainDocumentPart.GetIdOfPart(headerPart);
+            //var evenOdd = _docx.MainDocumentPart.DocumentSettingsPart.Settings.UseEvenOdHeaders()
+            //    ? 2
+            //    : 1;
+
+            //var header = evenOdd == 1 || headerParts.Length < 2
+            //    ? headerParts[0]
+            //    : headerParts[pageNumber % evenOdd];
+
+                // _docx.MainDocumentPart.HeaderParts.First().Header;
             return new HeaderRenderer(header, pageNumber, _renderingOptions);
         }
 

@@ -20,5 +20,10 @@ namespace Sidea.DocxToPdf.Renderers
         {
             return xmlElement.ChildElements.OfType<T>();
         }
+
+        public static bool IsOn(this OnOffType onOffType, bool ifNull = false)
+        {
+            return onOffType?.Val ?? false;
+        }
     }
 }
