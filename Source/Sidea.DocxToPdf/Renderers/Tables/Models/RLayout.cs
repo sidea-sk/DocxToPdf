@@ -42,23 +42,23 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             return new XSize(totalWidth, _rowHeights.Sum());
         }
 
-        protected override sealed RenderingState RenderCore(IRenderArea renderArea)
+        protected override sealed RenderResult RenderCore(IRenderArea renderArea)
         {
             this.RenderCells(renderArea);
 
             var unfinished = this.GetCellsToRenderer();
             if(unfinished.Any())
             {
-                return RenderingState.EndOfRenderArea(renderArea.AreaRectangle);
+                return RenderResult.EndOfRenderArea(renderArea.AreaRectangle);
             }
 
             var totalHeight = _rowHeights.Sum();
-            return RenderingState.Done(new XRect(new XSize(this.PrecalulatedSize.Width, totalHeight - this.RenderedSize.Height)));
+            return RenderResult.Done(new XRect(new XSize(this.PrecalulatedSize.Width, totalHeight - this.RenderedSize.Height)));
         }
 
         private IEnumerable<RCell> GetCellsToRenderer()
         {
-            return _orderedCells.Where(c => c.CurrentRenderingState.Status.IsNotFinished());
+            return _orderedCells.Where(c => c.RenderResult.Status.IsNotFinished());
         }
 
         private void RenderCells(IRenderArea renderArea)
@@ -176,7 +176,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         {
             var renderedPartOfCellOffset = onCellRender
                 ? cell.RenderedSize.Height
-                : cell.RenderedSize.Height - cell.CurrentRenderingState.RenderedSize.Height;
+                : cell.RenderedSize.Height - cell.RenderResult.RenderedSize.Height;
 
             var leftOffset = _grid.CalculateLeftOffset(cell.GridPosition);
             var topOffset = _rowHeights
@@ -225,7 +225,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
         private void JustifyRowHeights(RCell cell)
         {
-            if(cell.CurrentRenderingState.Status != RenderingStatus.Done)
+            if(cell.RenderResult.Status != RenderingStatus.Done)
             {
                 return;
             }

@@ -24,7 +24,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
             return this.CalculateChildrenSize(prerenderArea);
         }
 
-        protected override RenderingState RenderCore(IRenderArea renderArea)
+        protected override RenderResult RenderCore(IRenderArea renderArea)
         {
             return this.RenderChildren(renderArea);
         }
@@ -45,27 +45,27 @@ namespace Sidea.DocxToPdf.Renderers.Core
             return size;
         }
 
-        protected RenderingState RenderChildren(IRenderArea renderArea)
+        protected RenderResult RenderChildren(IRenderArea renderArea)
         {
             var renderedHeight = XUnit.Zero;
             var status = RenderingStatus.Done;
             var currentRenderArea = renderArea;
 
-            foreach (var renderer in _renderers.Where(r => r.CurrentRenderingState.Status != RenderingStatus.Done))
+            foreach (var renderer in _renderers.Where(r => r.RenderResult.Status != RenderingStatus.Done))
             {
                 renderer.Render(currentRenderArea);
-                status = renderer.CurrentRenderingState.Status;
-                renderedHeight += renderer.CurrentRenderingState.RenderedHeight;
+                status = renderer.RenderResult.Status;
+                renderedHeight += renderer.RenderResult.RenderedHeight;
 
                 if (status == RenderingStatus.ReachedEndOfArea)
                 {
                     break;
                 }
 
-                currentRenderArea = currentRenderArea.PanDown(renderer.CurrentRenderingState.RenderedHeight);
+                currentRenderArea = currentRenderArea.PanDown(renderer.RenderResult.RenderedHeight);
             }
 
-            return RenderingState.FromStatus(status, renderArea.Width, renderedHeight);
+            return RenderResult.FromStatus(status, renderArea.Width, renderedHeight);
         }
     }
 }
