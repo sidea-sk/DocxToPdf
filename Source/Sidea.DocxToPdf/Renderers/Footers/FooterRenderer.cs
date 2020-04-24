@@ -27,14 +27,14 @@ namespace Sidea.DocxToPdf.Renderers.Footers
             return contentSize.ExpandToMax(new XSize(prerenderArea.Width, h));
         }
 
-        protected override RenderingState RenderCore(IRenderArea renderArea)
+        protected override RenderResult RenderCore(IRenderArea renderArea)
         {
             var footerArea = renderArea
                 .PanDown(renderArea.Height - this.PrecalulatedSize.Height);
 
             // child rendering state ignored. The footer has no chance to extend its height during the rendering
             base.RenderCore(footerArea);
-            return RenderingState.Done(renderArea.Width, this.PrecalulatedSize.Height);
+            return RenderResult.Done(renderArea.Width, this.PrecalulatedSize.Height);
         }
     }
 }

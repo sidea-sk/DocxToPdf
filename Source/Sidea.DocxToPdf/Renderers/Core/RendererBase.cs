@@ -9,28 +9,28 @@ namespace Sidea.DocxToPdf.Renderers.Core
 
         public XSize RenderedSize { get; private set; } = new XSize(0, 0);
 
-        public RenderingState CurrentRenderingState { get; private set; } = RenderingState.Unprepared;
+        public RenderResult RenderResult { get; private set; } = RenderResult.Unprepared;
 
         public void CalculateContentSize(IPrerenderArea prerenderArea)
         {
             this.PrecalulatedSize = this.CalculateContentSizeCore(prerenderArea);
-            this.CurrentRenderingState = RenderingState.NotStarted;
+            this.RenderResult = RenderResult.NotStarted;
         }
 
         public void Render(IRenderArea renderArea)
         {
-            if(this.CurrentRenderingState.Status == RenderingStatus.Unprepared)
+            if(this.RenderResult.Status == RenderingStatus.Unprepared)
             {
                 throw new RendererException("Cannot render content - renderer is not prepared!");
             }
 
-            this.CurrentRenderingState = this.RenderCore(renderArea);
-            this.RenderedSize = UpdateRenderedSize(this.RenderedSize, this.CurrentRenderingState.RenderedSize);
+            this.RenderResult = this.RenderCore(renderArea);
+            this.RenderedSize = UpdateRenderedSize(this.RenderedSize, this.RenderResult.RenderedSize);
         }
 
         protected abstract XSize CalculateContentSizeCore(IPrerenderArea prerenderArea);
 
-        protected abstract RenderingState RenderCore(IRenderArea renderArea);
+        protected abstract RenderResult RenderCore(IRenderArea renderArea);
 
         private static XSize UpdateRenderedSize(XSize currentRenderedSize, XSize renderedSize)
         {

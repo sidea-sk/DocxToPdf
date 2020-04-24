@@ -19,9 +19,9 @@ namespace Sidea.DocxToPdf.Renderers.Headers
             return new XSize(prerenderArea.Width, _topMargin);
         }
 
-        protected override RenderingState RenderCore(IRenderArea renderArea)
+        protected override RenderResult RenderCore(IRenderArea renderArea)
         {
-            return RenderingState.Done(renderArea.Width, _topMargin);
+            return RenderResult.Done(renderArea.Width, _topMargin);
         }
     }
 }

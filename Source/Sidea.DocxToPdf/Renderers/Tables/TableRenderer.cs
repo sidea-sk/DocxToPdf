@@ -36,10 +36,10 @@ namespace Sidea.DocxToPdf.Renderers.Tables
             return _layout.PrecalulatedSize;
         }
 
-        protected override sealed RenderingState RenderCore(IRenderArea renderArea)
+        protected override sealed RenderResult RenderCore(IRenderArea renderArea)
         {
             _layout.Render(renderArea);
-            return _layout.CurrentRenderingState;
+            return _layout.RenderResult;
         }
     }
 }

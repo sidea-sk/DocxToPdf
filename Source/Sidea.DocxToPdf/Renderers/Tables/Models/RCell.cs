@@ -54,11 +54,11 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             return size;
         }
 
-        protected override sealed RenderingState RenderCore(IRenderArea renderArea)
+        protected override sealed RenderResult RenderCore(IRenderArea renderArea)
         {
             if(this.GridPosition.IsRowMergedCell)
             {
-                return RenderingState.DoneEmpty;
+                return RenderResult.DoneEmpty;
             }
 
             var cellRenderArea = renderArea
@@ -69,11 +69,11 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             foreach (var renderer in _childRenderers)
             {
                 renderer.Render(cellRenderArea);
-                var renderingState = renderer.CurrentRenderingState;
+                var renderingState = renderer.RenderResult;
                 renderedHeight += renderingState.RenderedSize.Height;
                 if(renderingState.Status == RenderingStatus.ReachedEndOfArea)
                 {
-                    return RenderingState.EndOfRenderArea(renderArea.AreaRectangle);
+                    return RenderResult.EndOfRenderArea(renderArea.AreaRectangle);
                 }
 
                 cellRenderArea = cellRenderArea
@@ -82,7 +82,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
             renderedHeight += _padding.Bottom;
 
-            return RenderingState.Done(_outerWidth, renderedHeight);
+            return RenderResult.Done(_outerWidth, renderedHeight);
         }
     }
 }

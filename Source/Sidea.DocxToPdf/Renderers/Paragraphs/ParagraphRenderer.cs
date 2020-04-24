@@ -23,11 +23,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
             _renderingOptions = renderingOptions;
         }
 
-        protected override sealed RenderingState RenderCore(IRenderArea renderArea)
+        protected override sealed RenderResult RenderCore(IRenderArea renderArea)
         {
             if(_remainingLines.Count == 0)
             {
-                return RenderingState.DoneEmpty;
+                return RenderResult.DoneEmpty;
             }
 
             var availableArea = renderArea;
@@ -40,7 +40,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
                 var line = _remainingLines[0];
                 if (aggregatedHeight + line.Height > renderArea.Height)
                 {
-                    return RenderingState.EndOfRenderArea(renderArea.Width, aggregatedHeight);
+                    return RenderResult.EndOfRenderArea(renderArea.Width, aggregatedHeight);
                 }
 
                 _remainingLines.RemoveAt(0);
@@ -56,7 +56,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
                 availableArea.DrawText("¶", renderArea.AreaFont, XBrushes.Black, new XPoint(lastLineEnd, y));
             }
 
-            return RenderingState.Done(_width, aggregatedHeight);
+            return RenderResult.Done(_width, aggregatedHeight);
         }
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea renderArea)

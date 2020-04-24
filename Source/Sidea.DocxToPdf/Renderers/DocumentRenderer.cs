@@ -52,11 +52,11 @@ namespace Sidea.DocxToPdf.Renderers
         {
             var currentRenderingArea = this.PrepareNewPageRenderingArea(pdf, _documentFont);
 
-            while(_bodyRenderer.CurrentRenderingState.Status != RenderingStatus.Done)
+            while(_bodyRenderer.RenderResult.Status != RenderingStatus.Done)
             {
                 _bodyRenderer.Render(currentRenderingArea);
 
-                if(_bodyRenderer.CurrentRenderingState.Status == RenderingStatus.ReachedEndOfArea)
+                if(_bodyRenderer.RenderResult.Status == RenderingStatus.ReachedEndOfArea)
                 {
                     currentRenderingArea = this.PrepareNewPageRenderingArea(pdf, _documentFont);
                 }

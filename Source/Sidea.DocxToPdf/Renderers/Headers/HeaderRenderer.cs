@@ -27,7 +27,7 @@ namespace Sidea.DocxToPdf.Renderers.Headers
             return contentSize.ExpandToMax(new XSize(prerenderArea.Width, _topMargin));
         }
 
-        protected override RenderingState RenderCore(IRenderArea renderArea)
+        protected override RenderResult RenderCore(IRenderArea renderArea)
         {
             var headerContentArea = renderArea
                 .PanDown(_toHeaderMargin);
@@ -39,7 +39,7 @@ namespace Sidea.DocxToPdf.Renderers.Headers
             var size = state.RenderedSize
                 .ExpandToMax(new XSize(renderArea.Width, t));
 
-            return RenderingState.FromStatus(state.Status, size);
+            return RenderResult.FromStatus(state.Status, size);
         }
     }
 }

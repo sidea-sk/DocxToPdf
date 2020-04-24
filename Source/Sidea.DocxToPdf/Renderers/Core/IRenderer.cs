@@ -22,7 +22,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
         /// The result of last rendering.
         /// Its's used to signalize whether the rendering has reached the end of rendering area and needs more.
         /// </summary>
-        RenderingState CurrentRenderingState { get; }
+        RenderResult RenderResult { get; }
 
         void CalculateContentSize(IPrerenderArea prerenderArea);
 
