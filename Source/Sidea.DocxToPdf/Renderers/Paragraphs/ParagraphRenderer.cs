@@ -15,12 +15,38 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
         private readonly RenderingOptions _renderingOptions;
         private XUnit _width = XUnit.Zero;
 
+        private List<RLineElement> _elements = null;
         private List<RLine> _remainingLines = null;
 
         public ParagraphRenderer(Paragraph paragraph, RenderingOptions renderingOptions)
         {
             _paragraph = paragraph;
             _renderingOptions = renderingOptions;
+        }
+
+        protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
+        {
+            this.PrepareLineElements(prerenderArea.AreaFont);
+            this.PrepareRemainingLines(prerenderArea);
+
+            if (_remainingLines.Count == 0)
+            {
+                return new XSize(0, 0);
+            }
+
+            _width = _remainingLines
+                .Select(l => (double)l.Width)
+                .Max();
+
+            var height = _remainingLines
+                .Select(l => l.Height)
+                .Sum();
+
+            var width = _remainingLines
+                .Select(l => (double)l.Width)
+                .Max();
+
+            return new XSize(width, height);
         }
 
         protected override sealed RenderResult RenderCore(IRenderArea renderArea)
@@ -59,34 +85,17 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
             return RenderResult.Done(_width, aggregatedHeight);
         }
 
-        protected override sealed XSize CalculateContentSizeCore(IPrerenderArea renderArea)
-        {
-            this.PrepareRemainingLines(renderArea);
-
-            if (_remainingLines.Count == 0)
-            {
-                return new XSize(0, 0);
-            }
-
-            _width = _remainingLines
-                .Select(l => (double)l.Width)
-                .Max();
-
-            var height = _remainingLines
-                .Select(l => l.Height)
-                .Sum();
-
-            var width = _remainingLines
-                .Select(l => (double)l.Width)
-                .Max();
-
-            return new XSize(width, height);
-        }
-
         private void PrepareRemainingLines(IPrerenderArea renderArea)
         {
             _remainingLines = _paragraph
                 .ToRenderingLines(renderArea)
+                .ToList();
+        }
+
+        private void PrepareLineElements(XFont areaFont)
+        {
+            _elements = _paragraph
+                .ToLineElements(areaFont)
                 .ToList();
         }
     }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Sidea.DocxToPdf.Tests
 {
@@ -16,6 +13,24 @@ namespace Sidea.DocxToPdf.Tests
         public void Image()
         {
             this.Generate(nameof(Image));
+        }
+
+        [TestMethod]
+        public void ImageTextWrapInLine()
+        {
+            this.Generate(nameof(ImageTextWrapInLine));
+        }
+
+        [TestMethod]
+        public void ImageTextWrapping()
+        {
+            this.Generate(nameof(ImageTextWrapInLine));
+        }
+
+        [TestMethod]
+        public void ImageResize()
+        {
+            this.Generate(nameof(ImageResize));
         }
     }
 }

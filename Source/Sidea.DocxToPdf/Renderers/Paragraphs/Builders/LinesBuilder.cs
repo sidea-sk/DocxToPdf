@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
@@ -12,6 +13,16 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 {
     internal static class LinesBuilder
     {
+        public static IEnumerable<RLineElement> ToLineElements(this Paragraph paragraph, XFont defaultFont)
+        {
+            var le = paragraph
+                .ChildsOfType<Run>()
+                .SelectMany(r => r.ToLineElements(defaultFont))
+                .ToArray();
+
+            return le;
+        }
+
         public static IEnumerable<RLine> ToRenderingLines(this Paragraph paragraph, IRenderingAreaBase renderArea)
         {
             var lineAlignment = paragraph.GetLinesAlignment();
@@ -27,6 +38,29 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return lines.Length == 0
                 ? new[] { new RLine(new RWord[0], lineAlignment, renderArea.AreaFont.GetHeight()) }
                 : lines;
+        }
+
+        private static IEnumerable<RLineElement> ToLineElements(this Run run, XFont defaultFont)
+        {
+            XFont font = run.RunProperties.CreateRunFont(defaultFont);
+            XBrush brush = run.RunProperties?.Color.ToXBrush() ?? XBrushes.Black;
+
+            var xtexts = run
+                .ChildElements
+                .Where(c => c is Text || c is TabChar || c is Drawing)
+                .SelectMany(c =>
+                {
+                    return c switch
+                    {
+                        Text t => t.SplitToWordsX(font, brush).Cast<RLineElement>(),
+                        TabChar t => new RLineElement[] { new RText("    ", font, brush) },
+                        Drawing d => new RLineElement[] { d.ToRDrawing() },
+                        _ => throw new Exception("unprocessed child")
+                    };
+                })
+                .ToArray();
+
+            return xtexts;
         }
 
         private static IEnumerable<RWord> ToWords(this Run run, XFont defaultFont, ITextMeasuringService textMeasuringService)
@@ -56,8 +90,19 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             var xtexts = new List<RWord>();
             var xText = text
                 .InnerText
-                .SplitToLinesWordsWhitespaces()
+                .SplitToLinesOrWordsOrWhitespaces()
                 .Select(t => new RWord(t, font, brush, textMeasuringService))
+                .ToArray();
+
+            return xText;
+        }
+
+        private static IEnumerable<RText> SplitToWordsX(this Text text, XFont font, XBrush brush)
+        {
+            var xText = text
+                .InnerText
+                .SplitToLinesOrWordsOrWhitespaces()
+                .Select(t => new RText(t, font, brush))
                 .ToArray();
 
             return xText;
@@ -140,7 +185,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return stack;
         }
 
-        private static IEnumerable<string> SplitToLinesWordsWhitespaces(this string text)
+        private static IEnumerable<string> SplitToLinesOrWordsOrWhitespaces(this string text)
         {
             var lines = text.SplitByNewLines();
             var result = lines
@@ -224,6 +269,35 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 JustificationValues.Both => LineAlignment.Justify,
                 _ => LineAlignment.Left,
             };
+        }
+
+        private static RDrawing ToRDrawing(this Drawing drawing)
+        {
+            var rdraw = drawing.Inline?.FromInline() ?? drawing.Anchor.FromAnchor();
+            return rdraw;
+        }
+
+        private static RDrawing FromInline(this Inline inline)
+        {
+
+            var size = inline.Extent.Size();
+            return new RDrawing(
+                inline.DocProperties.Id,
+                inline.DocProperties.Name,
+                inline.Graphic.GraphicData.Uri,
+                size);
+        }
+
+        private static RDrawing FromAnchor(this Anchor anchor)
+        {
+            var size = anchor.Extent.Size();
+            var docProperties = anchor.ChildsOfType<DocProperties>().Single();
+            var graphic = anchor.ChildsOfType<DocumentFormat.OpenXml.Drawing.Graphic>().Single();
+
+            return new RDrawing(
+                docProperties.Id,
+                docProperties.Name,
+                graphic.GraphicData.Uri, size);
         }
     }
 }
