@@ -265,11 +265,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             var size = inline.Extent.Size();
             var blipElement = inline.Descendants<DocumentFormat.OpenXml.Drawing.Blip>().First();
 
-            return new RDrawing(
-                blipElement.Embed.Value,
-                inline.DocProperties.Name,
-                inline.Graphic.GraphicData.Uri,
-                size);
+            return new RDrawing(blipElement.Embed.Value, size);
         }
 
         private static RDrawing FromAnchor(this Anchor anchor)
@@ -277,13 +273,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             var size = anchor.Extent.Size();
             var blipElement = anchor.Descendants<DocumentFormat.OpenXml.Drawing.Blip>().First();
 
-            var docProperties = anchor.ChildsOfType<DocProperties>().Single();
-            var graphic = anchor.ChildsOfType<DocumentFormat.OpenXml.Drawing.Graphic>().Single();
-
-            return new RDrawing(
-                blipElement.Embed.Value,
-                docProperties.Name,
-                graphic.GraphicData.Uri, size);
+            return new RDrawing(blipElement.Embed.Value, size);
         }
     }
 }
