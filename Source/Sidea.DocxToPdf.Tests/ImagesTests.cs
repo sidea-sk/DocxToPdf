@@ -24,7 +24,7 @@ namespace Sidea.DocxToPdf.Tests
         [TestMethod]
         public void ImageTextWrapping()
         {
-            this.Generate(nameof(ImageTextWrapInLine));
+            this.Generate(nameof(ImageTextWrapping));
         }
 
         [TestMethod]
