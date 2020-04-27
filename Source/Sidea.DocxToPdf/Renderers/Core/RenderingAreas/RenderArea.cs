@@ -20,12 +20,13 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
             IImageAccessor imageAccessor,
             RenderingOptions renderingOptions)
         {
-            AreaFont = font;
             _graphics = graphics;
-            AreaRectangle = area;
-            _imageAccessor = imageAccessor;
-            this.Options = renderingOptions;
             _translate = new XVector(area.X, area.Y);
+            _imageAccessor = imageAccessor;
+
+            this.AreaFont = font;
+            this.AreaRectangle = area;
+            this.Options = renderingOptions;
         }
 
         public XUnit Width => AreaRectangle.Width;
