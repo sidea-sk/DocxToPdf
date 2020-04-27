@@ -25,21 +25,13 @@ namespace Sidea.DocxToPdf.Renderers.Core
             }
 
             this.RenderResult = this.RenderCore(renderArea);
-            this.RenderedSize = UpdateRenderedSize(this.RenderedSize, this.RenderResult.RenderedSize);
+            this.RenderedSize = this.RenderedSize
+                .ExpandWidthIfBigger(this.RenderResult.RenderedSize.Width)
+                .ExpandHeight(this.RenderResult.RenderedSize.Height);
         }
 
         protected abstract XSize CalculateContentSizeCore(IPrerenderArea prerenderArea);
 
         protected abstract RenderResult RenderCore(IRenderArea renderArea);
-
-        private static XSize UpdateRenderedSize(XSize currentRenderedSize, XSize renderedSize)
-        {
-            if (renderedSize.Width > currentRenderedSize.Width)
-            {
-                currentRenderedSize = new XSize(renderedSize.Width, currentRenderedSize.Height);
-            }
-
-            return currentRenderedSize.ExpandHeight(renderedSize.Height);
-        }
     }
 }

@@ -39,7 +39,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                     defaultFont.PdfOptions);
         }
 
-        public static double ToXFontSize(this RunProperties properties, XFont defaultFont)
+        public static XUnit ToXFontSize(this RunProperties properties, XFont defaultFont)
         {
             if (properties.FontSize == null)
             {
@@ -47,7 +47,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             }
 
             var d = Convert.ToInt32(properties.FontSize.Val.Value);
-            return d / 2d;
+            return d.HPToPoint();
         }
 
         public static XFontStyle ToXFontStyle(this RunProperties properties)
@@ -74,6 +74,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             }
 
             return style;
+        }
+
+        public static XBrush ToBrush(this RunProperties properties)
+        {
+            return properties?.Color.ToXBrush() ?? XBrushes.Black;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
                 Table t => new TableRenderer(t, renderingOptions),
                 Header h => new UnknownElementRenderer(),
                 Footer f => new UnknownElementRenderer(),
-                Paragraph p => new ParagraphRenderer(p, renderingOptions),
+                Paragraph p => new ParagraphRenderer(p),
                 Drawing d => new UnknownElementRenderer(),
                 _ => new UnknownElementRenderer()
             };

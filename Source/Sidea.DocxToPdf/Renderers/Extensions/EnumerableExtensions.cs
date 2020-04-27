@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Sidea.DocxToPdf.Renderers
 {
-    internal static class ArrayExtensions
+    internal static class EnumerableExtensions
     {
         public static IEnumerable<(T value, int index)> SelectWithIndeces<T>(this IEnumerable<T> source, params int[] indeces)
         {
@@ -25,6 +25,15 @@ namespace Sidea.DocxToPdf.Renderers
                 copy[v.index] = v.value;
             }
             return copy;
+        }
+
+        public static Stack<T> ToStack<T>(this IEnumerable<T> source, bool reverseOrder = true)
+        {
+            var content = reverseOrder 
+                ? source.Reverse()
+                : source;
+
+            return new Stack<T>(content);
         }
     }
 }

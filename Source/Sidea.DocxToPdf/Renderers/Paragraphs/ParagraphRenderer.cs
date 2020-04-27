@@ -12,82 +12,52 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
     internal class ParagraphRenderer : RendererBase
     {
         private readonly Paragraph _paragraph;
-        private readonly RenderingOptions _renderingOptions;
-        private XUnit _width = XUnit.Zero;
+        private List<RLine> _lines = null;
 
-        private List<RLine> _remainingLines = null;
-
-        public ParagraphRenderer(Paragraph paragraph, RenderingOptions renderingOptions)
+        public ParagraphRenderer(Paragraph paragraph)
         {
             _paragraph = paragraph;
-            _renderingOptions = renderingOptions;
         }
 
-        protected override sealed RenderResult RenderCore(IRenderArea renderArea)
+        protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            if(_remainingLines.Count == 0)
-            {
-                return RenderResult.DoneEmpty;
-            }
+            _lines = _paragraph
+                .CreateRenderingLines(prerenderArea)
+                .ToList();
 
-            var availableArea = renderArea;
-            var aggregatedHeight = 0d;
-
-            var lastLineEnd = XUnit.Zero;
-
-            while (_remainingLines.Count > 0)
-            {
-                var line = _remainingLines[0];
-                if (aggregatedHeight + line.Height > renderArea.Height)
-                {
-                    return RenderResult.EndOfRenderArea(renderArea.Width, aggregatedHeight);
-                }
-
-                _remainingLines.RemoveAt(0);
-                var lineEnd = line.Render(availableArea.PanLeftDown(new XSize(0, aggregatedHeight)));
-                lastLineEnd = lineEnd.X;
-                aggregatedHeight += line.Height;
-            }
-
-            if (_renderingOptions.RenderParagraphCharacter && _remainingLines.Count == 0)
-            {
-                // TODO: use some property of Font to position paragraph corectly
-                var y = aggregatedHeight - renderArea.AreaFont.Height / 4d;
-                availableArea.DrawText("¶", renderArea.AreaFont, XBrushes.Black, new XPoint(lastLineEnd, y));
-            }
-
-            return RenderResult.Done(_width, aggregatedHeight);
-        }
-
-        protected override sealed XSize CalculateContentSizeCore(IPrerenderArea renderArea)
-        {
-            this.PrepareRemainingLines(renderArea);
-
-            if (_remainingLines.Count == 0)
-            {
-                return new XSize(0, 0);
-            }
-
-            _width = _remainingLines
-                .Select(l => (double)l.Width)
+            var width = _lines
+                .Select(l => (double)l.PrecalulatedSize.Width)
                 .Max();
 
-            var height = _remainingLines
-                .Select(l => l.Height)
+            var height = _lines
+                .Select(l => l.PrecalulatedSize.Height)
                 .Sum();
-
-            var width = _remainingLines
-                .Select(l => (double)l.Width)
-                .Max();
 
             return new XSize(width, height);
         }
 
-        private void PrepareRemainingLines(IPrerenderArea renderArea)
+        protected override sealed RenderResult RenderCore(IRenderArea renderArea)
         {
-            _remainingLines = _paragraph
-                .ToRenderingLines(renderArea)
-                .ToList();
+            var renderedSize = new XSize(0, 0);
+
+            while (_lines.Count > 0)
+            {
+                if(_lines[0].PrecalulatedSize.Height + renderedSize.Height > renderArea.Height)
+                {
+                    return RenderResult.EndOfRenderArea(renderedSize);
+                }
+
+                var line = _lines[0];
+                _lines.RemoveAt(0);
+
+                line.Render(renderArea.PanDown(renderedSize.Height));
+
+                renderedSize = renderedSize
+                    .ExpandWidthIfBigger(line.RenderResult.RenderedWidth)
+                    .ExpandHeight(line.RenderResult.RenderedHeight);
+            }
+
+            return RenderResult.Done(renderedSize);
         }
     }
 }

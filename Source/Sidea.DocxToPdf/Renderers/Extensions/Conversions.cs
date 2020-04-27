@@ -7,6 +7,23 @@ namespace Sidea.DocxToPdf.Renderers
 {
     internal static class Conversions
     {
+        private const double PCT = 50;
+        private const double DXA = 20;
+        private const double IN = 72;
+        private const double CM = IN * 2.54d;
+        private const double EMU = 914400;
+
+        public static XUnit EmuToXUnit(this Int64Value value)
+        {
+            return value / EMU * IN ;
+        }
+
+        public static XUnit EmuToXUnit(this UInt32Value value)
+        {
+            // 914400 / 72 / 20
+            return XUnit.Zero;
+        }
+
         public static XUnit ToXUnit(this UInt32Value value)
         {
             if (!value.HasValue)
@@ -14,7 +31,7 @@ namespace Sidea.DocxToPdf.Renderers
                 return XUnit.Zero;
             }
 
-            return value.Value.TwentiethToUnit();
+            return value.Value.DxaToPoint();
         }
 
         public static XUnit ToXUnit(this Int32Value value)
@@ -24,7 +41,7 @@ namespace Sidea.DocxToPdf.Renderers
                 return XUnit.Zero;
             }
 
-            return value.Value.TwentiethToUnit();
+            return value.Value.DxaToPoint();
         }
 
         public static XUnit ToXUnit(this StringValue value)
@@ -55,12 +72,12 @@ namespace Sidea.DocxToPdf.Renderers
             {
                 case TableWidthUnitValues.Nil:
                     break;
-                case TableWidthUnitValues.Pct: // Width in Fiftieths of a Percent
+                case TableWidthUnitValues.Pct:
                     var p = Convert.ToInt32(width.Width.Value);
-                    return outOf * p / 5000d; // (/ 50 / 100)
-                case TableWidthUnitValues.Dxa: // Width in Twentieths of a Point.
+                    return outOf * p / PCT / 100;
+                case TableWidthUnitValues.Dxa:
                     var v = Convert.ToInt32(width.Width.Value);
-                    return XUnit.FromPoint(v / 20d);
+                    return v.DxaToPoint();
                 case TableWidthUnitValues.Auto:
                     break;
                 default:
@@ -81,14 +98,23 @@ namespace Sidea.DocxToPdf.Renderers
             return brush;
         }
 
-        private static XUnit TwentiethToUnit(this uint value)
+        public static XUnit DxaToPoint(this uint value)
         {
-            return value / 20d;
+            return value / DXA;
         }
 
-        private static XUnit TwentiethToUnit(this int value)
+        public static XUnit DxaToPoint(this int value)
         {
-            return value / 20d;
+            return value / DXA;
+        }
+
+        /// <summary>
+        /// HalfPoint to Point
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static XUnit HPToPoint(this int value) {
+            return value / 2d;
         }
 
         //private static XUnit TwentiethToUnit(this double value)
