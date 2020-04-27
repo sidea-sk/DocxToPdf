@@ -1,9 +1,10 @@
 ﻿using PdfSharp.Drawing;
-using Sidea.DocxToPdf.Renderers.Core.Serices;
+using Sidea.DocxToPdf.Renderers.Core.Services;
 
 namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 {
-    internal interface IRenderingAreaBase : ITextMeasuringService
+    internal interface IRenderingAreaBase :
+        ITextMeasuringService
     {
         XFont AreaFont { get; }
         XUnit Width { get; }

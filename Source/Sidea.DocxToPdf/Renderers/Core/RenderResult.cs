@@ -28,11 +28,17 @@ namespace Sidea.DocxToPdf.Renderers.Core
         public static RenderResult EndOfRenderArea(XUnit width, XUnit height)
             => FromStatus(RenderingStatus.ReachedEndOfArea, width, height);
 
+        public static RenderResult EndOfRenderArea(XSize size)
+            => FromStatus(RenderingStatus.ReachedEndOfArea, size);
+
         public static RenderResult EndOfRenderArea(XRect renderedArea)
             => FromStatus(RenderingStatus.ReachedEndOfArea, renderedArea.Size);
 
-        public static RenderResult Done(double width, double height)
+        public static RenderResult Done(XUnit width, XUnit height)
             => FromStatus(RenderingStatus.Done, width, height);
+
+        public static RenderResult Done(XSize size)
+            => FromStatus(RenderingStatus.Done, size);
 
         public static RenderResult Done(XRect renderedArea)
             => FromStatus(RenderingStatus.Done, renderedArea.Size);

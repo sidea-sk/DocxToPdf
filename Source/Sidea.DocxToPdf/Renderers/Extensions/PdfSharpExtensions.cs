@@ -26,6 +26,13 @@ namespace Sidea.DocxToPdf.Renderers
         public static XSize ExpandWidth(this XSize size, XUnit width)
          => size.Expand(width, 0);
 
+        public static XSize ExpandWidthIfBigger(this XSize size, XUnit width)
+        {
+            return size.Width >= width
+                ? size
+                : new XSize(width, size.Height);
+        }
+
         public static XSize ExpandToMax(this XSize size, XSize other)
         {
             return new XSize(Math.Max(size.Width, other.Width), Math.Max(size.Height, other.Height));

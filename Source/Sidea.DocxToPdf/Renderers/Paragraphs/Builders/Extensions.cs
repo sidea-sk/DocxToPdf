@@ -75,5 +75,10 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 
             return style;
         }
+
+        public static XBrush ToBrush(this RunProperties properties)
+        {
+            return properties?.Color.ToXBrush() ?? XBrushes.Black;
+        }
     }
 }

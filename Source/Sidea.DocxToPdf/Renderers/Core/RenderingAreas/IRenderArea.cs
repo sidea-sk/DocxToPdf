@@ -4,6 +4,8 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 {
     internal interface IRenderArea : IRenderingAreaBase
     {
+        RenderingOptions Options { get; }
+
         void DrawText(string text, XFont font, XBrush brush, XPoint position);
         void DrawText(string text, XFont font, XBrush brush, XRect layout, XStringFormat stringFormat);
 
@@ -16,6 +18,7 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         IRenderArea PanLeftDown(XUnit width, XUnit height);
         IRenderArea PanLeftDown(XSize size);
         IRenderArea Restrict(XUnit width);
+        IRenderArea Restrict(XUnit width, XUnit height);
         IRenderArea RestrictFromBottom(XUnit height);
     }
 }

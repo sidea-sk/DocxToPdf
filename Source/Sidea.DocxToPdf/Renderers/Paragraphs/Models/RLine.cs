@@ -1,125 +1,136 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using PdfSharp.Drawing;
+using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 {
-    internal class RLine
+    internal class RLine : RendererBase
     {
-        private readonly RWord[] _words;
         private readonly LineAlignment _alignment;
-        private readonly XSize _size;
+        private readonly bool _isLastLineOfParagraph;
+        private readonly RLineElement[] _elements;
+        private XUnit[] _offsets;
 
         public RLine(
-            IEnumerable<RWord> words,
+            IEnumerable<RLineElement> elements,
             LineAlignment alignment,
-            XUnit defaultHeight)
+            bool isLastLineOfParagraph)
         {
-            _words = words
-                .SkipWhile(w => w.IsSpace)
+            _elements = elements
+                .SkipWhile(e => e.OmitableAtLineBegin)
                 .Reverse()
-                .SkipWhile(w => w.IsSpace)
+                .SkipWhile(e => e.OmitableAtLineEnd)
                 .Reverse()
+                .ToArray();
+
+            _offsets = Enumerable
+                .Range(0, _elements.Length)
+                .Select(_ => XUnit.Zero)
                 .ToArray();
 
             _alignment = alignment;
-
-            _size = _words.CalculateBoundingAreaSize();
-            if(_size.Height == 0)
-            {
-                _size = new XSize(0, defaultHeight);
-            }
+            _isLastLineOfParagraph = isLastLineOfParagraph;
         }
 
-        public XUnit Width => _size.Width;
-        public XUnit Height => _size.Height;
-
-        public XPoint Render(IRenderArea toArea)
+        protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            var wordsArea = toArea;
-            var position = new XPoint(0, this.Height);
-            var lastWordPosition = new XPoint(0, 0);
-            foreach (var word in this.AlignWords(toArea.Width))
-            {
-                lastWordPosition = word.Render(wordsArea, position);
-            }
+            _offsets = this
+                .CalculateOffsets(prerenderArea.Width)
+                .ToArray();
 
-            return lastWordPosition;
+            var maxHeight = _elements.Max(e => e.PrecalulatedSize.Height);
+            var width = _offsets.Last()
+                + _elements.Last().PrecalulatedSize.Width;
+
+            return new XSize(width, maxHeight);
         }
 
-        private IEnumerable<OffsetWord> AlignWords(double totalWidth)
+        protected override RenderResult RenderCore(IRenderArea renderArea)
         {
+            var lineArea = renderArea
+                .Restrict(renderArea.Width, this.PrecalulatedSize.Height);
+
+            for(var i = 0; i < _elements.Length; i++)
+            {
+                var elementArea = lineArea.PanLeft(_offsets[i]);
+                _elements[i].Render(elementArea);
+            }
+
+            if(_isLastLineOfParagraph && renderArea.Options.RenderParagraphCharacter)
+            {
+                var y = this.PrecalulatedSize.Height - renderArea.AreaFont.Height / 4d;
+                lineArea
+                    .PanLeft(this.PrecalulatedSize.Width)
+                    .DrawText("¶", renderArea.AreaFont, XBrushes.Black, new XPoint(0, y));
+            }
+
+            return RenderResult.Done(this.PrecalulatedSize);
+        }
+
+        private IEnumerable<XUnit> CalculateOffsets(XUnit totalWidth)
+        {
+            var defaultWidth = _elements
+                .Sum(e => e.PrecalulatedSize.Width);
+
             switch (_alignment)
             {
                 case LineAlignment.Left:
-                    return this.OffsetAlignWords(new XPoint(0, this.Height));
+                    _offsets = this.CalculateDefaultElementOffsets(XUnit.Zero);
+                    break;
                 case LineAlignment.Center:
                     {
-                        var offset = (totalWidth - this.Width) / 2;
-                        return this.OffsetAlignWords(new XPoint(offset, this.Height));
+                        var firstElementOffset = (totalWidth - defaultWidth) / 2;
+                        _offsets = this.CalculateDefaultElementOffsets(firstElementOffset);
                     }
+                    break;
                 case LineAlignment.Right:
                     {
-                        var offset = totalWidth - this.Width;
-                        return this.OffsetAlignWords(new XPoint(offset, this.Height));
+                        var firstElementOffset = (totalWidth - defaultWidth);
+                        _offsets = this.CalculateDefaultElementOffsets(firstElementOffset);
                     }
+                    break;
                 case LineAlignment.Justify:
-                    return this.JustifyWords(new XPoint(0, this.Height), totalWidth);
-                default:
-                    throw new System.Exception("Unhandled alignment value");
+                    _offsets = this.JustifyWords(defaultWidth, totalWidth);
+                    break;
             }
+
+            return _offsets;
         }
 
-        private IEnumerable<OffsetWord> OffsetAlignWords(XPoint lineBottomLeft)
+        private XUnit[] CalculateDefaultElementOffsets(XUnit firstElementOffset)
         {
-            var x = lineBottomLeft.X;
-            var y = 0;
-
-            return _words
-                .Select(word =>
+            var leftOffset = firstElementOffset;
+            return _elements
+                .Select(e =>
                 {
-                    var xCoordinate = x;
-                    x += word.Width;
-                    return new OffsetWord(word, new XVector(xCoordinate, y));
+                    var t = leftOffset;
+                    leftOffset += e.PrecalulatedSize.Width;
+                    return t;
                 })
                 .ToArray();
         }
 
-        private IEnumerable<OffsetWord> JustifyWords(XPoint lineBottomLeft, double totalWidth)
+        private XUnit[] JustifyWords(XUnit defaultWidth, XUnit totalWidth)
         {
-            if (this.Width < totalWidth - XUnit.FromCentimeter(2.5))
+            if (defaultWidth < totalWidth - XUnit.FromCentimeter(2.5))
             {
-                return this.OffsetAlignWords(lineBottomLeft);
+                return this.CalculateDefaultElementOffsets(XUnit.Zero);
             }
 
-            var spaceToJustify = totalWidth - this.Width;
-            var wordsJustifiedSpacing = (totalWidth - this.Width) / _words.Length;
+            var spaceToJustify = totalWidth - defaultWidth;
+            var wordsJustifiedSpacing = (totalWidth - defaultWidth) / _elements.Length;
 
-            var x = lineBottomLeft.X;
-
-            return _words
-                .Select(word =>
+            var x = XUnit.Zero;
+            return _elements
+                .Select(element =>
                 {
                     var xCoordinate = x;
-                    x += word.Width + wordsJustifiedSpacing;
-                    return new OffsetWord(word, new XVector(xCoordinate, 0));
+                    x += element.PrecalulatedSize.Width + wordsJustifiedSpacing;
+                    return xCoordinate;
                 })
                 .ToArray();
-        }
-
-        private class OffsetWord
-        {
-            private readonly RWord _word;
-            private readonly XVector _offset;
-
-            public OffsetWord(RWord word, XVector offset)
-            {
-                _word = word;
-                _offset = offset;
-            }
-
-            public XPoint Render(IRenderArea renderArea, XPoint position) => _word.Render(renderArea, _offset + position);
         }
     }
 }

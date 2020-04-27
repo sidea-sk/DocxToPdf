@@ -1,4 +1,6 @@
 ﻿using PdfSharp.Drawing;
+using Sidea.DocxToPdf.Renderers.Core;
+using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 {
@@ -26,5 +28,15 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
         public override bool OmitableAtLineBegin => false;
 
         public override bool OmitableAtLineEnd => false;
+
+        protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
+        {
+            return _size;
+        }
+
+        protected override RenderResult RenderCore(IRenderArea renderArea)
+        {
+            return RenderResult.Done(_size.Width, _size.Height);
+        }
     }
 }

@@ -71,7 +71,7 @@ namespace Sidea.DocxToPdf.Renderers
             var pageMargin = _docx.MainDocumentPart.GetPageMargin();
             var leftMargin = pageMargin.Left.ToXUnit();
             var rightMargin = pageMargin.Right.ToXUnit();
-            var renderArea = new RenderArea(documentDefaultFont, graphics, new XRect(leftMargin, 0, page.Width - leftMargin - rightMargin, page.Height));
+            var renderArea = new RenderArea(documentDefaultFont, graphics, new XRect(leftMargin, 0, page.Width - leftMargin - rightMargin, page.Height), _renderingOptions);
 
             IRenderArea bodyRenderArea = this.RenderHeaderAndFooter(renderArea);
             graphics.DrawRectangle(XPens.Orange, bodyRenderArea.AreaRectangle);
@@ -131,7 +131,7 @@ namespace Sidea.DocxToPdf.Renderers
             var graphics = XGraphics.FromPdfPage(page);
             var margin = XUnit.FromCentimeter(2.5);
             var contentArea = new XRect(margin, margin, page.Width - 2 * margin, page.Height - 2 * margin);
-            return new RenderArea(documentDefaultFont, graphics, contentArea);
+            return new RenderArea(documentDefaultFont, graphics, contentArea, _renderingOptions);
         }
 
         private void DeletePrerenderPage(PdfDocument pdf)

@@ -12,91 +12,52 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
     internal class ParagraphRenderer : RendererBase
     {
         private readonly Paragraph _paragraph;
-        private readonly RenderingOptions _renderingOptions;
-        private XUnit _width = XUnit.Zero;
+        private List<RLine> _lines = null;
 
-        private List<RLineElement> _elements = null;
-        private List<RLine> _remainingLines = null;
-
-        public ParagraphRenderer(Paragraph paragraph, RenderingOptions renderingOptions)
+        public ParagraphRenderer(Paragraph paragraph)
         {
             _paragraph = paragraph;
-            _renderingOptions = renderingOptions;
         }
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            this.PrepareLineElements(prerenderArea.AreaFont);
-            this.PrepareRemainingLines(prerenderArea);
+            _lines = _paragraph
+                .CreateRenderingLines(prerenderArea)
+                .ToList();
 
-            if (_remainingLines.Count == 0)
-            {
-                return new XSize(0, 0);
-            }
-
-            _width = _remainingLines
-                .Select(l => (double)l.Width)
+            var width = _lines
+                .Select(l => (double)l.PrecalulatedSize.Width)
                 .Max();
 
-            var height = _remainingLines
-                .Select(l => l.Height)
+            var height = _lines
+                .Select(l => l.PrecalulatedSize.Height)
                 .Sum();
-
-            var width = _remainingLines
-                .Select(l => (double)l.Width)
-                .Max();
 
             return new XSize(width, height);
         }
 
         protected override sealed RenderResult RenderCore(IRenderArea renderArea)
         {
-            if(_remainingLines.Count == 0)
+            var renderedSize = new XSize(0, 0);
+
+            while (_lines.Count > 0)
             {
-                return RenderResult.DoneEmpty;
-            }
-
-            var availableArea = renderArea;
-            var aggregatedHeight = 0d;
-
-            var lastLineEnd = XUnit.Zero;
-
-            while (_remainingLines.Count > 0)
-            {
-                var line = _remainingLines[0];
-                if (aggregatedHeight + line.Height > renderArea.Height)
+                if(_lines[0].PrecalulatedSize.Height + renderedSize.Height > renderArea.Height)
                 {
-                    return RenderResult.EndOfRenderArea(renderArea.Width, aggregatedHeight);
+                    return RenderResult.EndOfRenderArea(renderedSize);
                 }
 
-                _remainingLines.RemoveAt(0);
-                var lineEnd = line.Render(availableArea.PanLeftDown(new XSize(0, aggregatedHeight)));
-                lastLineEnd = lineEnd.X;
-                aggregatedHeight += line.Height;
+                var line = _lines[0];
+                _lines.RemoveAt(0);
+
+                line.Render(renderArea.PanDown(renderedSize.Height));
+
+                renderedSize = renderedSize
+                    .ExpandWidthIfBigger(line.RenderResult.RenderedWidth)
+                    .ExpandHeight(line.RenderResult.RenderedHeight);
             }
 
-            if (_renderingOptions.RenderParagraphCharacter && _remainingLines.Count == 0)
-            {
-                // TODO: use some property of Font to position paragraph corectly
-                var y = aggregatedHeight - renderArea.AreaFont.Height / 4d;
-                availableArea.DrawText("¶", renderArea.AreaFont, XBrushes.Black, new XPoint(lastLineEnd, y));
-            }
-
-            return RenderResult.Done(_width, aggregatedHeight);
-        }
-
-        private void PrepareRemainingLines(IPrerenderArea renderArea)
-        {
-            _remainingLines = _paragraph
-                .ToRenderingLines(renderArea)
-                .ToList();
-        }
-
-        private void PrepareLineElements(XFont areaFont)
-        {
-            _elements = _paragraph
-                .ToLineElements(areaFont)
-                .ToList();
+            return RenderResult.Done(renderedSize);
         }
     }
 }
