@@ -6,7 +6,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 {
     internal class RDrawing : RLineElement
     {
-        private readonly uint _id;
+        private readonly string _id;
         private readonly string _name;
         private readonly string _uri;
 
@@ -14,7 +14,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
         private readonly XSize _size;
 
         public RDrawing(
-            uint id,
+            string id,
             string name,
             string uri,
             XSize size)
@@ -36,6 +36,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 
         protected override RenderResult RenderCore(IRenderArea renderArea)
         {
+            renderArea.DrawImage(_id, _size);
             return RenderResult.Done(_size.Width, _size.Height);
         }
     }

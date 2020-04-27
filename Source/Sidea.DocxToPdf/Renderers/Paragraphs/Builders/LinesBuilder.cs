@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
-using Sidea.DocxToPdf.Renderers.Core.Services;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Models;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
@@ -264,10 +262,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 
         private static RDrawing FromInline(this Inline inline)
         {
-
             var size = inline.Extent.Size();
+            var blipElement = inline.Descendants<DocumentFormat.OpenXml.Drawing.Blip>().First();
+
             return new RDrawing(
-                inline.DocProperties.Id,
+                blipElement.Embed.Value,
                 inline.DocProperties.Name,
                 inline.Graphic.GraphicData.Uri,
                 size);
@@ -276,11 +275,13 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
         private static RDrawing FromAnchor(this Anchor anchor)
         {
             var size = anchor.Extent.Size();
+            var blipElement = anchor.Descendants<DocumentFormat.OpenXml.Drawing.Blip>().First();
+
             var docProperties = anchor.ChildsOfType<DocProperties>().Single();
             var graphic = anchor.ChildsOfType<DocumentFormat.OpenXml.Drawing.Graphic>().Single();
 
             return new RDrawing(
-                docProperties.Id,
+                blipElement.Embed.Value,
                 docProperties.Name,
                 graphic.GraphicData.Uri, size);
         }
