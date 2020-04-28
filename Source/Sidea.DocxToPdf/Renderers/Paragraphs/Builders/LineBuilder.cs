@@ -228,7 +228,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             var spaceToJustify = toTotalWidth - sumWidth;
             var wordsJustifiedSpacing = spaceToJustify / widths.Count;
 
-            var x = XUnit.Zero;
+            var x = defaultOffset;
             var offsets = widths
                 .Select(w =>
                 {
