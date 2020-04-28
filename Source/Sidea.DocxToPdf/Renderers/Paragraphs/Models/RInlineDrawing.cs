@@ -30,7 +30,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 
         protected override RenderResult RenderCore(IRenderArea renderArea)
         {
-            renderArea.DrawImage(_id, _size);
+            renderArea.DrawImage(_id, new XPoint(0,0), _size);
             return RenderResult.Done(_size.Width, _size.Height);
         }
     }

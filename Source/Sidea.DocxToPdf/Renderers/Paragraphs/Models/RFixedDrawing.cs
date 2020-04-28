@@ -17,7 +17,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
         {
             _id = id;
             _size = size;
-
+            
             _horizontalMargin = XUnit.FromMillimeter(2);
 
             this.Position = new XPoint(position.X - _horizontalMargin, position.Y);
@@ -29,10 +29,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 
         public void Render(IRenderArea renderArea)
         {
-            var drawingArea = renderArea
-                .PanLeftDown(this.Position.X + _horizontalMargin, this.Position.Y);
-
-            drawingArea.DrawImage(_id, _size);
+            renderArea.DrawImage(_id, this.Position + new XVector(_horizontalMargin, 0), _size);
         }
     }
 }
