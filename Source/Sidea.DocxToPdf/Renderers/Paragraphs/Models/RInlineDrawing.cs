@@ -4,14 +4,14 @@ using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 {
-    internal class RDrawing : RLineElement
+    internal class RInlineDrawing : RLineElement
     {
         private readonly string _id;
 
         // size defined in document
         private readonly XSize _size;
 
-        public RDrawing(
+        public RInlineDrawing(
             string id,
             XSize size)
         {

@@ -12,6 +12,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
     internal class ParagraphRenderer : RendererBase
     {
         private readonly Paragraph _paragraph;
+        private List<RFixedDrawing> _fixedDrawings = null;
         private List<RLine> _lines = null;
 
         public ParagraphRenderer(Paragraph paragraph)
@@ -21,8 +22,12 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
+            _fixedDrawings = _paragraph
+                .CreateFixedDrawings()
+                .ToList();
+
             _lines = _paragraph
-                .CreateRenderingLines(prerenderArea)
+                .CreateRenderingLines(_fixedDrawings, prerenderArea)
                 .ToList();
 
             var width = _lines

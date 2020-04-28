@@ -11,108 +11,43 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 {
     internal static class LinesBuilder
     {
+        public static IEnumerable<RFixedDrawing> CreateFixedDrawings(this Paragraph paragraph)
+        {
+            var drawings = paragraph
+                .Descendants<Drawing>()
+                .Where(d => d.Anchor != null)
+                .Select(d => d.Anchor.FromAnchor())
+                .ToArray();
+
+            return drawings;
+        }
+
         public static IEnumerable<RLine> CreateRenderingLines(
             this Paragraph paragraph,
+            IReadOnlyCollection<RFixedDrawing> fixedDrawings,
             IPrerenderArea prerenderArea)
         {
             var lineAlignment = paragraph.GetLinesAlignment();
+
             var elements = paragraph
-                .ChildsOfType<Run>()
-                .SelectMany(run => run.ToLineElements(prerenderArea.AreaFont))
+                .ToLineElements(prerenderArea)
                 .ToStack();
 
             var lines = new List<RLine>();
+            var vOffset = new XUnit(0);
             do
             {
-                var line = CreateLine(elements, lineAlignment, prerenderArea);
+                var line = LineBuilder.CreateLine(elements, lineAlignment, vOffset, fixedDrawings, prerenderArea);
                 line.CalculateContentSize(prerenderArea);
                 lines.Add(line);
+
+                vOffset += line.PrecalulatedSize.Height;
             } while (elements.Count > 0);
 
             return lines;
         }
 
-        private static RLine CreateLine(Stack<RLineElement> fromElements, LineAlignment lineAlignment, IPrerenderArea prerenderArea)
-        {
-            var aggregatedWidth = XUnit.Zero;
-            var lineElements = new List<RLineElement>();
-
-            while(fromElements.Count > 0)
-            {
-                var e = fromElements.Pop();
-                e.CalculateContentSize(prerenderArea);
-
-                if (e.PrecalulatedSize.Width + aggregatedWidth <= prerenderArea.Width)
-                {
-                    lineElements.Add(e);
-                    aggregatedWidth += e.PrecalulatedSize.Width;
-                    continue;
-                }
-
-                if (lineElements.Count == 0)
-                {
-                    switch (e)
-                    {
-                        case RDrawing d:
-                            lineElements.Add(d);
-                            break;
-
-                        case RText t:
-                            var (head, tail) = t.CutTextOfMaxWidth(prerenderArea.Width, prerenderArea);
-                            lineElements.Add(head);
-                            fromElements.Push(tail);
-                            break;
-                    }
-                }
-                break;
-            }
-
-            var elements = lineElements
-                .TrimSpaces()
-                .EnsureAtLeastOne(prerenderArea);
-
-            var line = new RLine(elements, lineAlignment, fromElements.Count == 0);
-            return line;
-        }
-
-        public static IEnumerable<RLineElement> ToLineElements(this Paragraph paragraph, XFont defaultFont)
-        {
-            var le = paragraph
-                .ChildsOfType<Run>()
-                .SelectMany(r => r.ToLineElements(defaultFont))
-                .ToArray();
-
-            return le.Length == 0
-                ? new RLineElement[] { RText.Empty(defaultFont) }
-                : le;
-        }
-
-        private static IEnumerable<RLineElement> TrimSpaces(this IEnumerable<RLineElement> elements)
-        {
-            var result = elements
-                .SkipWhile(e => e.OmitableAtLineBegin)
-                .Reverse()
-                .SkipWhile(e => e.OmitableAtLineEnd)
-                .Reverse()
-                .ToArray();
-
-            return result;
-        }
-
-        private static IEnumerable<RLineElement> EnsureAtLeastOne(this IEnumerable<RLineElement> elements, IPrerenderArea prerenderArea)
-        {
-            var e = elements.ToList();
-            if(e.Count > 0)
-            {
-                return e;
-            }
-
-            var empty = RText.Empty(prerenderArea.AreaFont);
-            empty.CalculateContentSize(prerenderArea);
-            return new List<RLineElement> { empty };
-        }
-
-        public static LineAlignment GetLinesAlignment(this Paragraph paragraph)
+        private static LineAlignment GetLinesAlignment(this Paragraph paragraph)
         {
             var properties = paragraph.ParagraphProperties;
             if (properties?.Justification == null)
@@ -129,6 +64,16 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             };
         }
 
+        private static IEnumerable<RLineElement> ToLineElements(this Paragraph paragraph, IPrerenderArea prerenderArea)
+        {
+            var elements = paragraph
+               .ChildsOfType<Run>()
+               .SelectMany(run => run.ToLineElements(prerenderArea.AreaFont))
+               .ToStack();
+
+            return elements;
+        }
+
         private static IEnumerable<RLineElement> ToLineElements(this Run run, XFont defaultFont)
         {
             XFont font = run.RunProperties.CreateRunFont(defaultFont);
@@ -143,7 +88,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                     {
                         Text t => t.SplitToWords(font, brush).Cast<RLineElement>(),
                         TabChar t => new RLineElement[] { new RText("    ", font, brush) },
-                        Drawing d => new RLineElement[] { d.ToRDrawing() },
+                        Drawing d => d.ToRInlineDrawing(),
                         _ => throw new Exception("unprocessed child")
                     };
                 })
@@ -232,48 +177,35 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return words;
         }
 
-        private static (RText cut, RText tail) CutTextOfMaxWidth(this RText text, XUnit maxWidth, IPrerenderArea prerenderArea)
+        private static RInlineDrawing[] ToRInlineDrawing(this Drawing drawing)
         {
-            RText previous = text.Substring(0, 0);
-            previous.CalculateContentSize(prerenderArea);
-
-            RText current;
-            for(var i = 1; i < text.TextLength; i++)
+            if(drawing.Inline == null)
             {
-                current = text.Substring(0, i);
-                current.CalculateContentSize(prerenderArea);
-
-                if(current.PrecalulatedSize.Width > maxWidth)
-                {
-                    return (previous, text.Substring(i, text.TextLength - i));
-                }
-
-                previous = current;
+                return new RInlineDrawing[0];
             }
 
-            throw new Exception("Could not found appropriate substring");
+            var rdrawing = drawing.Inline.FromInline();
+            return new[] { rdrawing };
         }
 
-        private static RDrawing ToRDrawing(this Drawing drawing)
-        {
-            var rdraw = drawing.Inline?.FromInline() ?? drawing.Anchor.FromAnchor();
-            return rdraw;
-        }
-
-        private static RDrawing FromInline(this Inline inline)
+        private static RInlineDrawing FromInline(this Inline inline)
         {
             var size = inline.Extent.Size();
             var blipElement = inline.Descendants<DocumentFormat.OpenXml.Drawing.Blip>().First();
 
-            return new RDrawing(blipElement.Embed.Value, size);
+            return new RInlineDrawing(blipElement.Embed.Value, size);
         }
 
-        private static RDrawing FromAnchor(this Anchor anchor)
+        private static RFixedDrawing FromAnchor(this Anchor anchor)
         {
             var size = anchor.Extent.Size();
             var blipElement = anchor.Descendants<DocumentFormat.OpenXml.Drawing.Blip>().First();
 
-            return new RDrawing(blipElement.Embed.Value, size);
+            var position = anchor.SimplePos.Value
+                ? new XPoint(anchor.SimplePosition.X.Value, anchor.SimplePosition.Y.Value)
+                : new XPoint(anchor.HorizontalPosition.PositionOffset.ToXUnit(), anchor.VerticalPosition.PositionOffset.ToXUnit());
+
+            return new RFixedDrawing(blipElement.Embed.Value, position, size);
         }
     }
 }

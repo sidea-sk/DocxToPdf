@@ -9,6 +9,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
         }
 
         public abstract bool OmitableAtLineBegin { get; }
+
         public abstract bool OmitableAtLineEnd { get; }
     }
 }
