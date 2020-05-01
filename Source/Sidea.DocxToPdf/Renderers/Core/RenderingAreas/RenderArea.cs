@@ -84,6 +84,8 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         IPrerenderArea IPrerenderArea.Restrict(XUnit width) => this.RestrictCore(width);
 
+        IPrerenderArea IPrerenderArea.Restrict(XUnit width, XUnit height) => this.RestrictCore(new XSize(width, height));
+
         IRenderArea IRenderArea.Restrict(XUnit width) => this.RestrictCore(width);
 
         IRenderArea IRenderArea.Restrict(XUnit width, XUnit height) => this.RestrictCore(new XSize(width, height));
