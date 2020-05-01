@@ -4,8 +4,7 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 {
     internal interface IPrerenderArea : IRenderingAreaBase
     {
-        //IPrerenderArea PanLeft(XUnit unit);
-        //IPrerenderArea PanLeftDown(XSize size);
         IPrerenderArea Restrict(XUnit width);
+        IPrerenderArea Restrict(XUnit width, XUnit height);
     }
 }

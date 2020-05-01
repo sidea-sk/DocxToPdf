@@ -134,8 +134,13 @@ namespace Sidea.DocxToPdf.Renderers
         {
             var page = pdf.AddPage();
             var graphics = XGraphics.FromPdfPage(page);
-            var margin = XUnit.FromCentimeter(2.5);
-            var contentArea = new XRect(margin, margin, page.Width - 2 * margin, page.Height - 2 * margin);
+
+            var pageMargin = _docx.MainDocumentPart.GetPageMargin();
+            var leftMargin = pageMargin.Left.ToXUnit();
+            var rightMargin = pageMargin.Right.ToXUnit();
+
+            var contentArea = new XRect(leftMargin, 0, page.Width - leftMargin - rightMargin, page.Height);
+
             return new RenderArea(
                 documentDefaultFont,
                 graphics,
