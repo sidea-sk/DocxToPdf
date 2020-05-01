@@ -12,6 +12,8 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
     internal class ParagraphRenderer : RendererBase
     {
         private readonly Paragraph _paragraph;
+
+        private List<RFixedDrawing> _fixedDrawings = null;
         private List<RLine> _lines = null;
 
         public ParagraphRenderer(Paragraph paragraph)
@@ -21,8 +23,13 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
+            _fixedDrawings = _paragraph
+                .CreateFixedDrawings()
+                .OrderBy(d => d.Position.Y)
+                .ToList();
+
             _lines = _paragraph
-                .CreateRenderingLines(prerenderArea)
+                .CreateRenderingLines(_fixedDrawings, prerenderArea)
                 .ToList();
 
             var width = _lines
@@ -40,9 +47,23 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
         {
             var renderedSize = new XSize(0, 0);
 
+            while (_fixedDrawings.Count > 0)
+            {
+                var drawing = _fixedDrawings[0];
+                if (drawing.Position.Y + drawing.OuterboxSize.Height < renderArea.Height)
+                {
+                    drawing.Render(renderArea);
+                    _fixedDrawings.RemoveAt(0);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
             while (_lines.Count > 0)
             {
-                if(_lines[0].PrecalulatedSize.Height + renderedSize.Height > renderArea.Height)
+                if (_lines[0].PrecalulatedSize.Height + renderedSize.Height > renderArea.Height)
                 {
                     return RenderResult.EndOfRenderArea(renderedSize);
                 }

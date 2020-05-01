@@ -59,7 +59,7 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
             _graphics.DrawRectangle(pen, brush, XRect.Offset(rect, _translate));
         }
 
-        public void DrawImage(string imageId, XSize size)
+        public void DrawImage(string imageId, XPoint position, XSize size)
         {
             var stream = _imageAccessor.GetImageStream(imageId);
             Image bmp = new Bitmap(stream);
@@ -67,7 +67,8 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
             {
                 bmp.Save(ms, bmp.RawFormat);
                 var image = XImage.FromStream(ms);
-                _graphics.DrawImage(image, new XRect(new XPoint(0,0) + _translate, size));
+                var p = position + _translate;
+                _graphics.DrawImage(image, p.X, p.Y, size.Width, size.Height);
             }
         }
 

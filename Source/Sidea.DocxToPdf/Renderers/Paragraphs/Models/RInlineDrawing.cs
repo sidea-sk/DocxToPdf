@@ -4,24 +4,18 @@ using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 {
-    internal class RDrawing : RLineElement
+    internal class RInlineDrawing : RLineElement
     {
         private readonly string _id;
-        private readonly string _name;
-        private readonly string _uri;
 
         // size defined in document
         private readonly XSize _size;
 
-        public RDrawing(
+        public RInlineDrawing(
             string id,
-            string name,
-            string uri,
             XSize size)
         {
             _id = id;
-            _name = name;
-            _uri = uri;
             _size = size;
         }
 
@@ -36,7 +30,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 
         protected override RenderResult RenderCore(IRenderArea renderArea)
         {
-            renderArea.DrawImage(_id, _size);
+            renderArea.DrawImage(_id, new XPoint(0,0), _size);
             return RenderResult.Done(_size.Width, _size.Height);
         }
     }

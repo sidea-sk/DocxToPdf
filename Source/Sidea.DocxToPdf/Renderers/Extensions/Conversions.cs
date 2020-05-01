@@ -1,5 +1,6 @@
 ﻿using System;
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 
@@ -7,21 +8,21 @@ namespace Sidea.DocxToPdf.Renderers
 {
     internal static class Conversions
     {
-        private const double PCT = 50;
+        private const double HP = 2;
         private const double DXA = 20;
+        private const double PCT = 50;
         private const double IN = 72;
         private const double CM = IN * 2.54d;
         private const double EMU = 914400;
 
         public static XUnit EmuToXUnit(this Int64Value value)
         {
-            return value / EMU * IN ;
+            return value.Value.EmuToXUnit();
         }
 
-        public static XUnit EmuToXUnit(this UInt32Value value)
+        public static XUnit EmuToXUnit(this long value)
         {
-            // 914400 / 72 / 20
-            return XUnit.Zero;
+            return value / EMU * IN;
         }
 
         public static XUnit ToXUnit(this UInt32Value value)
@@ -114,12 +115,13 @@ namespace Sidea.DocxToPdf.Renderers
         /// <param name="value"></param>
         /// <returns></returns>
         public static XUnit HPToPoint(this int value) {
-            return value / 2d;
+            return value / HP;
         }
 
-        //private static XUnit TwentiethToUnit(this double value)
-        //{
-        //    return value / 20d;
-        //}
+        public static XUnit ToXUnit(this PositionOffset positionOffset)
+        {
+            var offset = Convert.ToInt64(positionOffset.Text);
+            return offset.EmuToXUnit();
+        }
     }
 }
