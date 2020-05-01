@@ -20,11 +20,6 @@ namespace Sidea.DocxToPdf.Renderers
             return value.Value.EmuToXUnit();
         }
 
-        //public static XUnit EmuToXUnit(this UInt32Value value)
-        //{
-            
-        //}
-
         public static XUnit EmuToXUnit(this long value)
         {
             return value / EMU * IN;
