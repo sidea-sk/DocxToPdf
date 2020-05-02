@@ -6,6 +6,7 @@ using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Builders;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Models;
+using Sidea.DocxToPdf.Renderers.Paragraphs.Models.Spacing;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs
 {
@@ -15,6 +16,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
         private List<RFixedDrawing> _fixedDrawings = null;
         private List<RLine> _lines = null;
+        private ParagraphSpacing _spacing;
 
         public ParagraphRenderer(Paragraph paragraph)
         {
@@ -23,6 +25,8 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
+            _spacing = _paragraph.Spacing();
+
             _fixedDrawings = _paragraph
                 .CreateFixedDrawings()
                 .OrderBy(d => d.Position.Y)
@@ -37,8 +41,9 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
                 .Max();
 
             var height = _lines
-                .Select(l => l.PrecalulatedSize.Height)
-                .Sum();
+                .Select(l => l.PrecalulatedSize.Height + _spacing.Line.CalculateSpaceAfterLine(l))
+                .Sum()
+                + _spacing.After;
 
             return new XSize(width, height);
         }
@@ -75,9 +80,10 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
                 renderedSize = renderedSize
                     .ExpandWidthIfBigger(line.RenderResult.RenderedWidth)
-                    .ExpandHeight(line.RenderResult.RenderedHeight);
+                    .ExpandHeight(line.RenderResult.RenderedHeight + _spacing.Line.CalculateSpaceAfterLine(line));
             }
 
+            renderedSize = renderedSize.ExpandHeight(_spacing.After);
             return RenderResult.Done(renderedSize);
         }
     }
