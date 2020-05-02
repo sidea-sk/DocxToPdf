@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
@@ -78,12 +79,19 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
                 line.Render(renderArea.PanDown(renderedSize.Height));
 
+                var spaceAfterLine = _spacing.Line.CalculateSpaceAfterLine(line);
+
                 renderedSize = renderedSize
                     .ExpandWidthIfBigger(line.RenderResult.RenderedWidth)
-                    .ExpandHeight(line.RenderResult.RenderedHeight + _spacing.Line.CalculateSpaceAfterLine(line));
+                    .ExpandHeight(line.RenderResult.RenderedHeight);
+
+                renderedSize = renderedSize
+                    .ExpandHeight(Math.Min(spaceAfterLine, renderArea.Height - renderedSize.Height));
             }
 
-            renderedSize = renderedSize.ExpandHeight(_spacing.After);
+            renderedSize = renderedSize
+                .ExpandHeight(Math.Min(_spacing.After, renderArea.Height - renderedSize.Height));
+
             return RenderResult.Done(renderedSize);
         }
     }
