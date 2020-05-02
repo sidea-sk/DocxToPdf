@@ -18,7 +18,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             IPrerenderArea prerenderArea)
         {
             var lineSegments = prerenderArea
-                .GetAvailableLineToSegments(fixedDrawings, verticalOffset);
+                .SplitLineToSegments(fixedDrawings, verticalOffset);
 
             var boxes = lineSegments
                 .SelectMany(l => l.GetAlignedElementsForLineSegment(fromElements, lineAlignment, lineSegments.Length == 1, prerenderArea))
@@ -65,8 +65,21 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 var element = fromElements.Pop();
                 element.CalculateContentSize(prerenderArea);
 
-                if(left + element.PrecalulatedSize.Width <= lineSegment.Width)
-                { 
+                if(element is RPageBreak)
+                {
+                    if(segmentElements.Count > 0)
+                    {
+                        fromElements.Push(element);
+                    }
+                    else
+                    {
+                        segmentElements.Add(element);
+                    }
+
+                    continueSearch = false;
+                }
+                else if (left + element.PrecalulatedSize.Width <= lineSegment.Width)
+                {
                     segmentElements.Add(element);
                     left += element.PrecalulatedSize.Width;
                 }
@@ -88,7 +101,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 .TrimSpaces();
         }
 
-        private static LineSegment[] GetAvailableLineToSegments(
+        private static LineSegment[] SplitLineToSegments(
             this IPrerenderArea prerenderArea,
             IEnumerable<RFixedDrawing> fixedDrawings,
             XUnit lineVerticalOffset)
