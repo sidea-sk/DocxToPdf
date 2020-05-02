@@ -28,6 +28,12 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        public void ImageTextWrappingLineSpacing()
+        {
+            this.Generate(nameof(ImageTextWrappingLineSpacing));
+        }
+
+        [TestMethod]
         public void ImageResize()
         {
             this.Generate(nameof(ImageResize));

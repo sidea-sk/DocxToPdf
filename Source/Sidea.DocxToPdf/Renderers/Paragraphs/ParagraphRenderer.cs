@@ -34,7 +34,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
                 .ToList();
 
             _lines = _paragraph
-                .CreateRenderingLines(_fixedDrawings, prerenderArea)
+                .CreateRenderingLines(_fixedDrawings, _spacing.Line, prerenderArea)
                 .ToList();
 
             var width = _lines
