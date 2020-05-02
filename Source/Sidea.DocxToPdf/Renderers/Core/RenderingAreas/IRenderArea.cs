@@ -4,8 +4,6 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 {
     internal interface IRenderArea : IRenderingAreaBase
     {
-        RenderingOptions Options { get; }
-
         void DrawText(string text, XFont font, XBrush brush, XPoint position);
         void DrawText(string text, XFont font, XBrush brush, XRect layout, XStringFormat stringFormat);
         void DrawLine(XPen pen, XPoint start, XPoint end);

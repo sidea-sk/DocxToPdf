@@ -6,9 +6,12 @@
 
         public RenderingOptions(bool renderParagraphCharacter = false)
         {
-            this.RenderParagraphCharacter = renderParagraphCharacter;
+            this.RenderHiddenChars = renderParagraphCharacter;
         }
 
-        public bool RenderParagraphCharacter { get; }
+        /// <summary>
+        /// e.g. Paragraph, PageBreak, SectionBreak
+        /// </summary>
+        public bool RenderHiddenChars { get; }
     }
 }

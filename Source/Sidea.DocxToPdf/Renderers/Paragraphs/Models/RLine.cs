@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Common;
@@ -11,6 +12,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
     {
         private readonly Box<RLineElement>[] _elements;
         private readonly bool _isLastLineOfParagraph;
+        private readonly RParagraph _paragraph = new RParagraph();
 
         public RLine(
             IEnumerable<Box<RLineElement>> elements,
@@ -22,14 +24,23 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            var maxHeight = _elements.Max(e => e.Element.PrecalulatedSize.Height);
+            _paragraph.CalculateContentSize(prerenderArea);
+
+            var maxHeight = _elements
+                .Max(e => e.Element.PrecalulatedSize.Height);
+
             var lastElement = _elements.Last();
             var width = lastElement.Offset.X + lastElement.Element.PrecalulatedSize.Width;
-            return new XSize(width, maxHeight);
+            return new XSize(width, Math.Max(maxHeight, prerenderArea.AreaFont.Height));
         }
 
         protected override RenderResult RenderCore(IRenderArea renderArea)
         {
+            if(this.RenderResult.Status == RenderingStatus.ReachedEndOfArea)
+            {
+                return RenderResult.DoneEmpty;
+            }
+
             var lineArea = renderArea
                 .Restrict(renderArea.Width, this.PrecalulatedSize.Height);
 
@@ -39,15 +50,18 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
                 box.Element.Render(elementArea);
             }
 
-            if (_isLastLineOfParagraph && renderArea.Options.RenderParagraphCharacter)
+            if (_isLastLineOfParagraph)
             {
-                var y = this.PrecalulatedSize.Height - renderArea.AreaFont.Height / 4d;
-                lineArea
-                    .PanLeft(this.PrecalulatedSize.Width)
-                    .DrawText("¶", renderArea.AreaFont, XBrushes.Black, new XPoint(0, y));
+                var pan = _elements.Length > 0
+                    ? new XUnit(_elements.Last().Offset.X + _elements.Last().Element.PrecalulatedSize.Width)
+                    : new XUnit(0);
+
+                _paragraph.Render(lineArea.PanLeft(pan));
             }
 
-            return RenderResult.Done(this.PrecalulatedSize);
+            return _elements.LastOrDefault()?.Element is RPageBreak
+                ? RenderResult.EndOfRenderArea(renderArea.AreaRectangle)
+                : RenderResult.Done(this.PrecalulatedSize);
         }
     }
 }

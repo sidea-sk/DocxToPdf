@@ -81,7 +81,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 
             var xtexts = run
                 .ChildElements
-                .Where(c => c is Text || c is TabChar || c is Drawing)
+                .Where(c => c is Text || c is TabChar || c is Drawing || c is Break)
                 .SelectMany(c =>
                 {
                     return c switch
@@ -89,6 +89,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                         Text t => t.SplitToWords(font, brush).Cast<RLineElement>(),
                         TabChar t => new RLineElement[] { new RText("    ", font, brush) },
                         Drawing d => d.ToRInlineDrawing(),
+                        Break b => b.ToRLineElements(defaultFont),
                         _ => throw new Exception("unprocessed child")
                     };
                 })
@@ -175,6 +176,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             }
 
             return words;
+        }
+
+        private static RLineElement[] ToRLineElements(this Break @break, XFont font)
+        {
+            return new RLineElement[] { new RPageBreak(font) };
         }
 
         private static RInlineDrawing[] ToRInlineDrawing(this Drawing drawing)
