@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
@@ -6,6 +7,7 @@ using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Builders;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Models;
+using Sidea.DocxToPdf.Renderers.Paragraphs.Models.Spacing;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs
 {
@@ -15,6 +17,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
         private List<RFixedDrawing> _fixedDrawings = null;
         private List<RLine> _lines = null;
+        private ParagraphSpacing _spacing;
 
         public ParagraphRenderer(Paragraph paragraph)
         {
@@ -23,13 +26,15 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
+            _spacing = _paragraph.Spacing();
+
             _fixedDrawings = _paragraph
                 .CreateFixedDrawings()
                 .OrderBy(d => d.Position.Y)
                 .ToList();
 
             _lines = _paragraph
-                .CreateRenderingLines(_fixedDrawings, prerenderArea)
+                .CreateRenderingLines(_fixedDrawings, _spacing.Line, prerenderArea)
                 .ToList();
 
             var width = _lines
@@ -37,8 +42,9 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
                 .Max();
 
             var height = _lines
-                .Select(l => l.PrecalulatedSize.Height)
-                .Sum();
+                .Select(l => l.PrecalulatedSize.Height + _spacing.Line.CalculateSpaceAfterLine(l))
+                .Sum()
+                + _spacing.After;
 
             return new XSize(width, height);
         }
@@ -73,10 +79,18 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
 
                 line.Render(renderArea.PanDown(renderedSize.Height));
 
+                var spaceAfterLine = _spacing.Line.CalculateSpaceAfterLine(line);
+
                 renderedSize = renderedSize
                     .ExpandWidthIfBigger(line.RenderResult.RenderedWidth)
                     .ExpandHeight(line.RenderResult.RenderedHeight);
+
+                renderedSize = renderedSize
+                    .ExpandHeight(Math.Min(spaceAfterLine, renderArea.Height - renderedSize.Height));
             }
+
+            renderedSize = renderedSize
+                .ExpandHeight(Math.Min(_spacing.After, renderArea.Height - renderedSize.Height));
 
             return RenderResult.Done(renderedSize);
         }

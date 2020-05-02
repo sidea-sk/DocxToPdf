@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -14,6 +15,8 @@ namespace Sidea.DocxToPdf.Renderers
         private const double IN = 72;
         private const double CM = IN * 2.54d;
         private const double EMU = 914400;
+
+        private static readonly string[] _units = { "mm", "cm", "in", "pt", "pc", "pi" };
 
         public static XUnit EmuToXUnit(this Int64Value value)
         {
@@ -45,10 +48,35 @@ namespace Sidea.DocxToPdf.Renderers
             return value.Value.DxaToPoint();
         }
 
-        public static XUnit ToXUnit(this StringValue value)
+        public static XUnit ToXUnit(this StringValue value, double ifNull = 0)
         {
-            var v = Convert.ToInt32(value.Value);
-            return XUnit.FromPoint(v / 20d);
+            if(value == null)
+            {
+                return new XUnit(ifNull);
+            }
+
+            var (v, u) = value.ToValueWithUnit();
+            switch (u)
+            {
+                case "mm":
+                    return XUnit.FromMillimeter(v);
+                case "cm":
+                    return XUnit.FromCentimeter(v);
+                case "in":
+                    return v.InchToPoint();
+                case "pt":
+                    return  v.DxaToPoint();
+                case "pi":
+                    return XUnit.FromPresentation(v);
+                case "pc":
+                default:
+                    throw new Exception($"Unhandled string value: {value}");
+            }
+        }
+
+        public static long ToLong(this StringValue value)
+        {
+            return Convert.ToInt64(value.Value);
         }
 
         public static XUnit ToXUnit(this TableWidthType width) => width.ToXUnit(XUnit.Zero);
@@ -99,12 +127,22 @@ namespace Sidea.DocxToPdf.Renderers
             return brush;
         }
 
+        public static XUnit InchToPoint(this double value)
+        {
+            return value / IN;
+        }
+
         public static XUnit DxaToPoint(this uint value)
         {
             return value / DXA;
         }
 
         public static XUnit DxaToPoint(this int value)
+        {
+            return value / DXA;
+        }
+
+        public static XUnit DxaToPoint(this double value)
         {
             return value / DXA;
         }
@@ -122,6 +160,24 @@ namespace Sidea.DocxToPdf.Renderers
         {
             var offset = Convert.ToInt64(positionOffset.Text);
             return offset.EmuToXUnit();
+        }
+
+        private static (double v, string unit) ToValueWithUnit(this StringValue stringValue)
+        {
+            var l = stringValue.Value.Length > 2
+                ? stringValue.Value.Length - 2
+                : 0;
+
+            var u = stringValue.Value.Substring(l);
+
+            if (!_units.Contains(u))
+            {
+                l = stringValue.Value.Length;
+                u = "pt";
+            }
+
+            var v = stringValue.Value.Substring(0, l);
+            return (Convert.ToDouble(v), u);
         }
     }
 }

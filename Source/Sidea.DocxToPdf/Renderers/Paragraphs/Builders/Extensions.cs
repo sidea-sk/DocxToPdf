@@ -1,84 +1,39 @@
-﻿using System;
-using DocumentFormat.OpenXml.Wordprocessing;
-using PdfSharp.Drawing;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using Sidea.DocxToPdf.Renderers.Paragraphs.Models.Spacing;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 {
     internal static class Extensions
     {
-        public static bool OverridesFont(this Run run)
+        public static ParagraphSpacing Spacing(this Paragraph paragraph)
         {
-            return run.RunProperties.OverridesFont();
+            var spacingXml = paragraph.ParagraphProperties?.SpacingBetweenLines;
+
+            if(spacingXml == null)
+            {
+                return ParagraphSpacing.Default;
+            }
+
+            var before = spacingXml.Before.ToXUnit();
+            var after = spacingXml.After.ToXUnit();
+            var line = spacingXml.GetLineSpacing();
+
+            return new ParagraphSpacing(line, before, after);
         }
 
-        public static bool OverridesFont(this RunProperties properties)
+        private static LineSpacing GetLineSpacing(this SpacingBetweenLines spacingBetweenLines)
         {
-            return !(
-                properties?.FontSize == null
-                && properties?.Bold == null
-                && properties?.Italic == null
-                && properties?.Underline == null
-                && properties?.Strike == null)
-                ;
-        }
+            var rule = spacingBetweenLines.LineRule?.Value ?? LineSpacingRuleValues.Auto;
 
-        public static XFont CreateRunFont(this RunProperties properties, XFont defaultFont)
-        {
-            if (!properties.OverridesFont())
+            LineSpacing lineSpacing = rule switch
             {
-                return defaultFont;
-            }
+                LineSpacingRuleValues.Auto => new AutoLineSpacing(spacingBetweenLines.Line?.ToLong() ?? AutoLineSpacing.Default),
+                LineSpacingRuleValues.Exact => new ExactLineSpacing(spacingBetweenLines.Line.ToXUnit()),
+                LineSpacingRuleValues.AtLeast => new AtLeastLineSpacing(spacingBetweenLines.Line.ToXUnit()),
+                _ => new AutoLineSpacing(),
+            };
 
-            var fontSize = properties.ToXFontSize(defaultFont);
-            var fontStyle = properties.ToXFontStyle();
-
-            return new XFont(
-                    defaultFont.FontFamily.Name,
-                    fontSize,
-                    fontStyle,
-                    defaultFont.PdfOptions);
-        }
-
-        public static XUnit ToXFontSize(this RunProperties properties, XFont defaultFont)
-        {
-            if (properties.FontSize == null)
-            {
-                return defaultFont.Size;
-            }
-
-            var d = Convert.ToInt32(properties.FontSize.Val.Value);
-            return d.HPToPoint();
-        }
-
-        public static XFontStyle ToXFontStyle(this RunProperties properties)
-        {
-            var style = XFontStyle.Regular;
-            if (properties?.Bold?.Val ?? false)
-            {
-                style |= XFontStyle.Bold;
-            }
-
-            if (properties?.Italic?.Val ?? false)
-            {
-                style |= XFontStyle.Italic;
-            }
-
-            if (properties?.Strike?.Val ?? false)
-            {
-                style |= XFontStyle.Strikeout;
-            }
-
-            if ((properties?.Underline?.Val.Value ?? UnderlineValues.None) != UnderlineValues.None)
-            {
-                style |= XFontStyle.Underline;
-            }
-
-            return style;
-        }
-
-        public static XBrush ToBrush(this RunProperties properties)
-        {
-            return properties?.Color.ToXBrush() ?? XBrushes.Black;
+            return lineSpacing;
         }
     }
 }

@@ -6,6 +6,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Models;
+using Sidea.DocxToPdf.Renderers.Paragraphs.Models.Spacing;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 {
@@ -25,6 +26,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
         public static IEnumerable<RLine> CreateRenderingLines(
             this Paragraph paragraph,
             IReadOnlyCollection<RFixedDrawing> fixedDrawings,
+            LineSpacing lineSpacing,
             IPrerenderArea prerenderArea)
         {
             var lineAlignment = paragraph.GetLinesAlignment();
@@ -41,7 +43,8 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 line.CalculateContentSize(prerenderArea);
                 lines.Add(line);
 
-                vOffset += line.PrecalulatedSize.Height;
+                vOffset += line.PrecalulatedSize.Height
+                    + lineSpacing.CalculateSpaceAfterLine(line);
             } while (elements.Count > 0);
 
             return lines;

@@ -32,5 +32,11 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(ParagraphOverPage));
         }
+
+        [TestMethod]
+        public void ParagraphLineSpacing()
+        {
+            this.Generate(nameof(ParagraphLineSpacing));
+        }
     }
 }
