@@ -14,6 +14,7 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         private readonly XVector _translate;
 
         public RenderArea(
+            RenderingContext context,
             XFont font,
             XGraphics graphics,
             XRect area,
@@ -24,6 +25,8 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
             _translate = new XVector(area.X, area.Y);
             _imageAccessor = imageAccessor;
 
+            this.AreaRectangle = area;
+            this.Context = context;
             this.AreaFont = font;
             this.AreaRectangle = area;
             this.Options = renderingOptions;
@@ -32,6 +35,8 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         public XUnit Width => AreaRectangle.Width;
 
         public XUnit Height => AreaRectangle.Height;
+
+        public RenderingContext Context { get; }
 
         public XFont AreaFont { get; }
 
@@ -92,47 +97,38 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         IRenderArea IRenderArea.RestrictFromBottom(XUnit height)
         {
-            var r = new XRect(this.AreaRectangle.X, this.AreaRectangle.Y, this.AreaRectangle.Width, this.AreaRectangle.Height - height);
-            return new RenderArea(this.AreaFont, _graphics, r, _imageAccessor, this.Options);
+            var area = new XRect(this.AreaRectangle.X, this.AreaRectangle.Y, this.AreaRectangle.Width, this.AreaRectangle.Height - height);
+            return this.WithArea(area);
         }
 
         private RenderArea PanLeftCore(XUnit unit)
         {
-            return new RenderArea(
-                AreaFont,
-                _graphics,
-                new XRect(AreaRectangle.X + unit, AreaRectangle.Y, AreaRectangle.Width - unit, AreaRectangle.Height),
-                _imageAccessor,
-                this.Options);
+            var area = new XRect(AreaRectangle.X + unit, AreaRectangle.Y, AreaRectangle.Width - unit, AreaRectangle.Height);
+            return this.WithArea(area);
         }
 
         private RenderArea PanLeftDownCore(XSize size)
         {
-            // check XRect methods Offset, Inflate, etc.
-            return new RenderArea(
-                AreaFont,
-                _graphics,
-                new XRect(AreaRectangle.X + size.Width, AreaRectangle.Y + size.Height, AreaRectangle.Width - size.Width, AreaRectangle.Height - size.Height),
-                _imageAccessor,
-                this.Options);
+            var area = new XRect(AreaRectangle.X + size.Width, AreaRectangle.Y + size.Height, AreaRectangle.Width - size.Width, AreaRectangle.Height - size.Height);
+            return this.WithArea(area);
         }
 
         private RenderArea RestrictCore(XUnit width)
-        {
-            return new RenderArea(
-                 AreaFont,
-                 _graphics,
-                 new XRect(AreaRectangle.X, AreaRectangle.Y, width, AreaRectangle.Height),
-                 _imageAccessor,
-                 this.Options);
-        }
+            => this.RestrictCore(new XSize(width, this.AreaRectangle.Height));
 
         private RenderArea RestrictCore(XSize size)
         {
+            var area = new XRect(AreaRectangle.X, AreaRectangle.Y, size.Width, size.Height);
+            return this.WithArea(area);
+        }
+
+        private RenderArea WithArea(XRect area)
+        {
             return new RenderArea(
-                 AreaFont,
+                this.Context,
+                 this.AreaFont,
                  _graphics,
-                 new XRect(AreaRectangle.X, AreaRectangle.Y, size.Width, size.Height),
+                 area,
                  _imageAccessor,
                  this.Options);
         }

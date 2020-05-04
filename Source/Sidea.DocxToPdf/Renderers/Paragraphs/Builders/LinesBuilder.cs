@@ -69,19 +69,50 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 
         private static IEnumerable<RLineElement> ToLineElements(this Paragraph paragraph, IPrerenderArea prerenderArea)
         {
-            var elements = paragraph
-               .ChildsOfType<Run>()
-               .SelectMany(run => run.ToLineElements(prerenderArea.AreaFont))
-               .ToStack();
+            var runs = paragraph
+                .ChildElements
+                .Where(child => child is Run || child is SdtRun)
+                .SelectMany(child =>
+                {
+                    return child switch
+                    {
+                        Run r => new[] { r },
+                        SdtRun sdtRun => sdtRun.SdtContentRun.ChildElements.Cast<Run>(),
+                        _ => new Run[0]
+                    };
+                })
+                .ToStack();
+
+            var elements = new List<RLineElement>();
+            while(runs.Count > 0)
+            {
+                var run = runs.Pop();
+                if (run.IsFieldStart())
+                {
+                    var fieldRuns = new List<Run> { run };
+                    do
+                    {
+                        run = runs.Pop();
+                        fieldRuns.Add(run);
+                    } while (!run.IsFieldEnd());
+
+                    var field = fieldRuns.CreateField(prerenderArea.AreaFont);
+                    elements.Add(field);
+                }
+                else
+                {
+                    var runElements = run.ToLineElements(prerenderArea.AreaFont);
+                    elements.AddRange(runElements);
+                }
+            }
 
             return elements;
         }
 
         private static IEnumerable<RLineElement> ToLineElements(this Run run, XFont defaultFont)
         {
-            XFont font = run.RunProperties.CreateRunFont(defaultFont);
-            XBrush brush = run.RunProperties?.Color.ToXBrush() ?? XBrushes.Black;
-
+            var runStyle = run.Style(defaultFont);
+            
             var xtexts = run
                 .ChildElements
                 .Where(c => c is Text || c is TabChar || c is Drawing || c is Break)
@@ -89,8 +120,8 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 {
                     return c switch
                     {
-                        Text t => t.SplitToWords(font, brush).Cast<RLineElement>(),
-                        TabChar t => new RLineElement[] { new RText("    ", font, brush) },
+                        Text t => t.SplitToWords(runStyle.Font, runStyle.Brush).Cast<RLineElement>(),
+                        TabChar t => new RLineElement[] { new RText("    ", runStyle.Font, runStyle.Brush) },
                         Drawing d => d.ToRInlineDrawing(),
                         Break b => b.ToRLineElements(defaultFont),
                         _ => throw new Exception("unprocessed child")

@@ -11,7 +11,7 @@ namespace Sidea.DocxToPdf.Renderers
         {
             return xmlElement
                 .ChildElements
-                .Where(c => c is Paragraph || c is Table)
+                .Where(c => c is Paragraph || c is Table || c is SdtBlock)
                 .Cast<OpenXmlCompositeElement>();
         }
 
