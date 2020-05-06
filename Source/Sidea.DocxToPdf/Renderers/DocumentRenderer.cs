@@ -18,7 +18,9 @@ namespace Sidea.DocxToPdf.Renderers
         private readonly RenderingOptions _renderingOptions;
         private readonly List<IHeaderRenderer> _headerRenderers = new List<IHeaderRenderer>();
         private readonly List<IFooterRenderer> _footerRenderers = new List<IFooterRenderer>();
+
         private BodyRenderer _bodyRenderer;
+        private int _currentPage = 0;
 
         private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
 
@@ -30,6 +32,8 @@ namespace Sidea.DocxToPdf.Renderers
 
         public PdfDocument Render()
         {
+            _currentPage = 0;
+
             var pdf = new PdfDocument();
             this.PrepareContent(pdf);
             this.RenderCore(pdf);
@@ -69,10 +73,13 @@ namespace Sidea.DocxToPdf.Renderers
             var page = this.CreatePage(pdf);
             var graphics = XGraphics.FromPdfPage(page);
 
+            _currentPage++;
+
             var pageMargin = _docx.MainDocumentPart.GetPageMargin();
             var leftMargin = pageMargin.Left.ToXUnit();
             var rightMargin = pageMargin.Right.ToXUnit();
             var renderArea = new RenderArea(
+                new RenderingContext(_currentPage),
                 documentDefaultFont,
                 graphics, new XRect(leftMargin, 0, page.Width - leftMargin - rightMargin, page.Height),
                 new ImageAccessor(_docx.MainDocumentPart),
@@ -142,6 +149,7 @@ namespace Sidea.DocxToPdf.Renderers
             var contentArea = new XRect(leftMargin, 0, page.Width - leftMargin - rightMargin, page.Height);
 
             return new RenderArea(
+                new RenderingContext(0),
                 documentDefaultFont,
                 graphics,
                 contentArea,

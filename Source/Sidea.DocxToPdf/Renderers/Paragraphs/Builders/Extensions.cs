@@ -1,4 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
+using PdfSharp.Drawing;
+using Sidea.DocxToPdf.Renderers.Paragraphs.Models;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Models.Spacing;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
@@ -19,6 +21,14 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             var line = spacingXml.GetLineSpacing();
 
             return new ParagraphSpacing(line, before, after);
+        }
+
+        public static RStyle Style(this Run run, XFont defaultFont)
+        {
+            XFont font = run.RunProperties.CreateRunFont(defaultFont);
+            XBrush brush = run.RunProperties?.Color.ToXBrush() ?? XBrushes.Black;
+
+            return new RStyle(font, brush);
         }
 
         private static LineSpacing GetLineSpacing(this SpacingBetweenLines spacingBetweenLines)
