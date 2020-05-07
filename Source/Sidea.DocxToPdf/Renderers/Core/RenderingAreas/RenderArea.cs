@@ -13,7 +13,25 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         private readonly IImageAccessor _imageAccessor;
         private readonly XVector _translate;
 
-        public RenderArea(
+        public static RenderArea CreateNewPageRenderArea(
+            RenderingContext context,
+            XFont font,
+            XGraphics graphics,
+            IImageAccessor imageAccessor,
+            RenderingOptions renderingOptions)
+        {
+            return new RenderArea(
+                true,
+                context,
+                font,
+                graphics,
+                new XRect(graphics.PageSize),
+                imageAccessor,
+                renderingOptions);
+        }
+
+        private RenderArea(
+            bool pristine,
             RenderingContext context,
             XFont font,
             XGraphics graphics,
@@ -21,6 +39,7 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
             IImageAccessor imageAccessor,
             RenderingOptions renderingOptions)
         {
+            this.IsPristine = pristine;
             _graphics = graphics;
             _translate = new XVector(area.X, area.Y);
             _imageAccessor = imageAccessor;
@@ -44,23 +63,29 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         public RenderingOptions Options { get; }
 
+        public bool IsPristine { get; private set; }
+
         public void DrawLine(XPen pen, XPoint start, XPoint end)
         {
+            this.IsPristine = false;
             _graphics.DrawLine(pen, start + _translate, end + _translate);
         }
 
         public void DrawText(string text, XFont font, XBrush brush, XPoint position)
         {
+            this.IsPristine = false;
             _graphics.DrawString(text, font, brush, position + _translate);
         }
 
         public void DrawText(string text, XFont font, XBrush brush, XRect layout, XStringFormat stringFormat)
         {
+            this.IsPristine = false;
             _graphics.DrawString(text, font, brush, XRect.Offset(layout, _translate), stringFormat);
         }
 
         public void DrawRectangle(XPen pen, XBrush brush, XRect rect)
         {
+            this.IsPristine = false;
             _graphics.DrawRectangle(pen, brush, XRect.Offset(rect, _translate));
         }
 
@@ -125,12 +150,13 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         private RenderArea WithArea(XRect area)
         {
             return new RenderArea(
+                this.IsPristine,
                 this.Context,
-                 this.AreaFont,
-                 _graphics,
-                 area,
-                 _imageAccessor,
-                 this.Options);
+                this.AreaFont,
+                _graphics,
+                area,
+                _imageAccessor,
+                this.Options);
         }
     }
 }

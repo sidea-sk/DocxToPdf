@@ -8,14 +8,19 @@ namespace Sidea.DocxToPdf.Renderers.Core
 {
     internal class CompositeRenderer : RendererBase
     {
-        private readonly OpenXmlCompositeElement _openXmlComposite;
         private readonly RenderingOptions _renderingOptions;
         private readonly RendererFactory _factory = new RendererFactory();
         private readonly List<IRenderer> _renderers = new List<IRenderer>();
+        private readonly IEnumerable<OpenXmlCompositeElement> _childElements;
 
         public CompositeRenderer(OpenXmlCompositeElement openXmlComposite, RenderingOptions renderingOptions)
+            :this(openXmlComposite.RenderableChildren(), renderingOptions)
         {
-            _openXmlComposite = openXmlComposite;
+        }
+
+        public CompositeRenderer(IEnumerable<OpenXmlCompositeElement> childElements, RenderingOptions renderingOptions)
+        {
+            _childElements = childElements;
             _renderingOptions = renderingOptions;
         }
 
@@ -34,7 +39,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
             // TODO: padding
             // TODO: margin
             var size = new XSize(prerenderArea.Width, 0);
-            foreach (var child in _openXmlComposite.RenderableChildren())
+            foreach (var child in _childElements)
             {
                 var renderer = _factory.CreateRenderer(child, _renderingOptions);
                 _renderers.Add(renderer);
