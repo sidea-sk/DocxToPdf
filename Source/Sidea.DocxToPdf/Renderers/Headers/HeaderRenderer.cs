@@ -14,8 +14,7 @@ namespace Sidea.DocxToPdf.Renderers.Headers
 
         public HeaderRenderer(
             Header header,
-            PageMargin pageMargin,
-            RenderingOptions renderingOptions) : base(header, renderingOptions)
+            PageMargin pageMargin) : base(header)
         {
             _toHeaderMargin = pageMargin.Header.ToXUnit();
             _topMargin = pageMargin.Top.ToXUnit();

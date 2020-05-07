@@ -8,20 +8,17 @@ namespace Sidea.DocxToPdf.Renderers.Core
 {
     internal class CompositeRenderer : RendererBase
     {
-        private readonly RenderingOptions _renderingOptions;
         private readonly RendererFactory _factory = new RendererFactory();
         private readonly List<IRenderer> _renderers = new List<IRenderer>();
         private readonly IEnumerable<OpenXmlCompositeElement> _childElements;
 
-        public CompositeRenderer(OpenXmlCompositeElement openXmlComposite, RenderingOptions renderingOptions)
-            :this(openXmlComposite.RenderableChildren(), renderingOptions)
+        public CompositeRenderer(OpenXmlCompositeElement openXmlComposite): this(openXmlComposite.RenderableChildren())
         {
         }
 
-        public CompositeRenderer(IEnumerable<OpenXmlCompositeElement> childElements, RenderingOptions renderingOptions)
+        public CompositeRenderer(IEnumerable<OpenXmlCompositeElement> childElements)
         {
             _childElements = childElements;
-            _renderingOptions = renderingOptions;
         }
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
@@ -41,7 +38,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
             var size = new XSize(prerenderArea.Width, 0);
             foreach (var child in _childElements)
             {
-                var renderer = _factory.CreateRenderer(child, _renderingOptions);
+                var renderer = _factory.CreateRenderer(child);
                 _renderers.Add(renderer);
                 renderer.CalculateContentSize(prerenderArea);
                 size = size.ExpandHeight(renderer.PrecalulatedSize.Height);

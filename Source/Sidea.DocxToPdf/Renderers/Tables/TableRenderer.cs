@@ -12,23 +12,21 @@ namespace Sidea.DocxToPdf.Renderers.Tables
     internal class TableRenderer : RendererBase
     {
         private readonly Table _table;
-        private readonly RenderingOptions _renderingOptions;
         private readonly RGrid _grid;
         private RCell[] _cells = new RCell[0];
 
         private RLayout _layout = null;
 
-        public TableRenderer(Table table, RenderingOptions renderingOptions)
+        public TableRenderer(Table table)
         {
             _table = table;
-            _renderingOptions = renderingOptions;
             _grid = _table.InitializeGrid();
         }
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
             _cells = _table
-                .RCells(_grid, _renderingOptions)
+                .RCells(_grid)
                 .ToArray();
 
             _layout = new RLayout(_grid, _cells);

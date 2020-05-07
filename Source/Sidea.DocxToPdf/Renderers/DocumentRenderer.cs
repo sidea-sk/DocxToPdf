@@ -78,7 +78,7 @@ namespace Sidea.DocxToPdf.Renderers
                 .Select(sectionData => {
                     var prerenderArea = this.CreatePrerenderArea(pdf, _documentFont);
 
-                    var sectionRenderer = new SectionRenderer(sectionData, _renderingOptions);
+                    var sectionRenderer = new SectionRenderer(sectionData);
                     sectionRenderer.CalculateContentSize(prerenderArea);
 
                     this.DeletePrerenderPage(pdf);
@@ -114,7 +114,7 @@ namespace Sidea.DocxToPdf.Renderers
 
             var renderer = header == null
                 ? (IHeaderRenderer)new NoHeaderRenderer(pageMargin)
-                : new HeaderRenderer(header, pageMargin, _renderingOptions);
+                : new HeaderRenderer(header, pageMargin);
 
             renderer.CalculateContentSize(renderArea);
             renderer.Render(renderArea);
@@ -129,7 +129,7 @@ namespace Sidea.DocxToPdf.Renderers
 
             var renderer = footer == null
                 ? (IFooterRenderer)new NoFooterRenderer(pageMargin)
-                : new FooterRenderer(footer, pageMargin, _renderingOptions);
+                : new FooterRenderer(footer, pageMargin);
 
             renderer.CalculateContentSize(renderArea);
             renderer.Render(renderArea);
