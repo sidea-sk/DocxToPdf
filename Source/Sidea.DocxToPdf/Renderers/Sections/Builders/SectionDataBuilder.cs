@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml;
+using PdfSharp;
 using Sidea.DocxToPdf.Renderers.Common;
 using Sidea.DocxToPdf.Renderers.Sections.Models;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
@@ -49,6 +50,9 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
         private static SectionProperties ToModel(this Word.SectionProperties wordSectionProperties, bool isFirstSection)
         {
             var pageMargin = wordSectionProperties.ChildsOfType<Word.PageMargin>().Single();
+            var pageOrientation = wordSectionProperties.GetPageOrientation() == Word.PageOrientationValues.Landscape
+                ? PageOrientation.Landscape
+                : PageOrientation.Portrait;
 
             var margin = new Margin(
                 pageMargin.Top.ToXUnit(),
@@ -61,7 +65,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                 ? RenderBehaviour.NewPage
                 : RenderBehaviour.Continue;
 
-            return new SectionProperties(margin, PdfSharp.PageOrientation.Portrait, renderBehaviour);
+            return new SectionProperties(margin, pageOrientation, renderBehaviour);
         }
     }
 }
