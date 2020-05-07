@@ -5,7 +5,6 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
     internal interface IRenderArea : IRenderingAreaBase
     {
         RenderingContext Context { get; }
-        bool IsPristine { get; }
 
         void DrawText(string text, XFont font, XBrush brush, XPoint position);
         void DrawText(string text, XFont font, XBrush brush, XRect layout, XStringFormat stringFormat);
