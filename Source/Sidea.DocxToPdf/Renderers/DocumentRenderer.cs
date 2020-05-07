@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
-using Sidea.DocxToPdf.Renderers.Bodies;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 using Sidea.DocxToPdf.Renderers.Core.Services;
 using Sidea.DocxToPdf.Renderers.Footers;
 using Sidea.DocxToPdf.Renderers.Headers;
+using Sidea.DocxToPdf.Renderers.Sections;
+using Sidea.DocxToPdf.Renderers.Sections.Builders;
 
 namespace Sidea.DocxToPdf.Renderers
 {
@@ -18,8 +20,8 @@ namespace Sidea.DocxToPdf.Renderers
         private readonly RenderingOptions _renderingOptions;
         private readonly List<IHeaderRenderer> _headerRenderers = new List<IHeaderRenderer>();
         private readonly List<IFooterRenderer> _footerRenderers = new List<IFooterRenderer>();
+        private readonly List<SectionRenderer> _sectionRenderers = new List<SectionRenderer>();
 
-        private BodyRenderer _bodyRenderer;
         private int _currentPage = 0;
 
         private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
@@ -42,52 +44,50 @@ namespace Sidea.DocxToPdf.Renderers
 
         private void PrepareContent(PdfDocument pdf)
         {
-            var prerenderPage = this.CreateNewPagePrerenderArea(pdf, _documentFont);
-            var prerenderArea = prerenderPage;
-
             _headerRenderers.Clear();
+            _footerRenderers.Clear();
 
-            _bodyRenderer = new BodyRenderer(_docx.MainDocumentPart.Document.Body, _renderingOptions);
-            _bodyRenderer.CalculateContentSize(prerenderArea);
-
-            this.DeletePrerenderPage(pdf);
+            _sectionRenderers.Clear();
+            _sectionRenderers.AddRange(this.PrepareSectionRenderers(pdf));
         }
 
         private void RenderCore(PdfDocument pdf)
         {
-            var currentRenderingArea = this.PrepareNewPageRenderingArea(pdf, _documentFont);
-
-            while(_bodyRenderer.RenderResult.Status != RenderingStatus.Done)
+            IRenderArea renderArea = null;
+            foreach(var sectionRenderer in _sectionRenderers)
             {
-                _bodyRenderer.Render(currentRenderingArea);
-
-                if(_bodyRenderer.RenderResult.Status == RenderingStatus.ReachedEndOfArea)
+                if(sectionRenderer.SectionProperties.RenderBehaviour == Sections.Models.RenderBehaviour.NewPage)
                 {
-                    currentRenderingArea = this.PrepareNewPageRenderingArea(pdf, _documentFont);
+                    renderArea = this.CreateNewRenderArea(pdf, _documentFont);
                 }
+
+                do
+                {
+                    sectionRenderer.Render(renderArea);
+                    renderArea = sectionRenderer.RenderResult.Status != RenderingStatus.Done
+                        ? this.CreateNewRenderArea(pdf, _documentFont)
+                        : renderArea.PanDown(sectionRenderer.RenderResult.RenderedHeight);
+                } while (sectionRenderer.RenderResult.Status != RenderingStatus.Done);
             }
         }
 
-        private IRenderArea PrepareNewPageRenderingArea(PdfDocument pdf, XFont documentDefaultFont)
+        private IEnumerable<SectionRenderer> PrepareSectionRenderers(PdfDocument pdf)
         {
-            var page = this.CreatePage(pdf);
-            var graphics = XGraphics.FromPdfPage(page);
+            var sectionRenderers = _docx.MainDocumentPart.Document.Body
+                .SplitToSections()
+                .Select(sectionData => {
+                    var prerenderArea = this.CreatePrerenderArea(pdf, _documentFont);
 
-            _currentPage++;
+                    var sectionRenderer = new SectionRenderer(sectionData, _renderingOptions);
+                    sectionRenderer.CalculateContentSize(prerenderArea);
 
-            var pageMargin = _docx.MainDocumentPart.GetPageMargin();
-            var leftMargin = pageMargin.Left.ToXUnit();
-            var rightMargin = pageMargin.Right.ToXUnit();
-            var renderArea = new RenderArea(
-                new RenderingContext(_currentPage),
-                documentDefaultFont,
-                graphics, new XRect(leftMargin, 0, page.Width - leftMargin - rightMargin, page.Height),
-                new ImageAccessor(_docx.MainDocumentPart),
-                _renderingOptions);
+                    this.DeletePrerenderPage(pdf);
 
-            IRenderArea bodyRenderArea = this.RenderHeaderAndFooter(renderArea);
-            graphics.DrawRectangle(XPens.Orange, bodyRenderArea.AreaRectangle);
-            return bodyRenderArea;
+                    return sectionRenderer;
+                })
+                .ToArray();
+
+            return sectionRenderers;
         }
 
         private IRenderArea RenderHeaderAndFooter(RenderArea renderArea)
@@ -137,24 +137,36 @@ namespace Sidea.DocxToPdf.Renderers
             return renderer;
         }
 
-        private IPrerenderArea CreateNewPagePrerenderArea(PdfDocument pdf, XFont documentDefaultFont)
+        private IPrerenderArea CreatePrerenderArea(PdfDocument pdf, XFont documentDefaultFont)
         {
             var page = pdf.AddPage();
             var graphics = XGraphics.FromPdfPage(page);
 
-            var pageMargin = _docx.MainDocumentPart.GetPageMargin();
-            var leftMargin = pageMargin.Left.ToXUnit();
-            var rightMargin = pageMargin.Right.ToXUnit();
-
-            var contentArea = new XRect(leftMargin, 0, page.Width - leftMargin - rightMargin, page.Height);
-
-            return new RenderArea(
+            return RenderArea.CreateNewPageRenderArea(
                 new RenderingContext(0),
                 documentDefaultFont,
                 graphics,
-                contentArea,
                 new ImageAccessor(_docx.MainDocumentPart),
                 _renderingOptions);
+        }
+
+        private IRenderArea CreateNewRenderArea(
+            PdfDocument pdf,
+            XFont documentDefaultFont)
+        {
+            var page = this.CreatePage(pdf);
+            var graphics = XGraphics.FromPdfPage(page);
+            _currentPage++;
+
+            var renderArea = RenderArea.CreateNewPageRenderArea(
+                new RenderingContext(_currentPage),
+                documentDefaultFont,
+                graphics,
+                new ImageAccessor(_docx.MainDocumentPart),
+                _renderingOptions);
+
+            IRenderArea sectionRenderArea = this.RenderHeaderAndFooter(renderArea);
+            return sectionRenderArea;
         }
 
         private void DeletePrerenderPage(PdfDocument pdf)
@@ -170,8 +182,6 @@ namespace Sidea.DocxToPdf.Renderers
             };
 
             pdf.AddPage(page);
-
-           
 
             return page;
         }

@@ -13,7 +13,23 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         private readonly IImageAccessor _imageAccessor;
         private readonly XVector _translate;
 
-        public RenderArea(
+        public static RenderArea CreateNewPageRenderArea(
+            RenderingContext context,
+            XFont font,
+            XGraphics graphics,
+            IImageAccessor imageAccessor,
+            RenderingOptions renderingOptions)
+        {
+            return new RenderArea(
+                context,
+                font,
+                graphics,
+                new XRect(graphics.PageSize),
+                imageAccessor,
+                renderingOptions);
+        }
+
+        private RenderArea(
             RenderingContext context,
             XFont font,
             XGraphics graphics,
@@ -126,11 +142,11 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         {
             return new RenderArea(
                 this.Context,
-                 this.AreaFont,
-                 _graphics,
-                 area,
-                 _imageAccessor,
-                 this.Options);
+                this.AreaFont,
+                _graphics,
+                area,
+                _imageAccessor,
+                this.Options);
         }
     }
 }
