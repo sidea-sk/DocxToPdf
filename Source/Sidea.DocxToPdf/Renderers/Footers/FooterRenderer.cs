@@ -13,8 +13,7 @@ namespace Sidea.DocxToPdf.Renderers.Footers
 
         public FooterRenderer(
             Footer footer,
-            PageMargin pageMargin,
-            RenderingOptions renderingOptions) : base(footer, renderingOptions)
+            PageMargin pageMargin) : base(footer)
         {
             _bottomMargin = pageMargin.Bottom.ToXUnit();
             _toFooterMargin = pageMargin.Footer.ToXUnit();

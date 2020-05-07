@@ -5,7 +5,7 @@ namespace Sidea.DocxToPdf.Renderers.Bodies
 {
     internal class BlockRenderer : CompositeRenderer
     {
-        public BlockRenderer(SdtBlock block, RenderingOptions renderingOptions) : base(block.SdtContentBlock, renderingOptions)
+        public BlockRenderer(SdtBlock block) : base(block.SdtContentBlock)
         {
         }
     }

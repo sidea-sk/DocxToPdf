@@ -8,16 +8,13 @@ namespace Sidea.DocxToPdf.Renderers.Core
 {
     internal class RendererFactory
     {
-        public IRenderer CreateRenderer(OpenXmlCompositeElement forElement, RenderingOptions renderingOptions)
+        public IRenderer CreateRenderer(OpenXmlCompositeElement forElement)
         {
             return forElement switch
             {
-                SdtBlock b => new BlockRenderer(b, renderingOptions),
+                SdtBlock b => new BlockRenderer(b),
                 Paragraph p => new ParagraphRenderer(p),
-                Table t => new TableRenderer(t, renderingOptions),
-                // Header h => new UnknownElementRenderer(),
-                // Footer f => new UnknownElementRenderer(),
-                // Drawing d => new UnknownElementRenderer(),
+                Table t => new TableRenderer(t),
                 _ => new UnknownElementRenderer()
             };
         }

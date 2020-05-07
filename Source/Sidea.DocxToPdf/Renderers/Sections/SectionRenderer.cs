@@ -7,7 +7,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections
 {
     internal class SectionRenderer : CompositeRenderer
     {
-        public SectionRenderer(SectionData sectionData, RenderingOptions renderingOptions): base(sectionData.Elements, renderingOptions)
+        public SectionRenderer(SectionData sectionData): base(sectionData.Elements)
         {
             this.SectionProperties = sectionData.Properties;
         }
