@@ -147,7 +147,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
             return info;
         }
 
-
         private class GridSpanInfo
         {
             public int RowSpan { get; set; }

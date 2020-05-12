@@ -121,7 +121,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                 return new[] { new SectionColumn(totalColumnsWidth, new XUnit(0)) };
             }
 
-            if(columns.EqualWidth == null || columns.EqualWidth.Value == true)
+            if(columns.EqualWidth.IsOn(true))
             {
                 var space = columns.Space.ToXUnit();
                 var columnWidth = (totalColumnsWidth - space * (columnsCount - 1)) / columnsCount;

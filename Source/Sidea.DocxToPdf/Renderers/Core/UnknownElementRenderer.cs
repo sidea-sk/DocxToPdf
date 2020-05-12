@@ -9,7 +9,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
 
         public XSize RenderedSize => new XSize(0, 0);
 
-        public RenderResult RenderResult => RenderResult.Unprepared;
+        public RenderResult RenderResult => RenderResult.DoneEmpty;
 
         public void CalculateContentSize(IPrerenderArea prerenderArea)
         {
