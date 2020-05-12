@@ -6,11 +6,6 @@ namespace Sidea.DocxToPdf.Renderers
 {
     internal static class ParagraphXmlExtensions
     {
-        public static bool OverridesFont(this Run run)
-        {
-            return run.RunProperties.OverridesFont();
-        }
-
         public static bool OverridesFont(this RunProperties properties)
         {
             return !(
@@ -74,11 +69,6 @@ namespace Sidea.DocxToPdf.Renderers
             }
 
             return style;
-        }
-
-        public static XBrush ToBrush(this RunProperties properties)
-        {
-            return properties?.Color.ToXBrush() ?? XBrushes.Black;
         }
     }
 }

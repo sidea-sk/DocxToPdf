@@ -9,17 +9,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
 {
     internal static class Extensions
     {
-        public static Alignment GetAlignment(this TableProperties properties)
-        {
-            return Alignment.Left;
-        }
-
-        public static XUnit GetTableWidth(this TableProperties properties, XUnit availableWidth)
-        {
-            var w = properties.TableWidth.ToXUnit(availableWidth);
-            return w;
-        }
-
         public static IEnumerable<XUnit> GetGridColumnWidths(this Table table)
         {
             var grid = table.Grid();
@@ -27,18 +16,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
             var widths = columns
                 .Select(c => c.Width.ToXUnit());
             return widths;
-        }
-
-        public static XUnit CellWidth(this TableCell cell, int index, IEnumerable<XUnit> columnWidths)
-        {
-            var gridSpan = cell.GridSpan();
-            var colSpan = Convert.ToInt32(gridSpan.Val.Value);
-            var width = columnWidths
-                .Skip(index)
-                .Take(colSpan)
-                .Aggregate(XUnit.Zero, (col, acc) => acc + col);
-
-            return width;
         }
 
         public static RGridRow ToGridRow(this TableRow row)

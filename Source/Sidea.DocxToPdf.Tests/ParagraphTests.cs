@@ -44,5 +44,11 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(ParagraphLineSpacing));
         }
+
+        [TestMethod]
+        public void VeryLongTextWithoutSpaces()
+        {
+            this.Generate(nameof(VeryLongTextWithoutSpaces));
+        }
     }
 }

@@ -30,7 +30,7 @@ namespace Sidea.DocxToPdf.Renderers
 
         public static Stack<T> ToStack<T>(this IEnumerable<T> source, bool reverseOrder = true)
         {
-            var content = reverseOrder 
+            var content = reverseOrder
                 ? source.Reverse()
                 : source;
 

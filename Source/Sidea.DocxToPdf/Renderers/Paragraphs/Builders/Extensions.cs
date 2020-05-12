@@ -40,7 +40,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 LineSpacingRuleValues.Auto => new AutoLineSpacing(spacingBetweenLines.Line?.ToLong() ?? AutoLineSpacing.Default),
                 LineSpacingRuleValues.Exact => new ExactLineSpacing(spacingBetweenLines.Line.ToXUnit()),
                 LineSpacingRuleValues.AtLeast => new AtLeastLineSpacing(spacingBetweenLines.Line.ToXUnit()),
-                _ => new AutoLineSpacing(),
+                _ => new AutoLineSpacing()
             };
 
             return lineSpacing;
