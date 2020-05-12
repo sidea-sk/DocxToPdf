@@ -214,7 +214,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 
         private static RLineElement[] ToRLineElements(this Break @break, XFont font)
         {
-            return new RLineElement[] { new RPageBreak(font) };
+            return new RLineElement[] { new RBreak(@break.Type.Value.ToString(), font) };
         }
 
         private static RInlineDrawing[] ToRInlineDrawing(this Drawing drawing)

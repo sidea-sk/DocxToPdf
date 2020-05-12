@@ -59,7 +59,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
                 _paragraph.Render(lineArea.PanLeft(pan));
             }
 
-            return _elements.LastOrDefault()?.Element is RPageBreak
+            return _elements.LastOrDefault()?.Element is RBreak
                 ? RenderResult.EndOfRenderArea(renderArea.AreaRectangle)
                 : RenderResult.Done(this.PrecalulatedSize);
         }

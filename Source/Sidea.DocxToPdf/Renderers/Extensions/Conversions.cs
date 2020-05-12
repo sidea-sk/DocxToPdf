@@ -132,6 +132,26 @@ namespace Sidea.DocxToPdf.Renderers
             return value / IN;
         }
 
+        public static XUnit DxaToPoint(this Int32Value value)
+        {
+            if (!value.HasValue)
+            {
+                return XUnit.Zero;
+            }
+
+            return value.Value.DxaToPoint();
+        }
+
+        public static XUnit DxaToPoint(this UInt32Value value)
+        {
+            if (!value.HasValue)
+            {
+                return XUnit.Zero;
+            }
+
+            return value.Value.DxaToPoint();
+        }
+
         public static XUnit DxaToPoint(this uint value)
         {
             return value / DXA;

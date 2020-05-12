@@ -65,7 +65,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 var element = fromElements.Pop();
                 element.CalculateContentSize(prerenderArea);
 
-                if(element is RPageBreak)
+                if(element is RBreak)
                 {
                     if(segmentElements.Count > 0)
                     {

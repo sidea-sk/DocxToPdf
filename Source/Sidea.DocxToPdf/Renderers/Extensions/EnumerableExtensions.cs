@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sidea.DocxToPdf.Renderers
@@ -34,6 +35,22 @@ namespace Sidea.DocxToPdf.Renderers
                 : source;
 
             return new Stack<T>(content);
+        }
+
+        public static int IndexOf<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+        {
+            var i = 0;
+            foreach(var e in source)
+            {
+                if (predicate(e))
+                {
+                    return i;
+                }
+
+                i++;
+            }
+
+            return -1;
         }
     }
 }
