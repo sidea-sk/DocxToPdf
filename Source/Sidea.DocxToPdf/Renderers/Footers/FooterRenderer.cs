@@ -1,8 +1,9 @@
 ﻿using System;
-using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
+using Sidea.DocxToPdf.Renderers.Common;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
+using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Renderers.Footers
 {
@@ -12,11 +13,11 @@ namespace Sidea.DocxToPdf.Renderers.Footers
         private readonly XUnit _toFooterMargin;
 
         public FooterRenderer(
-            Footer footer,
+            Word.Footer footer,
             PageMargin pageMargin) : base(footer)
         {
-            _bottomMargin = pageMargin.Bottom.ToXUnit();
-            _toFooterMargin = pageMargin.Footer.ToXUnit();
+            _bottomMargin = pageMargin.Bottom;
+            _toFooterMargin = pageMargin.Footer;
         }
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)

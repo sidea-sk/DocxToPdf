@@ -1,9 +1,9 @@
 ﻿using System;
-
-using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
+using Sidea.DocxToPdf.Renderers.Common;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
+using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Renderers.Headers
 {
@@ -13,11 +13,11 @@ namespace Sidea.DocxToPdf.Renderers.Headers
         private readonly XUnit _toHeaderMargin;
 
         public HeaderRenderer(
-            Header header,
+            Word.Header header,
             PageMargin pageMargin) : base(header)
         {
-            _toHeaderMargin = pageMargin.Header.ToXUnit();
-            _topMargin = pageMargin.Top.ToXUnit();
+            _toHeaderMargin = pageMargin.Header;
+            _topMargin = pageMargin.Top;
         }
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)

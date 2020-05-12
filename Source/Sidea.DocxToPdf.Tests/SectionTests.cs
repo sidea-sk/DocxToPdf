@@ -16,6 +16,12 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        public void Columns()
+        {
+            this.Generate(nameof(Columns));
+        }
+
+        [TestMethod]
         public void PageOrientation()
         {
             this.Generate(nameof(PageOrientation));

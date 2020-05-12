@@ -1,5 +1,5 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
-using PdfSharp.Drawing;
+﻿using PdfSharp.Drawing;
+using Sidea.DocxToPdf.Renderers.Common;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
@@ -11,7 +11,7 @@ namespace Sidea.DocxToPdf.Renderers.Footers
 
         public NoFooterRenderer(PageMargin pageMargin)
         {
-            _bottomMargin = pageMargin.Bottom.ToXUnit();
+            _bottomMargin = pageMargin.Bottom;
         }
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
