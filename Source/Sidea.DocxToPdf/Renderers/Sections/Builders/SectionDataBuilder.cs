@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml;
-using PdfSharp;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Common;
 using Sidea.DocxToPdf.Renderers.Sections.Models;
@@ -66,7 +65,10 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                             }
                             else
                             {
-                                stack.Push(end);
+                                if (end != null)
+                                {
+                                    stack.Push(end);
+                                }
 
                                 partElements.Add(begin);
                                 sectionParts.Add(new SectionPart(@break, partElements.ToArray()));
@@ -159,7 +161,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
 
             var beginElements = paragraph
                 .ChildElements
-                .Take(index)
+                .Take(index + 1)
                 .Select(r => r.CloneNode(true))
                 .ToArray();
 
@@ -174,14 +176,16 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                 .Select(r => r.CloneNode(true))
                 .ToArray();
 
-            var end = new Word.Paragraph(endElements)
-            {
-                ParagraphProperties = (Word.ParagraphProperties)paragraph.ParagraphProperties.CloneNode(true)
-            };
+            var end = endElements.Length == 0
+                ? null
+                : new Word.Paragraph(endElements)
+                {
+                    ParagraphProperties = (Word.ParagraphProperties)paragraph.ParagraphProperties.CloneNode(true)
+                };
 
-            var breakRun = (Word.Run)(paragraph
+            var breakRun = (Word.Run)paragraph
                 .ChildElements
-                .ElementAt(index));
+                .ElementAt(index);
 
             var breakType = breakRun
                 .ChildElements

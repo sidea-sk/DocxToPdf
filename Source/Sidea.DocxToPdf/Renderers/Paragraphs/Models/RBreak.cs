@@ -4,13 +4,14 @@ using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 {
-    internal class RPageBreak : RLineElement
+    internal class RBreak : RLineElement
     {
-        private const string _text = "------ Page Break ------";
+        private readonly string _text;
         private readonly XFont _font;
 
-        public RPageBreak(XFont font)
+        public RBreak(string name, XFont font)
         {
+            _text = $"------ {name} Break ------";
             _font = new XFont(font.Name, XUnit.FromPoint(6));
         }
 
