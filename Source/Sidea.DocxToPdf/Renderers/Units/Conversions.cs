@@ -10,7 +10,6 @@ namespace Sidea.DocxToPdf.Renderers
     internal static class Conversions
     {
         private const double HalfPoint = 2;
-        private const double EightPoint = 8;
         private const double DXA = 20;
         private const double PERCENT = 50;
         private const double INCH = 72;
