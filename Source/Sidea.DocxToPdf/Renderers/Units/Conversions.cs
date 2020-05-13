@@ -186,7 +186,7 @@ namespace Sidea.DocxToPdf.Renderers
         public static XColor ToXColor(this StringValue color)
         {
             var hex = color?.Value;
-            if (hex == null)
+            if (hex == null || hex == "auto")
             {
                 return XColor.FromArgb(255, 0, 0, 0);
             }
