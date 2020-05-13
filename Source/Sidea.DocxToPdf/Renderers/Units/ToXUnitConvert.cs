@@ -3,7 +3,7 @@ using PdfSharp.Drawing;
 
 namespace Sidea.DocxToPdf.Renderers
 {
-    internal static class BaseConvert
+    internal static class ToXUnitConvert
     {
         public static XUnit ToXUnit(this Int32Value value, double factor)
         {
