@@ -49,6 +49,8 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
                 {
                     var gridPosition = GetCellGridPosition(rowIndex, index, spans);
                     var outerWidth = gridPositionService.CalculateWidth(gridPosition);
+                    var border = cell.TableCellProperties.GetBorder();
+
                     return new RCell(cell, gridPosition, border, outerWidth);
                 })
                 .ToArray();

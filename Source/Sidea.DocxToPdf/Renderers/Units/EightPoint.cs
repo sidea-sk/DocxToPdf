@@ -9,7 +9,7 @@ namespace Sidea.DocxToPdf.Renderers
 
         public static XUnit EpToXUnit(this UInt32Value value)
         {
-            if (!value.HasValue)
+            if (!(value?.HasValue ?? false))
             {
                 return XUnit.Zero;
             }

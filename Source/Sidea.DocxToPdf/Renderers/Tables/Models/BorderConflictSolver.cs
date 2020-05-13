@@ -17,30 +17,50 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
         public XPen GetTopBorderPen(RCell cell)
         {
-            return cell.GridPosition.Row == 0
-                ? _tableBorder.Top
-                : _tableBorder.InsideHorizontal;
+            return cell.Border.Top ?? this.DefaultTopBorderPen(cell.GridPosition);
         }
 
         public XPen GetRightBorderPen(RCell cell)
         {
-            return cell.GridPosition.Column + cell.GridPosition.ColumnSpan == _grid.ColumnsCount
-                ? _tableBorder.Right
-                : _tableBorder.InsideVertical;
+            return cell.Border.Right ?? this.DefaultRightBorderPen(cell.GridPosition);
         }
 
         public XPen GetBottomBorderPen(RCell cell)
         {
-            return cell.GridPosition.Row + cell.GridPosition.RowSpan == _grid.RowsCount
-                ? _tableBorder.Bottom
-                : _tableBorder.InsideHorizontal;
+            return cell.Border.Bottom ?? this.DefaultBottomBorderPen(cell.GridPosition);
         }
 
         public XPen GetLeftBorderPen(RCell cell)
         {
-            return cell.GridPosition.Column == 0
-                ? _tableBorder.Left
-                : _tableBorder.InsideVertical;
+            return cell.Border.Left ?? this.DefaultLeftBorderPen(cell.GridPosition);
+        }
+
+        private XPen DefaultTopBorderPen(GridPosition gridPosition)
+        {
+            return gridPosition.Row == 0
+                ? _tableBorder.Top
+                : _tableBorder.InsideHorizontal;
+        }
+
+        private XPen DefaultRightBorderPen(GridPosition gridPosition)
+        {
+            return gridPosition.Column + gridPosition.ColumnSpan == _grid.ColumnsCount
+               ? _tableBorder.Right
+               : _tableBorder.InsideVertical;
+        }
+
+        private XPen DefaultBottomBorderPen(GridPosition gridPosition)
+        {
+            return gridPosition.Row + gridPosition.RowSpan == _grid.RowsCount
+                ? _tableBorder.Bottom
+                : _tableBorder.InsideHorizontal;
+        }
+
+        private XPen DefaultLeftBorderPen(GridPosition gridPosition)
+        {
+            return gridPosition.Column == 0
+               ? _tableBorder.Left
+               : _tableBorder.InsideVertical;
         }
     }
 }
