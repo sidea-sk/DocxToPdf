@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
@@ -12,25 +11,25 @@ namespace Sidea.DocxToPdf.Renderers.Tables
     internal class TableRenderer : RendererBase
     {
         private readonly Table _table;
-        private readonly RGrid _grid;
-        private RCell[] _cells = new RCell[0];
-
         private RLayout _layout = null;
 
         public TableRenderer(Table table)
         {
             _table = table;
-            _grid = _table.InitializeGrid();
         }
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            _cells = _table
-                .RCells(_grid)
+            var grid = _table.InitializeGrid();
+            var cells = _table
+                .RCells(grid)
                 .ToArray();
 
-            _layout = new RLayout(_grid, _cells);
+            var tableBorder = _table.Properties().TableBorders.GetBorder();
+
+            _layout = new RLayout(grid, cells, tableBorder);
             _layout.CalculateContentSize(prerenderArea);
+
             return _layout.PrecalulatedSize;
         }
 

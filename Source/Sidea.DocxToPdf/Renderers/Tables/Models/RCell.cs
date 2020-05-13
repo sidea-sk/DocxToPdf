@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
-using Sidea.DocxToPdf.Renderers.Borders;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 
@@ -13,12 +12,12 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         private readonly RendererFactory _factory = new RendererFactory();
         private readonly List<IRenderer> _childRenderers = new List<IRenderer>();
         private readonly XUnit _outerWidth;
-        private readonly RPadding _padding; 
+        private readonly RPadding _padding;
 
         public RCell(
             TableCell cell,
             GridPosition gridPosition,
-            BorderStyle border,
+            CellBorderStyle border,
             XUnit outerWidth)
         {
             _cell = cell;
@@ -31,7 +30,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
         public GridPosition GridPosition { get; }
 
-        public BorderStyle Border { get; }
+        public CellBorderStyle Border { get; }
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {

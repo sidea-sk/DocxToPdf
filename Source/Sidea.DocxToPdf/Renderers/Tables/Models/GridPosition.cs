@@ -20,6 +20,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             this.RowSpan = rowSpan;
             this.ColumnSpan = columnSpan;
             this.IsLastVerticalCell = isLastVerticalCell;
+
             _rowIndeces = rowSpan > 0
                 ? Enumerable.Range(row, rowSpan).ToArray()
                 : new int[0];

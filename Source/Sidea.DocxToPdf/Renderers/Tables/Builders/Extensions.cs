@@ -9,6 +9,44 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
 {
     internal static class Extensions
     {
+        public static TableBorderStyle GetBorder(this TableBorders borders)
+        {
+            if (borders == null)
+            {
+                return TableBorderStyle.Default;
+            }
+
+            var top = borders.TopBorder.ToXPen();
+            var right = borders.RightBorder.ToXPen();
+            var bottom = borders.BottomBorder.ToXPen();
+            var left = borders.LeftBorder.ToXPen();
+            var insideH = borders.InsideHorizontalBorder.ToXPen(TableBorderStyle.Default.InsideHorizontal);
+            var insideV = borders.InsideVerticalBorder.ToXPen(TableBorderStyle.Default.InsideVertical);
+
+            return new TableBorderStyle(top, right, bottom, left, insideH, insideV);
+        }
+
+
+        public static CellBorderStyle GetBorder(this TableCellProperties properties)
+        {
+            return properties?.TableCellBorders.ToCellBorderStyle() ?? CellBorderStyle.Inherit;
+        }
+
+        public static CellBorderStyle ToCellBorderStyle(this TableCellBorders borders)
+        {
+            if (borders == null)
+            {
+                return CellBorderStyle.Inherit;
+            }
+
+            var top = borders.TopBorder.ToXPen();
+            var right = borders.RightBorder.ToXPen();
+            var bottom = borders.BottomBorder.ToXPen();
+            var left = borders.LeftBorder.ToXPen();
+
+            return new CellBorderStyle(top, right, bottom, left);
+        }
+
         public static IEnumerable<XUnit> GetGridColumnWidths(this Table table)
         {
             var grid = table.Grid();

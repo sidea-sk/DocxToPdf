@@ -9,18 +9,15 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
     internal class RLayout : RendererBase
     {
-        private readonly XPen _cellBorderPen = new XPen(XPens.Black)
-        {
-            Width = XUnit.FromPoint(0.5d)
-        };
-
+        private readonly BorderConflictSolver _border;
         private readonly RGrid _grid;
         private readonly RCell[] _orderedCells = new RCell[0];
         private XUnit[] _rowHeights = new XUnit[0];
 
-        public RLayout(RGrid grid, IEnumerable<RCell> cells)
+        public RLayout(RGrid grid, IEnumerable<RCell> cells, TableBorderStyle tableBorderStyle)
         {
             _grid = grid;
+            _border = new BorderConflictSolver(grid, tableBorderStyle);
             _orderedCells = cells
                 .OrderBy(c => c.GridPosition.Row)
                 .ThenBy(c => c.GridPosition.Column)
@@ -54,11 +51,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
             var totalHeight = _rowHeights.Sum();
             return RenderResult.Done(new XRect(new XSize(this.PrecalulatedSize.Width, totalHeight - this.RenderedSize.Height)));
-        }
-
-        private IEnumerable<RCell> GetCellsToRenderer()
-        {
-            return _orderedCells.Where(c => c.RenderResult.Status.IsNotFinished());
         }
 
         private void RenderCells(IRenderArea renderArea)
@@ -117,7 +109,8 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
             {
                 var (leftOffset, topOffset) = this.CalculateCellLayoutOffset(cell, false);
                 var cellRenderArea = renderArea.PanLeftDown(leftOffset, topOffset);
-                cellRenderArea.DrawLine(_cellBorderPen, new XPoint(0, 0), new XPoint(cell.PrecalulatedSize.Width, 0));
+                var borderPen = _border.GetTopBorderPen(cell);
+                cellRenderArea.DrawLine(borderPen, new XPoint(0, 0), new XPoint(cell.PrecalulatedSize.Width, 0));
             }
         }
 
@@ -142,8 +135,12 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
                 var height = Math.Min(remainingHeight, cellRenderArea.Height);
                 var rect = new XRect(0, 0, cell.PrecalulatedSize.Width, height);
-                cellRenderArea.DrawLine(_cellBorderPen, rect.TopLeft, rect.BottomLeft);
-                cellRenderArea.DrawLine(_cellBorderPen, rect.TopRight, rect.BottomRight);
+
+                var leftBorderPen = _border.GetLeftBorderPen(cell);
+                cellRenderArea.DrawLine(leftBorderPen, rect.TopLeft, rect.BottomLeft);
+
+                var rightBorderPen = _border.GetRightBorderPen(cell);
+                cellRenderArea.DrawLine(rightBorderPen, rect.TopRight, rect.BottomRight);
             }
         }
 
@@ -168,7 +165,8 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                     continue;
                 }
 
-                cellRenderArea.DrawLine(_cellBorderPen, new XPoint(0, remainingHeight), new XPoint(cell.PrecalulatedSize.Width, remainingHeight));
+                var borderPen = _border.GetBottomBorderPen(cell);
+                cellRenderArea.DrawLine(borderPen, new XPoint(0, remainingHeight), new XPoint(cell.PrecalulatedSize.Width, remainingHeight));
             }
         }
 
@@ -274,6 +272,11 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
                 });
 
             return copy.ToArray();
+        }
+
+        private IEnumerable<RCell> GetCellsToRenderer()
+        {
+            return _orderedCells.Where(c => c.RenderResult.Status.IsNotFinished());
         }
 
         private class CellRenderInfo
