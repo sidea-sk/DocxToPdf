@@ -171,7 +171,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 
                 if (current.PrecalulatedSize.Width > maxWidth)
                 {
-                    return (previous, text.Substring(i, text.TextLength - i));
+                    return (previous, text.Substring(i - 1, text.TextLength - i + 1));
                 }
 
                 previous = current;
