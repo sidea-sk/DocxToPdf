@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
-using PdfSharp.Drawing;
-using Sidea.DocxToPdf.Renderers.Borders;
 using Sidea.DocxToPdf.Renderers.Tables.Models;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Builders
@@ -41,8 +39,6 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
             IGridPositionService gridPositionService,
             List<GridSpanInfo[]> spans)
         {
-            var border = BorderStyle.Default;
-
             var cells = row
                 .Cells()
                 .Select((cell, index) => 

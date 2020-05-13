@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
-using Sidea.DocxToPdf.Renderers.Borders;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 using Sidea.DocxToPdf.Renderers.Tables.Builders;

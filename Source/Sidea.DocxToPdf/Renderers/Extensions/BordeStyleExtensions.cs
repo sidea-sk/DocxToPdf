@@ -1,35 +1,10 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 
-namespace Sidea.DocxToPdf.Renderers.Borders
+namespace Sidea.DocxToPdf.Renderers
 {
     internal static class BordeStyleExtensions
     {
-        public static BorderStyle GetBorder(
-            TopBorder top,
-            RightBorder right,
-            BottomBorder bottom,
-            LeftBorder left)
-        {
-            var topPen = top.ToXPen();
-            var rightPen = right.ToXPen();
-            var bottomPen = bottom.ToXPen();
-            var leftPen = left.ToXPen();
-
-            return new BorderStyle(topPen, rightPen, bottomPen, leftPen);
-        }
-
-        public static BorderStyle GetBorder(this TableCellBorders borders)
-        {
-            if (borders == null)
-            {
-                return BorderStyle.Default;
-            }
-
-            var borderStyle = GetBorder(borders.TopBorder, borders.RightBorder, borders.BottomBorder, borders.LeftBorder);
-            return borderStyle;
-        }
-
         public static XPen ToXPen(this BorderType border, XPen defaultIfNull = null)
         {
             if(border == null)
