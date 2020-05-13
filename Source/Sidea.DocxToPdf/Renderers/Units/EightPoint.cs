@@ -8,33 +8,15 @@ namespace Sidea.DocxToPdf.Renderers
         private const double Factor = 8;
 
         public static XUnit EpToXUnit(this UInt32Value value)
-        {
-            if (!(value?.HasValue ?? false))
-            {
-                return XUnit.Zero;
-            }
-
-            return value.Value.EpToPoint();
-        }
+            => value.ToXUnit(Factor);
 
         public static XUnit EpToXUnit(this Int32Value value)
-        {
-            if (!value.HasValue)
-            {
-                return XUnit.Zero;
-            }
-
-            return value.Value.EpToPoint();
-        }
+            => value.ToXUnit(Factor);
 
         public static XUnit EpToPoint(this int value)
-        {
-            return value / Factor;
-        }
+            => value.ToXUnit(Factor);
 
         public static XUnit EpToPoint(this uint value)
-        {
-            return value / Factor;
-        }
+            => value.ToXUnit(Factor);
     }
 }
