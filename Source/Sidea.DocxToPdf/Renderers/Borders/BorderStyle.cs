@@ -4,21 +4,25 @@ namespace Sidea.DocxToPdf.Renderers.Borders
 {
     internal class BorderStyle
     {
-        private readonly XPen _top;
-        private readonly XPen _right;
-        private readonly XPen _bottom;
-        private readonly XPen _left;
+        protected static readonly XPen DefaultPen = new XPen(XColors.Black, 4.EpToPoint());
 
-        public BorderStyle(
-            XPen top,
-            XPen right,
-            XPen bottom,
-            XPen left)
+        public static readonly BorderStyle Default = new BorderStyle(DefaultPen);
+
+        public BorderStyle(XPen all) : this(all, all, all, all)
         {
-            _top = top;
-            _right = right;
-            _bottom = bottom;
-            _left = left;
         }
+
+        public BorderStyle(XPen top, XPen right, XPen bottom, XPen left)
+        {
+            this.Top = top;
+            this.Right = right;
+            this.Bottom = bottom;
+            this.Left = left;
+        }
+
+        public XPen Top { get; }
+        public XPen Right { get; }
+        public XPen Bottom { get; }
+        public XPen Left { get; }
     }
 }

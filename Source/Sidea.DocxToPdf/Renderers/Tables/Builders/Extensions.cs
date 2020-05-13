@@ -3,12 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
+using Sidea.DocxToPdf.Renderers.Borders;
 using Sidea.DocxToPdf.Renderers.Tables.Models;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Builders
 {
     internal static class Extensions
     {
+        public static TableBorderStyle GetBorder(this TableBorders borders)
+        {
+            if (borders == null)
+            {
+                return TableBorderStyle.Default;
+            }
+
+            var top = borders.TopBorder.ToXPen();
+            var right = borders.RightBorder.ToXPen();
+            var bottom = borders.BottomBorder.ToXPen();
+            var left = borders.LeftBorder.ToXPen();
+            var insideH = borders.InsideHorizontalBorder.ToXPen(TableBorderStyle.Default.InsideHorizontal);
+            var insideV = borders.InsideVerticalBorder.ToXPen(TableBorderStyle.Default.InsideVertical);
+
+            return new TableBorderStyle(top, right, bottom, left, insideH, insideV);
+        }
+
         public static IEnumerable<XUnit> GetGridColumnWidths(this Table table)
         {
             var grid = table.Grid();

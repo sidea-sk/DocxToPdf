@@ -41,12 +41,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Builders
             IGridPositionService gridPositionService,
             List<GridSpanInfo[]> spans)
         {
-            var pen = new XPen(XPens.Black)
-            {
-                Width = 0.5
-            };
-
-            var border = new BorderStyle(pen, pen, pen, pen);
+            var border = BorderStyle.Default;
 
             var cells = row
                 .Cells()

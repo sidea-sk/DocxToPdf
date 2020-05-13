@@ -16,6 +16,18 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        public void TableBorders()
+        {
+            this.Generate(nameof(TableBorders));
+        }
+
+        [TestMethod]
+        public void CellBorders()
+        {
+            this.Generate(nameof(CellBorders));
+        }
+
+        [TestMethod]
         public void Layout()
         {
             this.Generate(nameof(Layout));

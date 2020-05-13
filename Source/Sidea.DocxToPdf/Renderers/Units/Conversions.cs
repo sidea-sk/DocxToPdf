@@ -9,11 +9,12 @@ namespace Sidea.DocxToPdf.Renderers
 {
     internal static class Conversions
     {
-        private const double HP = 2;
+        private const double HalfPoint = 2;
+        private const double EightPoint = 8;
         private const double DXA = 20;
-        private const double PCT = 50;
-        private const double IN = 72;
-        private const double CM = IN * 2.54d;
+        private const double PERCENT = 50;
+        private const double INCH = 72;
+        private const double CM = INCH * 2.54d;
         private const double EMU = 914400;
 
         private static readonly string[] _units = { "mm", "cm", "in", "pt", "pc", "pi" };
@@ -25,7 +26,7 @@ namespace Sidea.DocxToPdf.Renderers
 
         public static XUnit EmuToXUnit(this long value)
         {
-            return value / EMU * IN;
+            return value / EMU * INCH;
         }
 
         public static XUnit ToXUnit(this UInt32Value value)
@@ -103,7 +104,7 @@ namespace Sidea.DocxToPdf.Renderers
                     break;
                 case TableWidthUnitValues.Pct:
                     var p = Convert.ToInt32(width.Width.Value);
-                    return outOf * p / PCT / 100;
+                    return outOf * p / PERCENT / 100;
                 case TableWidthUnitValues.Dxa:
                     var v = Convert.ToInt32(width.Width.Value);
                     return v.DxaToPoint();
@@ -129,7 +130,7 @@ namespace Sidea.DocxToPdf.Renderers
 
         public static XUnit InchToPoint(this double value)
         {
-            return value / IN;
+            return value / INCH;
         }
 
         public static XUnit DxaToPoint(this Int32Value value)
@@ -173,13 +174,28 @@ namespace Sidea.DocxToPdf.Renderers
         /// <param name="value"></param>
         /// <returns></returns>
         public static XUnit HPToPoint(this int value) {
-            return value / HP;
+            return value / HalfPoint;
         }
 
         public static XUnit ToXUnit(this PositionOffset positionOffset)
         {
             var offset = Convert.ToInt64(positionOffset.Text);
             return offset.EmuToXUnit();
+        }
+
+        public static XColor ToXColor(this StringValue color)
+        {
+            var hex = color?.Value;
+            if (hex == null)
+            {
+                return XColor.FromArgb(255, 0, 0, 0);
+            }
+
+            var r = int.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);// Convert.ToInt32($"0x{color.Value.Substring(0, 2)}");
+            var g = int.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);// Convert.ToInt32($"0x{color.Value.Substring(2, 2)}");
+            var b = int.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);// Convert.ToInt32($"0x{color.Value.Substring(4, 2)}");
+
+            return XColor.FromArgb(255, r, g, b);
         }
 
         private static (double v, string unit) ToValueWithUnit(this StringValue stringValue)

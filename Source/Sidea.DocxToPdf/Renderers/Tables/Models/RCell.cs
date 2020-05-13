@@ -18,7 +18,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         public RCell(
             TableCell cell,
             GridPosition gridPosition,
-            BorderStyle border,
+            Borders.BorderStyle border,
             XUnit outerWidth)
         {
             _cell = cell;
@@ -31,7 +31,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
         public GridPosition GridPosition { get; }
 
-        public BorderStyle Border { get; }
+        public Borders.BorderStyle Border { get; }
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
