@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9ECB67EE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sidea.DocxToPdf.Tests", "Sidea.DocxToPdf.Tests\Sidea.DocxToPdf.Tests.csproj", "{D268296F-5287-42AC-9909-BD65B61E314F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sidea.DocxToPdf.Runner", "Sidea.DocxToPdf.Runner\Sidea.DocxToPdf.Runner.csproj", "{0401850D-16F6-474E-B1F3-6E8FA5CB6727}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{D268296F-5287-42AC-9909-BD65B61E314F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D268296F-5287-42AC-9909-BD65B61E314F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D268296F-5287-42AC-9909-BD65B61E314F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0401850D-16F6-474E-B1F3-6E8FA5CB6727}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0401850D-16F6-474E-B1F3-6E8FA5CB6727}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0401850D-16F6-474E-B1F3-6E8FA5CB6727}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0401850D-16F6-474E-B1F3-6E8FA5CB6727}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
