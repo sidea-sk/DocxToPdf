@@ -35,9 +35,9 @@ namespace Sidea.DocxToPdf.Tests
             }
 
             var inputFileName = $"{_samplesFolder}/{docxSampleFileName}.docx";
-            var document = WordprocessingDocument.Open(inputFileName, false);
+            using var fileStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read);
             var pdfGenerator = new PdfGenerator();
-            var pdf = pdfGenerator.Generate(document, options);
+            var pdf = pdfGenerator.Generate(fileStream, options);
 
             pdf.Save(outputFileName);
         }
