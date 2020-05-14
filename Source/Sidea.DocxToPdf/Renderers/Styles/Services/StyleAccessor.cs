@@ -21,7 +21,10 @@ namespace Sidea.DocxToPdf.Renderers.Styles
 
         public static StyleAccessor Default(MainDocumentPart mainDocumentPart)
         {
-            return new StyleAccessor(mainDocumentPart, TextStyle.Default, ParagraphStyle.Default);
+            var docDefaults = mainDocumentPart.StyleDefinitionsPart.Styles.DocDefaults;
+            var paragraph = ParagraphStyle.From(docDefaults.ParagraphPropertiesDefault.ParagraphPropertiesBaseStyle);
+
+            return new StyleAccessor(mainDocumentPart, TextStyle.Default, paragraph);
         }
 
         public ParagraphStyle EffectiveStyle(ParagraphProperties paragraphProperties)
@@ -33,29 +36,5 @@ namespace Sidea.DocxToPdf.Renderers.Styles
         {
             return _textStyle;
         }
-
-        //public ParagraphPropertiesBaseStyle GetParagraphProperties(string styleId)
-        //{
-        //    var pp = _mainDocumentPart
-        //        .StyleDefinitionsPart
-        //        .Styles
-        //        .DocDefaults
-        //        .ParagraphPropertiesDefault
-        //        .ParagraphPropertiesBaseStyle
-        //        ;
-
-        //    return pp;
-        //}
-
-        //public Style GetStyle(string styleId)
-        //{
-        //    var s = _mainDocumentPart
-        //        .StyleDefinitionsPart
-        //        .Styles
-        //        .Cast<Style>()
-        //        .SingleOrDefault(s => s.StyleId == styleId);
-
-        //    throw new NotImplementedException();
-        //}
     }
 }

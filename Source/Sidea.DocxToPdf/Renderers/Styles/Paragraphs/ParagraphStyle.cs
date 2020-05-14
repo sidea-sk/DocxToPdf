@@ -1,4 +1,6 @@
-﻿namespace Sidea.DocxToPdf.Renderers.Styles
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+
+namespace Sidea.DocxToPdf.Renderers.Styles
 {
     internal class ParagraphStyle
     {
@@ -13,6 +15,15 @@
         }
 
         public LineAlignment LineAlignment { get; }
+
         public ParagraphSpacing Spacing { get; }
+
+        public static ParagraphStyle From(ParagraphPropertiesBaseStyle style)
+        {
+            var spacing = style.SpacingBetweenLines.ToParagraphSpacing(ParagraphSpacing.Default);
+            var lineAlignment = style.Justification.GetLinesAlignment(LineAlignment.Left);
+
+            return new ParagraphStyle(lineAlignment, spacing);
+        }
     }
 }

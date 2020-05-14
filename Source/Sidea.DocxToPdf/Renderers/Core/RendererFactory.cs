@@ -14,7 +14,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
             return forElement switch
             {
                 SdtBlock b => new BlockRenderer(b, styleAccessor),
-                Paragraph p => new ParagraphRenderer(p),
+                Paragraph p => new ParagraphRenderer(p, styleAccessor),
                 Table t => new TableRenderer(t, styleAccessor),
                 _ => new UnknownElementRenderer()
             };

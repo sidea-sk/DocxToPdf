@@ -5,6 +5,7 @@ using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Common;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Models;
+using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 {

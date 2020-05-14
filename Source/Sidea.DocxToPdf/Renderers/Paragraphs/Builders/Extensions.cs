@@ -1,27 +1,31 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Models;
-using Sidea.DocxToPdf.Renderers.Paragraphs.Models.Spacing;
+using Sidea.DocxToPdf.Renderers.Styles;
+// using Sidea.DocxToPdf.Renderers.Paragraphs.Models.Spacing;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 {
     internal static class Extensions
     {
-        public static ParagraphSpacing Spacing(this Paragraph paragraph)
-        {
-            var spacingXml = paragraph.ParagraphProperties?.SpacingBetweenLines;
+        public static XUnit CalculateSpaceAfterLine(this LineSpacing lineSpacing, RLine line)
+            => lineSpacing.CalculateSpaceAfterLine(line.PrecalulatedSize.Height);
 
-            if(spacingXml == null)
-            {
-                return ParagraphSpacing.Default;
-            }
+        //public static ParagraphSpacing Spacing(this Paragraph paragraph)
+        //{
+        //    var spacingXml = paragraph.ParagraphProperties?.SpacingBetweenLines;
 
-            var before = spacingXml.Before.ToXUnit();
-            var after = spacingXml.After.ToXUnit();
-            var line = spacingXml.GetLineSpacing();
+        //    if(spacingXml == null)
+        //    {
+        //        return ParagraphSpacing.Default;
+        //    }
 
-            return new ParagraphSpacing(line, before, after);
-        }
+        //    var before = spacingXml.Before.ToXUnit();
+        //    var after = spacingXml.After.ToXUnit();
+        //    var line = spacingXml.GetLineSpacing();
+
+        //    return new ParagraphSpacing(line, before, after);
+        //}
 
         public static RStyle Style(this Run run, XFont defaultFont)
         {
@@ -31,19 +35,19 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return new RStyle(font, brush);
         }
 
-        private static LineSpacing GetLineSpacing(this SpacingBetweenLines spacingBetweenLines)
-        {
-            var rule = spacingBetweenLines.LineRule?.Value ?? LineSpacingRuleValues.Auto;
+        //private static LineSpacing GetLineSpacing(this SpacingBetweenLines spacingBetweenLines)
+        //{
+        //    var rule = spacingBetweenLines.LineRule?.Value ?? LineSpacingRuleValues.Auto;
 
-            LineSpacing lineSpacing = rule switch
-            {
-                LineSpacingRuleValues.Auto => new AutoLineSpacing(spacingBetweenLines.Line?.ToLong() ?? AutoLineSpacing.Default),
-                LineSpacingRuleValues.Exact => new ExactLineSpacing(spacingBetweenLines.Line.ToXUnit()),
-                LineSpacingRuleValues.AtLeast => new AtLeastLineSpacing(spacingBetweenLines.Line.ToXUnit()),
-                _ => new AutoLineSpacing()
-            };
+        //    LineSpacing lineSpacing = rule switch
+        //    {
+        //        LineSpacingRuleValues.Auto => new AutoLineSpacing(spacingBetweenLines.Line?.ToLong() ?? AutoLineSpacing.Default),
+        //        LineSpacingRuleValues.Exact => new ExactLineSpacing(spacingBetweenLines.Line.ToXUnit()),
+        //        LineSpacingRuleValues.AtLeast => new AtLeastLineSpacing(spacingBetweenLines.Line.ToXUnit()),
+        //        _ => new AutoLineSpacing()
+        //    };
 
-            return lineSpacing;
-        }
+        //    return lineSpacing;
+        //}
     }
 }

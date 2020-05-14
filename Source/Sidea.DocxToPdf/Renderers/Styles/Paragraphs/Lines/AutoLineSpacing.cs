@@ -4,7 +4,7 @@ namespace Sidea.DocxToPdf.Renderers.Styles
 {
     internal class AutoLineSpacing : LineSpacing
     {
-        public const long Default = 240; // 1.15 * 240
+        public const long Default = 240;
         public const long Unit = 240;
         private readonly long _lineSpace;
 
