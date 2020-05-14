@@ -3,6 +3,7 @@ using System.Linq;
 using DocumentFormat.OpenXml;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
+using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers.Core
 {
@@ -11,14 +12,18 @@ namespace Sidea.DocxToPdf.Renderers.Core
         private readonly RendererFactory _factory = new RendererFactory();
         private readonly List<IRenderer> _renderers = new List<IRenderer>();
         private readonly IEnumerable<OpenXmlCompositeElement> _childElements;
+        private readonly IStyleAccessor _styleAccessor;
 
-        public CompositeRenderer(OpenXmlCompositeElement openXmlComposite): this(openXmlComposite.RenderableChildren())
+        public CompositeRenderer(
+            OpenXmlCompositeElement openXmlComposite,
+            IStyleAccessor styleAccessor): this(openXmlComposite.RenderableChildren(), styleAccessor)
         {
         }
 
-        public CompositeRenderer(IEnumerable<OpenXmlCompositeElement> childElements)
+        public CompositeRenderer(IEnumerable<OpenXmlCompositeElement> childElements, IStyleAccessor styleAccessor)
         {
             _childElements = childElements;
+            _styleAccessor = styleAccessor;
         }
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
@@ -38,7 +43,7 @@ namespace Sidea.DocxToPdf.Renderers.Core
             var size = new XSize(prerenderArea.Width, 0);
             foreach (var child in _childElements)
             {
-                var renderer = _factory.CreateRenderer(child);
+                var renderer = _factory.CreateRenderer(child, _styleAccessor);
                 _renderers.Add(renderer);
                 renderer.CalculateContentSize(prerenderArea);
                 size = size.ExpandHeight(renderer.PrecalulatedSize.Height);

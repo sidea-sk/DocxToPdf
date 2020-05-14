@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
+using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
@@ -12,18 +13,20 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
         private readonly RendererFactory _factory = new RendererFactory();
         private readonly List<IRenderer> _childRenderers = new List<IRenderer>();
         private readonly XUnit _outerWidth;
+        private readonly IStyleAccessor _styleAccessor;
         private readonly RPadding _padding;
 
         public RCell(
             TableCell cell,
             GridPosition gridPosition,
             CellBorderStyle border,
-            XUnit outerWidth)
+            XUnit outerWidth,
+            IStyleAccessor styleAccessor)
         {
             _cell = cell;
             _padding =  RPadding.Padding(XUnit.FromPoint(1), XUnit.FromPoint(3), XUnit.FromPoint(1), XUnit.FromPoint(3));
             _outerWidth = outerWidth;
-
+            _styleAccessor = styleAccessor;
             this.GridPosition = gridPosition;
             this.Border = border;
         }
@@ -41,7 +44,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables.Models
 
             foreach (var child in _cell.RenderableChildren())
             {
-                var renderer = _factory.CreateRenderer(child);
+                var renderer = _factory.CreateRenderer(child, _styleAccessor);
                 _childRenderers.Add(renderer);
                 renderer.CalculateContentSize(cellPrerenderArea);
                 size = size.ExpandHeight(renderer.PrecalulatedSize.Height);

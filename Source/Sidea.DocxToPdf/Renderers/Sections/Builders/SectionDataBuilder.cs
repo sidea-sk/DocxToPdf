@@ -4,13 +4,16 @@ using DocumentFormat.OpenXml;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Common;
 using Sidea.DocxToPdf.Renderers.Sections.Models;
+using Sidea.DocxToPdf.Renderers.Styles;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Renderers.Sections.Builders
 {
     internal static class SectionDataBuilder
     {
-        public static IEnumerable<SectionData> SplitToSections(this Word.Body body)
+        public static IEnumerable<SectionData> SplitToSections(
+            this Word.Body body,
+            IStyleAccessor styleAccessor)
         {
             var sectionData = new List<SectionData>();
 
@@ -29,7 +32,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                     continue;
                 }
 
-                var sectionParts = sectionElements.SplitToSectionParts();
+                var sectionParts = sectionElements.SplitToSectionParts(styleAccessor);
                 var sd = new SectionData(sp.ToModel(sectionData.Count == 0), sectionParts);
                 sectionData.Add(sd);
                 sectionElements.Clear();
@@ -39,12 +42,14 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                .ChildsOfType<Word.SectionProperties>()
                .Single();
 
-            var lastSectionParts = sectionElements.SplitToSectionParts();
+            var lastSectionParts = sectionElements.SplitToSectionParts(styleAccessor);
             sectionData.Add(new SectionData(lastSectionProperties.ToModel(sectionData.Count == 0), lastSectionParts));
             return sectionData;
         }
 
-        private static IEnumerable<SectionPart> SplitToSectionParts(this IEnumerable<OpenXmlCompositeElement> xmlElements)
+        private static IEnumerable<SectionPart> SplitToSectionParts(
+            this IEnumerable<OpenXmlCompositeElement> xmlElements,
+            IStyleAccessor styleAccessor)
         {
             var sectionParts = new List<SectionPart>();
 
@@ -71,7 +76,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                                 }
 
                                 partElements.Add(begin);
-                                sectionParts.Add(new SectionPart(@break, partElements.ToArray()));
+                                sectionParts.Add(new SectionPart(@break, partElements.ToArray(), styleAccessor));
                                 partElements.Clear();
                             }
                         }
@@ -84,7 +89,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
 
             if(partElements.Count > 0)
             {
-                sectionParts.Add(new SectionPart(SectionBreak.None, partElements));
+                sectionParts.Add(new SectionPart(SectionBreak.None, partElements, styleAccessor));
             }
 
             return sectionParts;

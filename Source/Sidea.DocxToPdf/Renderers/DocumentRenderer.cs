@@ -11,6 +11,7 @@ using Sidea.DocxToPdf.Renderers.Footers;
 using Sidea.DocxToPdf.Renderers.Headers;
 using Sidea.DocxToPdf.Renderers.Sections;
 using Sidea.DocxToPdf.Renderers.Sections.Builders;
+using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers
 {
@@ -22,6 +23,7 @@ namespace Sidea.DocxToPdf.Renderers
         private readonly List<IFooterRenderer> _footerRenderers = new List<IFooterRenderer>();
         private readonly List<SectionRenderer> _sectionRenderers = new List<SectionRenderer>();
 
+        private readonly StyleAccessor _styleAccessor;
         private int _currentPage = 0;
 
         private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
@@ -30,6 +32,7 @@ namespace Sidea.DocxToPdf.Renderers
         {
             _docx = docx;
             _renderingOptions = renderingOptions;
+            _styleAccessor = StyleAccessor.Default(_docx.MainDocumentPart);
         }
 
         public PdfDocument Render()
@@ -74,7 +77,7 @@ namespace Sidea.DocxToPdf.Renderers
         private IEnumerable<SectionRenderer> PrepareSectionRenderers(PdfDocument pdf)
         {
             var sectionRenderers = _docx.MainDocumentPart.Document.Body
-                .SplitToSections()
+                .SplitToSections(_styleAccessor)
                 .Select(sectionData => {
                     var prerenderArea = this.CreatePrerenderArea(pdf, sectionData.Properties.PageConfiguration, _documentFont);
 
@@ -114,7 +117,7 @@ namespace Sidea.DocxToPdf.Renderers
 
             var renderer = header == null
                 ? (IHeaderRenderer)new NoHeaderRenderer(pageMargin)
-                : new HeaderRenderer(header, pageMargin);
+                : new HeaderRenderer(header, pageMargin, _styleAccessor);
 
             renderer.CalculateContentSize(renderArea);
             renderer.Render(renderArea);
@@ -129,7 +132,7 @@ namespace Sidea.DocxToPdf.Renderers
 
             var renderer = footer == null
                 ? (IFooterRenderer)new NoFooterRenderer(pageMargin)
-                : new FooterRenderer(footer, pageMargin);
+                : new FooterRenderer(footer, pageMargin, _styleAccessor);
 
             renderer.CalculateContentSize(renderArea);
             renderer.Render(renderArea);

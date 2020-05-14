@@ -6,7 +6,7 @@ using PdfSharp.Drawing;
 
 namespace Sidea.DocxToPdf.Renderers
 {
-    internal static class Styles
+    internal static class StylesConversions
     {
         public static XColor ToXColor(this StringValue color)
         {

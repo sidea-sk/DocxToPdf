@@ -3,6 +3,7 @@ using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Common;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
+using Sidea.DocxToPdf.Renderers.Styles;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Renderers.Headers
@@ -14,7 +15,8 @@ namespace Sidea.DocxToPdf.Renderers.Headers
 
         public HeaderRenderer(
             Word.Header header,
-            PageMargin pageMargin) : base(header)
+            PageMargin pageMargin,
+            IStyleAccessor styleAccessor) : base(header, styleAccessor)
         {
             _toHeaderMargin = pageMargin.Header;
             _topMargin = pageMargin.Top;
