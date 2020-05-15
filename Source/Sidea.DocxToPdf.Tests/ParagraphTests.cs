@@ -28,6 +28,12 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        public void DefaultStyles()
+        {
+            this.Generate(nameof(DefaultStyles));
+        }
+
+        [TestMethod]
         public void ParagraphOverPage()
         {
             this.Generate(nameof(ParagraphOverPage));

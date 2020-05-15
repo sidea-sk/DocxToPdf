@@ -1,7 +1,7 @@
 ﻿using PdfSharp.Drawing;
 
-namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models.Spacing
-{
+namespace Sidea.DocxToPdf.Renderers.Styles
+{ 
     internal class ParagraphSpacing
     {
         public static readonly ParagraphSpacing Default = new ParagraphSpacing(new AutoLineSpacing(), new XUnit(0), new XUnit(10));

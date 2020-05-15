@@ -1,6 +1,6 @@
 ﻿using PdfSharp.Drawing;
 
-namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models.Spacing
+namespace Sidea.DocxToPdf.Renderers.Styles
 {
     internal class ExactLineSpacing : LineSpacing
     {

@@ -3,6 +3,7 @@ using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Common;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
+using Sidea.DocxToPdf.Renderers.Styles;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Renderers.Footers
@@ -14,7 +15,8 @@ namespace Sidea.DocxToPdf.Renderers.Footers
 
         public FooterRenderer(
             Word.Footer footer,
-            PageMargin pageMargin) : base(footer)
+            PageMargin pageMargin,
+            IStyleAccessor styleAccessor) : base(footer, styleAccessor)
         {
             _bottomMargin = pageMargin.Bottom;
             _toFooterMargin = pageMargin.Footer;

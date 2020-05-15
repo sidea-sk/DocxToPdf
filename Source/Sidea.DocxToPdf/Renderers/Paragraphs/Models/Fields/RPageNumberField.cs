@@ -1,14 +1,15 @@
 ﻿using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
+using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models.Fields
 {
     internal class RPageNumberField : RField
     {
-        private readonly RStyle _style;
+        private readonly TextStyle _style;
 
-        public RPageNumberField(RStyle style)
+        public RPageNumberField(TextStyle style)
         {
             _style = style;
         }

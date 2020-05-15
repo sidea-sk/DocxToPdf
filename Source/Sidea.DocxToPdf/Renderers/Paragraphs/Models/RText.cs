@@ -2,6 +2,7 @@
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
+using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 {
@@ -9,14 +10,12 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
     internal class RText : RLineElement
     {
         private readonly string _content;
-        private readonly XFont _font;
-        private readonly XBrush _brush;
+        private readonly TextStyle _textSyle;
 
-        public RText(string content, XFont font, XBrush brush)
+        public RText(string content, TextStyle textSyle)
         {
             _content = content;
-            _font = font;
-            _brush = brush;
+            _textSyle = textSyle;
         }
 
         public override bool OmitableAtLineBegin => _content == " ";
@@ -27,20 +26,20 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 
         public RText Substring(int fromIndex, int length)
         {
-            return new RText(_content.Substring(fromIndex, length), _font, _brush);
+            return new RText(_content.Substring(fromIndex, length), _textSyle);
         }
 
-        public static RText Empty(XFont font) => new RText(string.Empty, font, XBrushes.Black);
+        public static RText Empty(TextStyle textStyle) => new RText(string.Empty, textStyle);
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            return prerenderArea.MeasureText(_content, _font);
+            return prerenderArea.MeasureText(_content, _textSyle.Font);
         }
 
         protected override RenderResult RenderCore(IRenderArea renderArea)
         {
             var rect = new XRect(new XPoint(0, renderArea.Height - this.PrecalulatedSize.Height), this.PrecalulatedSize);
-             renderArea.DrawText(_content, _font, _brush, rect, XStringFormats.TopLeft);
+             renderArea.DrawText(_content, _textSyle.Font, _textSyle.Brush, rect, XStringFormats.TopLeft);
             return RenderResult.Done(this.PrecalulatedSize.Width, this.PrecalulatedSize.Height);
         }
     }

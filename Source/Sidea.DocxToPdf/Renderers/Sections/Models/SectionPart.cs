@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using DocumentFormat.OpenXml;
 using Sidea.DocxToPdf.Renderers.Core;
+using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers.Sections.Models
 {
@@ -8,7 +9,8 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Models
     {
         public SectionPart(
             SectionBreak sectionBreak,
-            IEnumerable<OpenXmlCompositeElement> elements) : base(elements)
+            IEnumerable<OpenXmlCompositeElement> elements,
+            IStyleAccessor styleAccessor) : base(elements, styleAccessor)
         {
             this.SectionBreak = sectionBreak;
         }

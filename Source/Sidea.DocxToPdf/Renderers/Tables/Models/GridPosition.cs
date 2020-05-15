@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
+    [DebuggerDisplay("{Column}-{Row}")]
     internal class GridPosition
     {
         private int[] _rowIndeces;

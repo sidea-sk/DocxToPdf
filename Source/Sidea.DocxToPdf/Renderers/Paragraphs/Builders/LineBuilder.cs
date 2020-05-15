@@ -5,6 +5,7 @@ using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Common;
 using Sidea.DocxToPdf.Renderers.Core.RenderingAreas;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Models;
+using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 {
@@ -15,22 +16,23 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             LineAlignment lineAlignment,
             XUnit verticalOffset,
             IEnumerable<RFixedDrawing> fixedDrawings,
+            TextStyle textStyle,
             IPrerenderArea prerenderArea)
         {
             var lineSegments = prerenderArea
-                .SplitLineToSegments(fixedDrawings, verticalOffset);
+                .SplitLineToSegments(fixedDrawings, verticalOffset, textStyle);
 
             var boxes = lineSegments
-                .SelectMany(l => l.GetAlignedElementsForLineSegment(fromElements, lineAlignment, lineSegments.Length == 1, prerenderArea))
+                .SelectMany(l => l.GetAlignedElementsForLineSegment(fromElements, lineAlignment, lineSegments.Length == 1, textStyle, prerenderArea))
                 .ToList();
 
             if(boxes.Count == 0)
             {
-                var emptyText = prerenderArea.CreateEmptyText();
+                var emptyText = prerenderArea.CreateEmptyText(textStyle);
                 boxes.Add(new Box<RLineElement>(emptyText, new XPoint(lineSegments.First().LeftOffset, 0)));
             }
 
-            return new RLine(boxes, fromElements.Count == 0);
+            return new RLine(boxes, textStyle, fromElements.Count == 0);
         }
 
         private static IEnumerable<Box<RLineElement>> GetAlignedElementsForLineSegment(
@@ -38,10 +40,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             Stack<RLineElement> fromElements,
             LineAlignment lineAlignment,
             bool allowWordSplit,
+            TextStyle textStyle,
             IPrerenderArea prerenderArea)
         {
             var segmentElements = lineSegment
-                .GetElementsForLineSegment(fromElements, allowWordSplit, prerenderArea);
+                .GetElementsForLineSegment(fromElements, allowWordSplit, textStyle, prerenderArea);
 
             var boxes = segmentElements
                 .CreateBoxes(lineAlignment, lineSegment.LeftOffset, lineSegment.Width)
@@ -54,6 +57,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             this LineSegment lineSegment,
             Stack<RLineElement> fromElements,
             bool allowWordSplit,
+            TextStyle textStyle,
             IPrerenderArea prerenderArea)
         {
             var segmentElements = new List<RLineElement>();
@@ -85,7 +89,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 }
                 else if(allowWordSplit && segmentElements.Count == 0 && element is RText text)
                 {
-                    var (cut, tail) = text.CutTextOfMaxWidth(lineSegment.Width - left, prerenderArea);
+                    var (cut, tail) = text.CutTextOfMaxWidth(lineSegment.Width - left, textStyle, prerenderArea);
                     segmentElements.Add(cut);
                     fromElements.Push(tail);
                     continueSearch = false;
@@ -104,9 +108,10 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
         private static LineSegment[] SplitLineToSegments(
             this IPrerenderArea prerenderArea,
             IEnumerable<RFixedDrawing> fixedDrawings,
-            XUnit lineVerticalOffset)
+            XUnit lineVerticalOffset,
+            TextStyle textStyle)
         {
-            var reservedSpace = fixedDrawings.GetReservedSpaceInLine(lineVerticalOffset, prerenderArea.AreaFont.GetHeight());
+            var reservedSpace = fixedDrawings.GetReservedSpaceInLine(lineVerticalOffset, textStyle.Font.GetHeight());
             var lineSegments = new List<LineSegment>();
             var offset = XUnit.FromPoint(0);
             foreach(var rs in reservedSpace)
@@ -158,13 +163,17 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return result;
         }
 
-        private static (RText cut, RText tail) CutTextOfMaxWidth(this RText text, XUnit maxWidth, IPrerenderArea prerenderArea)
+        private static (RText cut, RText tail) CutTextOfMaxWidth(
+            this RText text,
+            XUnit maxWidth,
+            TextStyle textStyle,
+            IPrerenderArea prerenderArea)
         {
             RText previous = text.Substring(0, 0);
             previous.CalculateContentSize(prerenderArea);
 
             RText current;
-            for (var i = 1; i < text.TextLength; i++)
+            for (var i = 1; i <= text.TextLength; i++)
             {
                 current = text.Substring(0, i);
                 current.CalculateContentSize(prerenderArea);
@@ -177,7 +186,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 previous = current;
             }
 
-            var empty = prerenderArea.CreateEmptyText();
+            var empty = prerenderArea.CreateEmptyText(textStyle);
             return (empty, text);
         }
 
@@ -267,9 +276,9 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 .ToArray();
         }
 
-        private static RText CreateEmptyText(this IPrerenderArea prerenderArea)
+        private static RText CreateEmptyText(this IPrerenderArea prerenderArea, TextStyle textStyle)
         {
-            var empty = RText.Empty(prerenderArea.AreaFont);
+            var empty = RText.Empty(textStyle);
             empty.CalculateContentSize(prerenderArea);
             return empty;
         }

@@ -1,6 +1,6 @@
 ﻿namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 {
-    internal enum LineAlignment
+    internal enum LineAlignmentX
     {
         Left,
         Center,

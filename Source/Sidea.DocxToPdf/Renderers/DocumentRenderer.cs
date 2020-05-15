@@ -11,6 +11,7 @@ using Sidea.DocxToPdf.Renderers.Footers;
 using Sidea.DocxToPdf.Renderers.Headers;
 using Sidea.DocxToPdf.Renderers.Sections;
 using Sidea.DocxToPdf.Renderers.Sections.Builders;
+using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers
 {
@@ -22,14 +23,14 @@ namespace Sidea.DocxToPdf.Renderers
         private readonly List<IFooterRenderer> _footerRenderers = new List<IFooterRenderer>();
         private readonly List<SectionRenderer> _sectionRenderers = new List<SectionRenderer>();
 
+        private readonly StyleAccessor _styleAccessor;
         private int _currentPage = 0;
-
-        private XFont _documentFont = new XFont("Calibri", 11, XFontStyle.Regular);
 
         public DocumentRenderer(WordprocessingDocument docx, RenderingOptions renderingOptions)
         {
             _docx = docx;
             _renderingOptions = renderingOptions;
+            _styleAccessor = StyleAccessor.Default(_docx.MainDocumentPart);
         }
 
         public PdfDocument Render()
@@ -58,14 +59,14 @@ namespace Sidea.DocxToPdf.Renderers
             {
                 if(sectionRenderer.SectionProperties.RenderBehaviour == Sections.Models.RenderBehaviour.NewPage)
                 {
-                    renderArea = this.CreateNewRenderArea(pdf, sectionRenderer.SectionProperties.PageConfiguration, _documentFont);
+                    renderArea = this.CreateNewRenderArea(pdf, sectionRenderer.SectionProperties.PageConfiguration);
                 }
 
                 do
                 {
                     sectionRenderer.Render(renderArea);
                     renderArea = sectionRenderer.RenderResult.Status != RenderingStatus.Done
-                        ? this.CreateNewRenderArea(pdf, sectionRenderer.SectionProperties.PageConfiguration, _documentFont)
+                        ? this.CreateNewRenderArea(pdf, sectionRenderer.SectionProperties.PageConfiguration)
                         : renderArea.PanDown(sectionRenderer.RenderResult.RenderedHeight);
                 } while (sectionRenderer.RenderResult.Status != RenderingStatus.Done);
             }
@@ -74,9 +75,9 @@ namespace Sidea.DocxToPdf.Renderers
         private IEnumerable<SectionRenderer> PrepareSectionRenderers(PdfDocument pdf)
         {
             var sectionRenderers = _docx.MainDocumentPart.Document.Body
-                .SplitToSections()
+                .SplitToSections(_styleAccessor)
                 .Select(sectionData => {
-                    var prerenderArea = this.CreatePrerenderArea(pdf, sectionData.Properties.PageConfiguration, _documentFont);
+                    var prerenderArea = this.CreatePrerenderArea(pdf, sectionData.Properties.PageConfiguration);
 
                     var sectionRenderer = new SectionRenderer(sectionData);
                     sectionRenderer.CalculateContentSize(prerenderArea);
@@ -114,7 +115,7 @@ namespace Sidea.DocxToPdf.Renderers
 
             var renderer = header == null
                 ? (IHeaderRenderer)new NoHeaderRenderer(pageMargin)
-                : new HeaderRenderer(header, pageMargin);
+                : new HeaderRenderer(header, pageMargin, _styleAccessor);
 
             renderer.CalculateContentSize(renderArea);
             renderer.Render(renderArea);
@@ -129,7 +130,7 @@ namespace Sidea.DocxToPdf.Renderers
 
             var renderer = footer == null
                 ? (IFooterRenderer)new NoFooterRenderer(pageMargin)
-                : new FooterRenderer(footer, pageMargin);
+                : new FooterRenderer(footer, pageMargin, _styleAccessor);
 
             renderer.CalculateContentSize(renderArea);
             renderer.Render(renderArea);
@@ -137,14 +138,13 @@ namespace Sidea.DocxToPdf.Renderers
             return renderer;
         }
 
-        private IPrerenderArea CreatePrerenderArea(PdfDocument pdf, PageConfiguration pageConfiguration, XFont documentDefaultFont)
+        private IPrerenderArea CreatePrerenderArea(PdfDocument pdf, PageConfiguration pageConfiguration)
         {
             var page = this.CreatePage(pdf, pageConfiguration);
             var graphics = XGraphics.FromPdfPage(page);
 
             return RenderArea.CreateNewPageRenderArea(
                 new RenderingContext(0),
-                documentDefaultFont,
                 graphics,
                 new ImageAccessor(_docx.MainDocumentPart),
                 _renderingOptions);
@@ -152,8 +152,7 @@ namespace Sidea.DocxToPdf.Renderers
 
         private IRenderArea CreateNewRenderArea(
             PdfDocument pdf,
-            PageConfiguration pageConfiguration,
-            XFont documentDefaultFont)
+            PageConfiguration pageConfiguration)
         {
             var page = this.CreatePage(pdf, pageConfiguration);
             var graphics = XGraphics.FromPdfPage(page);
@@ -161,7 +160,6 @@ namespace Sidea.DocxToPdf.Renderers
 
             var renderArea = RenderArea.CreateNewPageRenderArea(
                 new RenderingContext(_currentPage),
-                documentDefaultFont,
                 graphics,
                 new ImageAccessor(_docx.MainDocumentPart),
                 _renderingOptions);
