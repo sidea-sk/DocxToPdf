@@ -38,7 +38,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             var vOffset = new XUnit(0);
             do
             {
-                var line = LineBuilder.CreateLine(elements, paragraphStyle.LineAlignment, vOffset, fixedDrawings, prerenderArea);
+                var line = LineBuilder.CreateLine(elements, paragraphStyle.LineAlignment, vOffset, fixedDrawings, styleAccessor.TextStyle, prerenderArea);
                 line.CalculateContentSize(prerenderArea);
                 lines.Add(line);
 

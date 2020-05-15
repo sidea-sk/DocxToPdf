@@ -9,7 +9,6 @@ namespace Sidea.DocxToPdf.Renderers.Styles
     internal class StyleAccessor : IStyleAccessor
     {
         private readonly MainDocumentPart _mainDocumentPart;
-        private readonly TextStyle _textStyle;
 
         private StyleAccessor(
             MainDocumentPart mainDocumentPart,
@@ -17,11 +16,13 @@ namespace Sidea.DocxToPdf.Renderers.Styles
             ParagraphStyle paragraphStyle)
         {
             _mainDocumentPart = mainDocumentPart;
-            _textStyle = textStyle;
+            TextStyle = textStyle;
             ParagraphStyle = paragraphStyle;
         }
 
         public ParagraphStyle ParagraphStyle { get; }
+
+        public TextStyle TextStyle { get; }
 
         public static StyleAccessor Default(MainDocumentPart mainDocumentPart)
         {
@@ -46,7 +47,7 @@ namespace Sidea.DocxToPdf.Renderers.Styles
             var runStyles = this.GetRunStyles(tableProperties?.TableStyle?.Val).ToArray();
 
             var ps = this.ParagraphStyle.Override(null, paragraphStyles);
-            var ts = _textStyle.Override(null, runStyles);
+            var ts = TextStyle.Override(null, runStyles);
             return new StyleAccessor(_mainDocumentPart, ts, ps);
         }
 
@@ -61,7 +62,7 @@ namespace Sidea.DocxToPdf.Renderers.Styles
         public TextStyle EffectiveStyle(RunProperties runProperties)
         {
             var styleRuns = this.GetRunStyles(runProperties?.RunStyle?.Val).ToArray();
-            return _textStyle.Override(runProperties, styleRuns);
+            return TextStyle.Override(runProperties, styleRuns);
         }
 
         private TextStyle TextStyleFromParagraph(ParagraphProperties paragraphProperties)
@@ -69,7 +70,7 @@ namespace Sidea.DocxToPdf.Renderers.Styles
             var styles = this.GetRunStyles(paragraphProperties)
                 .ToArray();
 
-            var ts = _textStyle.Override(null, styles);
+            var ts = TextStyle.Override(null, styles);
             return ts;
         }
 

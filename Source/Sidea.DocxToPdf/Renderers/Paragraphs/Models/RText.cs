@@ -29,7 +29,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
             return new RText(_content.Substring(fromIndex, length), _textSyle);
         }
 
-        public static RText Empty(XFont font) => new RText(string.Empty, TextStyle.Default);
+        public static RText Empty(TextStyle textStyle) => new RText(string.Empty, textStyle);
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {

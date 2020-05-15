@@ -8,6 +8,7 @@ namespace Sidea.DocxToPdf.Renderers.Styles
         // IStyleAccessor ForSection();
 
         ParagraphStyle ParagraphStyle { get; }
+        TextStyle TextStyle { get; }
 
         IStyleAccessor ForParagraph(ParagraphProperties paragraphProperties);
         IStyleAccessor ForTable(TableProperties tableProperties);

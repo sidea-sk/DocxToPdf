@@ -16,22 +16,23 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             LineAlignment lineAlignment,
             XUnit verticalOffset,
             IEnumerable<RFixedDrawing> fixedDrawings,
+            TextStyle textStyle,
             IPrerenderArea prerenderArea)
         {
             var lineSegments = prerenderArea
                 .SplitLineToSegments(fixedDrawings, verticalOffset);
 
             var boxes = lineSegments
-                .SelectMany(l => l.GetAlignedElementsForLineSegment(fromElements, lineAlignment, lineSegments.Length == 1, prerenderArea))
+                .SelectMany(l => l.GetAlignedElementsForLineSegment(fromElements, lineAlignment, lineSegments.Length == 1, textStyle, prerenderArea))
                 .ToList();
 
             if(boxes.Count == 0)
             {
-                var emptyText = prerenderArea.CreateEmptyText();
+                var emptyText = prerenderArea.CreateEmptyText(textStyle);
                 boxes.Add(new Box<RLineElement>(emptyText, new XPoint(lineSegments.First().LeftOffset, 0)));
             }
 
-            return new RLine(boxes, fromElements.Count == 0);
+            return new RLine(boxes, textStyle, fromElements.Count == 0);
         }
 
         private static IEnumerable<Box<RLineElement>> GetAlignedElementsForLineSegment(
@@ -39,10 +40,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             Stack<RLineElement> fromElements,
             LineAlignment lineAlignment,
             bool allowWordSplit,
+            TextStyle textStyle,
             IPrerenderArea prerenderArea)
         {
             var segmentElements = lineSegment
-                .GetElementsForLineSegment(fromElements, allowWordSplit, prerenderArea);
+                .GetElementsForLineSegment(fromElements, allowWordSplit, textStyle, prerenderArea);
 
             var boxes = segmentElements
                 .CreateBoxes(lineAlignment, lineSegment.LeftOffset, lineSegment.Width)
@@ -55,6 +57,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             this LineSegment lineSegment,
             Stack<RLineElement> fromElements,
             bool allowWordSplit,
+            TextStyle textStyle,
             IPrerenderArea prerenderArea)
         {
             var segmentElements = new List<RLineElement>();
@@ -86,7 +89,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 }
                 else if(allowWordSplit && segmentElements.Count == 0 && element is RText text)
                 {
-                    var (cut, tail) = text.CutTextOfMaxWidth(lineSegment.Width - left, prerenderArea);
+                    var (cut, tail) = text.CutTextOfMaxWidth(lineSegment.Width - left, textStyle, prerenderArea);
                     segmentElements.Add(cut);
                     fromElements.Push(tail);
                     continueSearch = false;
@@ -159,7 +162,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return result;
         }
 
-        private static (RText cut, RText tail) CutTextOfMaxWidth(this RText text, XUnit maxWidth, IPrerenderArea prerenderArea)
+        private static (RText cut, RText tail) CutTextOfMaxWidth(
+            this RText text,
+            XUnit maxWidth,
+            TextStyle textStyle,
+            IPrerenderArea prerenderArea)
         {
             RText previous = text.Substring(0, 0);
             previous.CalculateContentSize(prerenderArea);
@@ -178,7 +185,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 previous = current;
             }
 
-            var empty = prerenderArea.CreateEmptyText();
+            var empty = prerenderArea.CreateEmptyText(textStyle);
             return (empty, text);
         }
 
@@ -268,9 +275,9 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 .ToArray();
         }
 
-        private static RText CreateEmptyText(this IPrerenderArea prerenderArea)
+        private static RText CreateEmptyText(this IPrerenderArea prerenderArea, TextStyle textStyle)
         {
-            var empty = RText.Empty(prerenderArea.AreaFont);
+            var empty = RText.Empty(textStyle);
             empty.CalculateContentSize(prerenderArea);
             return empty;
         }
