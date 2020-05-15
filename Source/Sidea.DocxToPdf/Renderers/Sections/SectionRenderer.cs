@@ -112,6 +112,11 @@ namespace Sidea.DocxToPdf.Renderers.Sections
 
         private void RenderSectionBorder(IRenderArea renderArea)
         {
+            if (!renderArea.Options.RenderSectionRegionBoundaries)
+            {
+                return;
+            }
+
             var sectionRenderArea = renderArea
                 .PanLeft(this.Margin.Left)
                 .Restrict(renderArea.Width - this.Margin.HorizontalMargins);
