@@ -12,6 +12,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
     internal class RLine : RendererBase
     {
         private readonly Box<RLineElement>[] _elements;
+        private readonly TextStyle _textStyle;
         private readonly bool _isLastLineOfParagraph;
         private readonly RText _paragraph;
 
@@ -22,6 +23,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
         {
             _elements = elements.ToArray();
             _paragraph = new RText("¶", textStyle);
+            _textStyle = textStyle;
             _isLastLineOfParagraph = isLastLineOfParagraph;
         }
 
@@ -34,7 +36,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 
             var lastElement = _elements.Last();
             var width = lastElement.Offset.X + lastElement.Element.PrecalulatedSize.Width;
-            return new XSize(width, Math.Max(maxHeight, prerenderArea.AreaFont.Height));
+            return new XSize(width, Math.Max(maxHeight, _textStyle.Font.Height));
         }
 
         protected override RenderResult RenderCore(IRenderArea renderArea)

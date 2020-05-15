@@ -49,7 +49,10 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return lines;
         }
 
-        private static IEnumerable<RLineElement> ToLineElements(this Paragraph paragraph, IPrerenderArea prerenderArea, IStyleAccessor styleAccessor)
+        private static IEnumerable<RLineElement> ToLineElements(
+            this Paragraph paragraph,
+            IPrerenderArea prerenderArea,
+            IStyleAccessor styleAccessor)
         {
             var runs = paragraph
                 .ChildElements
@@ -83,7 +86,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 }
                 else
                 {
-                    var runElements = run.ToLineElements(prerenderArea.AreaFont, styleAccessor);
+                    var runElements = run.ToLineElements(styleAccessor);
                     elements.AddRange(runElements);
                 }
             }
@@ -91,7 +94,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return elements;
         }
 
-        private static IEnumerable<RLineElement> ToLineElements(this Run run, XFont defaultFont, IStyleAccessor styleAccessor)
+        private static IEnumerable<RLineElement> ToLineElements(this Run run, IStyleAccessor styleAccessor)
         {
             var textStyle = styleAccessor.EffectiveStyle(run.RunProperties);
 

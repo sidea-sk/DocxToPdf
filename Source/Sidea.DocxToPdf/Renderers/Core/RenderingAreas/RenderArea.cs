@@ -15,14 +15,12 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         public static RenderArea CreateNewPageRenderArea(
             RenderingContext context,
-            XFont font,
             XGraphics graphics,
             IImageAccessor imageAccessor,
             RenderingOptions renderingOptions)
         {
             return new RenderArea(
                 context,
-                font,
                 graphics,
                 new XRect(graphics.PageSize),
                 imageAccessor,
@@ -31,7 +29,6 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
         private RenderArea(
             RenderingContext context,
-            XFont font,
             XGraphics graphics,
             XRect area,
             IImageAccessor imageAccessor,
@@ -43,7 +40,6 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
 
             this.AreaRectangle = area;
             this.Context = context;
-            this.AreaFont = font;
             this.AreaRectangle = area;
             this.Options = renderingOptions;
         }
@@ -53,8 +49,6 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         public XUnit Height => AreaRectangle.Height;
 
         public RenderingContext Context { get; }
-
-        public XFont AreaFont { get; }
 
         public XRect AreaRectangle { get; }
 
@@ -142,7 +136,6 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
         {
             return new RenderArea(
                 this.Context,
-                this.AreaFont,
                 _graphics,
                 area,
                 _imageAccessor,

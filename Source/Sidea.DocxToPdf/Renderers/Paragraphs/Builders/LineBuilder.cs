@@ -20,7 +20,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             IPrerenderArea prerenderArea)
         {
             var lineSegments = prerenderArea
-                .SplitLineToSegments(fixedDrawings, verticalOffset);
+                .SplitLineToSegments(fixedDrawings, verticalOffset, textStyle);
 
             var boxes = lineSegments
                 .SelectMany(l => l.GetAlignedElementsForLineSegment(fromElements, lineAlignment, lineSegments.Length == 1, textStyle, prerenderArea))
@@ -108,9 +108,10 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
         private static LineSegment[] SplitLineToSegments(
             this IPrerenderArea prerenderArea,
             IEnumerable<RFixedDrawing> fixedDrawings,
-            XUnit lineVerticalOffset)
+            XUnit lineVerticalOffset,
+            TextStyle textStyle)
         {
-            var reservedSpace = fixedDrawings.GetReservedSpaceInLine(lineVerticalOffset, prerenderArea.AreaFont.GetHeight());
+            var reservedSpace = fixedDrawings.GetReservedSpaceInLine(lineVerticalOffset, textStyle.Font.GetHeight());
             var lineSegments = new List<LineSegment>();
             var offset = XUnit.FromPoint(0);
             foreach(var rs in reservedSpace)

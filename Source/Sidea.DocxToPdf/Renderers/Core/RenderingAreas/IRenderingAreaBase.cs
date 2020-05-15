@@ -8,7 +8,6 @@ namespace Sidea.DocxToPdf.Renderers.Core.RenderingAreas
     {
         RenderingOptions Options { get; }
 
-        XFont AreaFont { get; }
         XUnit Width { get; }
         XUnit Height { get; }
         XRect AreaRectangle { get; }
