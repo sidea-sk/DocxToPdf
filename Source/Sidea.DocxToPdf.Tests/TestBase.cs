@@ -20,7 +20,8 @@ namespace Sidea.DocxToPdf.Tests
         protected void Generate(string docxSampleFileName)
         {
             var options = new RenderingOptions(
-                renderParagraphCharacter: true
+                renderParagraphCharacter: true,
+                renderSectionRegionBoundaries: true
                 );
 
             if (!Directory.Exists(_outputFolder))
