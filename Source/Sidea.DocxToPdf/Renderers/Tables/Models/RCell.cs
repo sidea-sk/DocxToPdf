@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using DocumentFormat.OpenXml.Wordprocessing;
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Renderers.Core;
@@ -7,6 +8,7 @@ using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers.Tables.Models
 {
+    [DebuggerDisplay("{GridPosition}")]
     internal class RCell : RendererBase
     {
         private readonly TableCell _cell;

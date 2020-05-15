@@ -165,7 +165,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             previous.CalculateContentSize(prerenderArea);
 
             RText current;
-            for (var i = 1; i < text.TextLength; i++)
+            for (var i = 1; i <= text.TextLength; i++)
             {
                 current = text.Substring(0, i);
                 current.CalculateContentSize(prerenderArea);
