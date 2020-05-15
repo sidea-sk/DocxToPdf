@@ -40,9 +40,19 @@ namespace Sidea.DocxToPdf.Renderers.Styles
             return new StyleAccessor(_mainDocumentPart, ts, ps);
         }
 
+        public IStyleAccessor ForTable(TableProperties tableProperties)
+        {
+            var paragraphStyles = this.GetParagraphStyles(tableProperties?.TableStyle?.Val).ToArray();
+            var runStyles = this.GetRunStyles(tableProperties?.TableStyle?.Val).ToArray();
+
+            var ps = this.ParagraphStyle.Override(null, paragraphStyles);
+            var ts = _textStyle.Override(null, runStyles);
+            return new StyleAccessor(_mainDocumentPart, ts, ps);
+        }
+
         public ParagraphStyle EffectiveStyle(ParagraphProperties paragraphProperties)
         {
-            var styles = this.GetParagraphStyles(paragraphProperties)
+            var styles = this.GetParagraphStyles(paragraphProperties?.ParagraphStyleId?.Val)
                 .ToArray();
 
             return ParagraphStyle.Override(paragraphProperties, styles);
@@ -50,7 +60,7 @@ namespace Sidea.DocxToPdf.Renderers.Styles
 
         public TextStyle EffectiveStyle(RunProperties runProperties)
         {
-            var styleRuns = this.GetRunStyles(runProperties?.RunStyle).ToArray();
+            var styleRuns = this.GetRunStyles(runProperties?.RunStyle?.Val).ToArray();
             return _textStyle.Override(runProperties, styleRuns);
         }
 
@@ -63,14 +73,14 @@ namespace Sidea.DocxToPdf.Renderers.Styles
             return ts;
         }
 
-        private IEnumerable<StyleParagraphProperties> GetParagraphStyles(ParagraphProperties paragraphProperties)
+        private IEnumerable<StyleParagraphProperties> GetParagraphStyles(StringValue firstStyleId)
         {
-            if(paragraphProperties?.ParagraphStyleId?.Val == null)
+            if(string.IsNullOrWhiteSpace(firstStyleId?.Value))
             {
                 yield break;
             }
 
-            var styleId = paragraphProperties.ParagraphStyleId.Val;
+            var styleId = firstStyleId;
             do
             {
                 var style = this.FindStyle(styleId);
@@ -103,14 +113,14 @@ namespace Sidea.DocxToPdf.Renderers.Styles
             } while (styleId != null);
         }
 
-        private IEnumerable<StyleRunProperties> GetRunStyles(RunStyle runStyle)
+        private IEnumerable<StyleRunProperties> GetRunStyles(StringValue firstStyleId)
         {
-            if (string.IsNullOrWhiteSpace(runStyle?.Val?.Value))
+            if (string.IsNullOrWhiteSpace(firstStyleId?.Value))
             {
                 yield break;
             }
 
-            var styleId = runStyle.Val.Value;
+            var styleId = firstStyleId;
             do
             {
                 var style = this.FindStyle(styleId);

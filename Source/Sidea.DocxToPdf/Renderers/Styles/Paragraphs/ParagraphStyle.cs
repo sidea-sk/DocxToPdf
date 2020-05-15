@@ -29,7 +29,10 @@ namespace Sidea.DocxToPdf.Renderers.Styles
                 return this;
             }
 
-            var lineAlignment = paragraphProperties.Justification.GetLinesAlignment(this.LineAlignment);
+            var lineAlignment = paragraphProperties == null
+                ? this.LineAlignment
+                : paragraphProperties.Justification.GetLinesAlignment(this.LineAlignment);
+
             var spacing = styleParagraphs
                 .Select(sp => sp.SpacingBetweenLines)
                 .Where(sp => sp != null)

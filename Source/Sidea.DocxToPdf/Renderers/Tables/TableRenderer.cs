@@ -18,7 +18,7 @@ namespace Sidea.DocxToPdf.Renderers.Tables
         public TableRenderer(Table table, IStyleAccessor styleAccessor)
         {
             _table = table;
-            _styleAccessor = styleAccessor;
+            _styleAccessor = styleAccessor.ForTable(table.Properties());
         }
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
