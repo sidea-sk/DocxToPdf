@@ -1,4 +1,7 @@
-﻿using PdfSharp.Drawing;
+﻿using System.Collections.Generic;
+using System.Linq;
+using DocumentFormat.OpenXml.Wordprocessing;
+using PdfSharp.Drawing;
 
 namespace Sidea.DocxToPdf.Renderers.Styles
 {
@@ -14,5 +17,30 @@ namespace Sidea.DocxToPdf.Renderers.Styles
 
         public XFont Font { get; }
         public XBrush Brush { get; }
+
+        public TextStyle Override(RunProperties runProperties, IReadOnlyCollection<StyleRunProperties> styleRuns)
+        {
+            if (runProperties == null && styleRuns.Count == 0)
+            {
+                return this;
+            }
+
+            var fontSize = runProperties.EffectiveFontSize(styleRuns, this.Font.Size);
+            var fontStyle = runProperties.EffectiveFontStyle(styleRuns, this.Font.Style);
+
+            var font = new XFont("Arial", fontSize, fontStyle);
+            var brush = runProperties.EffectiveColor(styleRuns, this.Brush);
+
+            return new TextStyle(font, brush);
+        }
+
+        public static TextStyle From(RunPropertiesBaseStyle runPropertiesBaseStyle)
+        {
+            var fs = runPropertiesBaseStyle.FontSize.ToXUnit(XUnit.FromPoint(11));
+
+            var font = new XFont("Arial", fs);
+            var brush = runPropertiesBaseStyle.Color.ToXBrush();
+            return new TextStyle(font, brush);
+        }
     }
 }

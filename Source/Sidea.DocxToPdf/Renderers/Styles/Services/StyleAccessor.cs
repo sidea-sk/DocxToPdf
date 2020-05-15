@@ -10,7 +10,6 @@ namespace Sidea.DocxToPdf.Renderers.Styles
     {
         private readonly MainDocumentPart _mainDocumentPart;
         private readonly TextStyle _textStyle;
-        private readonly ParagraphStyle _paragraphStyle;
 
         private StyleAccessor(
             MainDocumentPart mainDocumentPart,
@@ -19,15 +18,26 @@ namespace Sidea.DocxToPdf.Renderers.Styles
         {
             _mainDocumentPart = mainDocumentPart;
             _textStyle = textStyle;
-            _paragraphStyle = paragraphStyle;
+            ParagraphStyle = paragraphStyle;
         }
+
+        public ParagraphStyle ParagraphStyle { get; }
 
         public static StyleAccessor Default(MainDocumentPart mainDocumentPart)
         {
             var docDefaults = mainDocumentPart.StyleDefinitionsPart.Styles.DocDefaults;
             var paragraph = ParagraphStyle.From(docDefaults.ParagraphPropertiesDefault.ParagraphPropertiesBaseStyle);
+            var text = TextStyle.From(docDefaults.RunPropertiesDefault.RunPropertiesBaseStyle);
 
-            return new StyleAccessor(mainDocumentPart, TextStyle.Default, paragraph);
+            return new StyleAccessor(mainDocumentPart, text, paragraph);
+        }
+
+        public IStyleAccessor ForParagraph(ParagraphProperties paragraphProperties)
+        {
+            var ps = this.EffectiveStyle(paragraphProperties);
+            var ts = this.TextStyleFromParagraph(paragraphProperties);
+
+            return new StyleAccessor(_mainDocumentPart, ts, ps);
         }
 
         public ParagraphStyle EffectiveStyle(ParagraphProperties paragraphProperties)
@@ -35,12 +45,22 @@ namespace Sidea.DocxToPdf.Renderers.Styles
             var styles = this.GetParagraphStyles(paragraphProperties)
                 .ToArray();
 
-            return _paragraphStyle.Override(paragraphProperties, styles);
+            return ParagraphStyle.Override(paragraphProperties, styles);
         }
 
         public TextStyle EffectiveStyle(RunProperties runProperties)
         {
-            return _textStyle;
+            var styleRuns = this.GetRunStyles(runProperties?.RunStyle).ToArray();
+            return _textStyle.Override(runProperties, styleRuns);
+        }
+
+        private TextStyle TextStyleFromParagraph(ParagraphProperties paragraphProperties)
+        {
+            var styles = this.GetRunStyles(paragraphProperties)
+                .ToArray();
+
+            var ts = _textStyle.Override(null, styles);
+            return ts;
         }
 
         private IEnumerable<StyleParagraphProperties> GetParagraphStyles(ParagraphProperties paragraphProperties)
@@ -57,6 +77,46 @@ namespace Sidea.DocxToPdf.Renderers.Styles
                 if (style.StyleParagraphProperties != null)
                 {
                     yield return style.StyleParagraphProperties;
+                }
+
+                styleId = style.BasedOn?.Val;
+            } while (styleId != null);
+        }
+
+        private IEnumerable<StyleRunProperties> GetRunStyles(ParagraphProperties paragraphProperties)
+        {
+            if (paragraphProperties?.ParagraphStyleId?.Val == null)
+            {
+                yield break;
+            }
+
+            var styleId = paragraphProperties.ParagraphStyleId.Val;
+            do
+            {
+                var style = this.FindStyle(styleId);
+                if (style.StyleRunProperties != null)
+                {
+                    yield return style.StyleRunProperties;
+                }
+
+                styleId = style.BasedOn?.Val;
+            } while (styleId != null);
+        }
+
+        private IEnumerable<StyleRunProperties> GetRunStyles(RunStyle runStyle)
+        {
+            if (string.IsNullOrWhiteSpace(runStyle?.Val?.Value))
+            {
+                yield break;
+            }
+
+            var styleId = runStyle.Val.Value;
+            do
+            {
+                var style = this.FindStyle(styleId);
+                if (style.StyleRunProperties != null)
+                {
+                    yield return style.StyleRunProperties;
                 }
 
                 styleId = style.BasedOn?.Val;

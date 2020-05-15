@@ -9,13 +9,5 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
     {
         public static XUnit CalculateSpaceAfterLine(this LineSpacing lineSpacing, RLine line)
             => lineSpacing.CalculateSpaceAfterLine(line.PrecalulatedSize.Height);
-
-        public static RStyle Style(this Run run, XFont defaultFont)
-        {
-            XFont font = run.RunProperties.CreateRunFont(defaultFont);
-            XBrush brush = run.RunProperties?.Color.ToXBrush() ?? XBrushes.Black;
-
-            return new RStyle(font, brush);
-        }
     }
 }

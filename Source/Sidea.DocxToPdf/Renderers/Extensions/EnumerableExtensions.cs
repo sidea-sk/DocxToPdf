@@ -28,6 +28,13 @@ namespace Sidea.DocxToPdf.Renderers
             return copy;
         }
 
+        public static IEnumerable<T> MergeAndFilter<T>(T value, IEnumerable<T> otherValues, Func<T, bool> predicate)
+        {
+            return new[] { value }
+                .Concat(otherValues)
+                .Where(v => predicate(v));
+        }
+
         public static Stack<T> ToStack<T>(this IEnumerable<T> source, bool reverseOrder = true)
         {
             var content = reverseOrder

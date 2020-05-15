@@ -26,48 +26,30 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
         public static IEnumerable<RLine> CreateRenderingLines(
             this Paragraph paragraph,
             IReadOnlyCollection<RFixedDrawing> fixedDrawings,
-            LineSpacing lineSpacing,
-            IPrerenderArea prerenderArea)
+            ParagraphStyle paragraphStyle,
+            IPrerenderArea prerenderArea,
+            IStyleAccessor styleAccessor)
         {
-            var lineAlignment = paragraph.GetLinesAlignment();
-
             var elements = paragraph
-                .ToLineElements(prerenderArea)
+                .ToLineElements(prerenderArea, styleAccessor)
                 .ToStack();
 
             var lines = new List<RLine>();
             var vOffset = new XUnit(0);
             do
             {
-                var line = LineBuilder.CreateLine(elements, lineAlignment, vOffset, fixedDrawings, prerenderArea);
+                var line = LineBuilder.CreateLine(elements, paragraphStyle.LineAlignment, vOffset, fixedDrawings, prerenderArea);
                 line.CalculateContentSize(prerenderArea);
                 lines.Add(line);
 
                 vOffset += line.PrecalulatedSize.Height
-                    + lineSpacing.CalculateSpaceAfterLine(line);
+                    + paragraphStyle.Spacing.Line.CalculateSpaceAfterLine(line);
             } while (elements.Count > 0);
 
             return lines;
         }
 
-        private static LineAlignment GetLinesAlignment(this Paragraph paragraph)
-        {
-            var properties = paragraph.ParagraphProperties;
-            if (properties?.Justification == null)
-            {
-                return LineAlignment.Left;
-            }
-
-            return properties.Justification.Val.Value switch
-            {
-                JustificationValues.Right => LineAlignment.Right,
-                JustificationValues.Center => LineAlignment.Center,
-                JustificationValues.Both => LineAlignment.Justify,
-                _ => LineAlignment.Left,
-            };
-        }
-
-        private static IEnumerable<RLineElement> ToLineElements(this Paragraph paragraph, IPrerenderArea prerenderArea)
+        private static IEnumerable<RLineElement> ToLineElements(this Paragraph paragraph, IPrerenderArea prerenderArea, IStyleAccessor styleAccessor)
         {
             var runs = paragraph
                 .ChildElements
@@ -96,12 +78,12 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                         fieldRuns.Add(run);
                     } while (!run.IsFieldEnd());
 
-                    var field = fieldRuns.CreateField(prerenderArea.AreaFont);
+                    var field = fieldRuns.CreateField(styleAccessor);
                     elements.Add(field);
                 }
                 else
                 {
-                    var runElements = run.ToLineElements(prerenderArea.AreaFont);
+                    var runElements = run.ToLineElements(prerenderArea.AreaFont, styleAccessor);
                     elements.AddRange(runElements);
                 }
             }
@@ -109,10 +91,10 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return elements;
         }
 
-        private static IEnumerable<RLineElement> ToLineElements(this Run run, XFont defaultFont)
+        private static IEnumerable<RLineElement> ToLineElements(this Run run, XFont defaultFont, IStyleAccessor styleAccessor)
         {
-            var runStyle = run.Style(defaultFont);
-            
+            var textStyle = styleAccessor.EffectiveStyle(run.RunProperties);
+
             var xtexts = run
                 .ChildElements
                 .Where(c => c is Text || c is TabChar || c is Drawing || c is Break)
@@ -120,10 +102,10 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 {
                     return c switch
                     {
-                        Text t => t.SplitToWords(runStyle.Font, runStyle.Brush).Cast<RLineElement>(),
-                        TabChar t => new RLineElement[] { new RText("    ", runStyle.Font, runStyle.Brush) },
+                        Text t => t.SplitToWords(textStyle).Cast<RLineElement>(),
+                        TabChar t => new RLineElement[] { new RText("    ", textStyle) },
                         Drawing d => d.ToRInlineDrawing(),
-                        Break b => b.ToRLineElements(defaultFont),
+                        Break b => b.ToRLineElements(textStyle),
                         _ => throw new Exception("unprocessed child")
                     };
                 })
@@ -132,12 +114,12 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return xtexts;
         }
 
-        private static IEnumerable<RText> SplitToWords(this Text text, XFont font, XBrush brush)
+        private static IEnumerable<RText> SplitToWords(this Text text, TextStyle textStyle)
         {
             var xText = text
                 .InnerText
                 .SplitToLinesOrWordsOrWhitespaces()
-                .Select(t => new RText(t, font, brush))
+                .Select(t => new RText(t, textStyle))
                 .ToArray();
 
             return xText;
@@ -212,9 +194,9 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             return words;
         }
 
-        private static RLineElement[] ToRLineElements(this Break @break, XFont font)
+        private static RLineElement[] ToRLineElements(this Break @break, TextStyle textStyle)
         {
-            return new RLineElement[] { new RBreak(@break.Type.Value.ToString(), font) };
+            return new RLineElement[] { new RBreak(@break.Type.Value.ToString(), textStyle) };
         }
 
         private static RInlineDrawing[] ToRInlineDrawing(this Drawing drawing)

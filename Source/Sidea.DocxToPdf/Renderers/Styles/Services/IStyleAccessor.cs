@@ -7,7 +7,10 @@ namespace Sidea.DocxToPdf.Renderers.Styles
         // IStyleAccessor ForTable();
         // IStyleAccessor ForTableCell();
         // IStyleAccessor ForSection();
-        // IStyleAccessor ForParagraph();
+
+        ParagraphStyle ParagraphStyle { get; }
+
+        IStyleAccessor ForParagraph(ParagraphProperties paragraphProperties);
 
         ParagraphStyle EffectiveStyle(ParagraphProperties paragraphProperties);
         TextStyle EffectiveStyle(RunProperties runProperties);

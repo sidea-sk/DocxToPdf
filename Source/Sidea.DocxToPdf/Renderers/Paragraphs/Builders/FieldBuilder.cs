@@ -1,17 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
-using PdfSharp.Drawing;
-using Sidea.DocxToPdf.Renderers.Paragraphs.Models;
 using Sidea.DocxToPdf.Renderers.Paragraphs.Models.Fields;
+using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 {
     internal static class FieldBuilder
     {
-        public static RField CreateField(this ICollection<Run> runs, XFont defaultFont)
+        public static RField CreateField(this ICollection<Run> runs, IStyleAccessor styleAccessor)
         {
-            var style = runs.First().Style(defaultFont);
+            var style = styleAccessor.EffectiveStyle(runs.First().RunProperties);
 
             var run = runs
                 .Skip(1)
@@ -42,7 +41,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
                 .Any();
         }
 
-        private static RField CreateField(this string text, RStyle style)
+        private static RField CreateField(this string text, TextStyle style)
         {
             var items = text.Split("\\");
             switch (items[0].Trim())

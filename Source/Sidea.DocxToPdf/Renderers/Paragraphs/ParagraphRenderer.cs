@@ -22,7 +22,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
         public ParagraphRenderer(Paragraph paragraph, IStyleAccessor styleAccessor)
         {
             _paragraph = paragraph;
-            _styleAccessor = styleAccessor;
+            _styleAccessor = styleAccessor.ForParagraph(_paragraph.ParagraphProperties);
         }
 
         protected override sealed XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
@@ -35,7 +35,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs
                 .ToList();
 
             _lines = _paragraph
-                .CreateRenderingLines(_fixedDrawings, _paragraphStyle.Spacing.Line, prerenderArea)
+                .CreateRenderingLines(_fixedDrawings, _paragraphStyle, prerenderArea, _styleAccessor)
                 .ToList();
 
             var width = _lines
