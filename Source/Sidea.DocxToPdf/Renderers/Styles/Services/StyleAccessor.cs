@@ -1,4 +1,7 @@
-﻿using DocumentFormat.OpenXml.Packaging;
+﻿using System.Collections.Generic;
+using System.Linq;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Renderers.Styles
@@ -29,12 +32,46 @@ namespace Sidea.DocxToPdf.Renderers.Styles
 
         public ParagraphStyle EffectiveStyle(ParagraphProperties paragraphProperties)
         {
-            return _paragraphStyle;
+            var styles = this.GetParagraphStyles(paragraphProperties)
+                .ToArray();
+
+            return _paragraphStyle.Override(paragraphProperties, styles);
         }
 
         public TextStyle EffectiveStyle(RunProperties runProperties)
         {
             return _textStyle;
+        }
+
+        private IEnumerable<StyleParagraphProperties> GetParagraphStyles(ParagraphProperties paragraphProperties)
+        {
+            if(paragraphProperties?.ParagraphStyleId?.Val == null)
+            {
+                yield break;
+            }
+
+            var styleId = paragraphProperties.ParagraphStyleId.Val;
+            do
+            {
+                var style = this.FindStyle(styleId);
+                if (style.StyleParagraphProperties != null)
+                {
+                    yield return style.StyleParagraphProperties;
+                }
+
+                styleId = style.BasedOn?.Val;
+            } while (styleId != null);
+        }
+
+        private Style FindStyle(StringValue styleId)
+        {
+            var style = _mainDocumentPart
+                .StyleDefinitionsPart
+                .Styles
+                .OfType<Style>()
+                .SingleOrDefault(s => s.StyleId == styleId);
+
+            return style;
         }
     }
 }
