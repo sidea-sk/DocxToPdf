@@ -119,6 +119,11 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 
         private static IEnumerable<RText> SplitToWords(this Text text, TextStyle textStyle)
         {
+            if (string.IsNullOrWhiteSpace(text.InnerText))
+            {
+                return new RText[0];
+            }
+
             var xText = text
                 .InnerText
                 .SplitToLinesOrWordsOrWhitespaces()
