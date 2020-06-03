@@ -31,7 +31,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
             IStyleAccessor styleAccessor)
         {
             var elements = paragraph
-                .ToLineElements(prerenderArea, styleAccessor)
+                .ToLineElements(styleAccessor)
                 .ToStack();
 
             var lines = new List<RLine>();
@@ -51,7 +51,6 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 
         private static IEnumerable<RLineElement> ToLineElements(
             this Paragraph paragraph,
-            IPrerenderArea prerenderArea,
             IStyleAccessor styleAccessor)
         {
             var runs = paragraph

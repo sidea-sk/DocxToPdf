@@ -6,8 +6,6 @@ namespace Sidea.DocxToPdf.Renderers.Styles
 {
     internal class TextStyle
     {
-        public static readonly TextStyle Default = new TextStyle(new XFont("Calibri", 11), XBrushes.Black);
-
         public TextStyle(XFont font, XBrush brush)
         {
             this.Font = font;

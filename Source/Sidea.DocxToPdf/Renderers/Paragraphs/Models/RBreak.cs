@@ -13,7 +13,6 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
         public RBreak(string name, TextStyle textStyle)
         {
             _text = $"------ {name} Break ------";
-            // _font = new XFont(font.Name, XUnit.FromPoint(6));
             _textStyle = textStyle;
         }
 
@@ -36,7 +35,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
             if (renderArea.Options.RenderHiddenChars)
             {
                 var rect = new XRect(0, 0, this.PrecalulatedSize.Width, renderArea.Height);
-                renderArea.DrawText(_text, _textStyle.Font, _textStyle.Brush, rect, XStringFormats.CenterLeft);
+                renderArea.DrawText(_text, _textStyle.Font, _textStyle.Brush, rect, XStringFormats.BottomLeft);
             }
 
             return RenderResult.Done(this.PrecalulatedSize);
