@@ -21,9 +21,9 @@ namespace Sidea.DocxToPdf.Renderers
             return xmlElement.ChildElements.OfType<T>();
         }
 
-        public static bool IsOn(this OnOffType onOffType, bool ifNull = false)
+        public static bool IsOn(this OnOffType onOffType, bool ifOnOffTypeNull = false, bool ifOnOffValueNull = false)
         {
-            return onOffType?.Val.IsOn(ifNull) ?? ifNull;
+            return onOffType?.Val.IsOn(ifOnOffValueNull) ?? ifOnOffTypeNull;
         }
 
         public static bool IsOn(this OnOffValue onOffValue, bool ifNull = false)

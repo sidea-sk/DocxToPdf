@@ -9,9 +9,9 @@ namespace Sidea.DocxToPdf.Renderers.Footers
     {
         private readonly XUnit _bottomMargin;
 
-        public NoFooterRenderer(PageMargin pageMargin)
+        public NoFooterRenderer(PageConfiguration pageConfiguration)
         {
-            _bottomMargin = pageMargin.Bottom;
+            _bottomMargin = pageConfiguration.Margin.Bottom;
         }
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)

@@ -10,27 +10,36 @@ namespace Sidea.DocxToPdf.Renderers.Headers
 {
     internal class HeaderRenderer : CompositeRenderer, IHeaderRenderer
     {
+        private readonly XUnit _leftMargin;
+        private readonly XUnit _renderableWidth;
         private readonly XUnit _topMargin;
         private readonly XUnit _toHeaderMargin;
 
         public HeaderRenderer(
             Word.Header header,
-            PageMargin pageMargin,
+            PageConfiguration pageConfiguration,
             IStyleAccessor styleAccessor) : base(header, styleAccessor)
         {
-            _toHeaderMargin = pageMargin.Header;
-            _topMargin = pageMargin.Top;
+            _leftMargin = pageConfiguration.Margin.Left;
+            _renderableWidth = pageConfiguration.Size.Width
+                - pageConfiguration.Margin.Left
+                - pageConfiguration.Margin.Right;
+
+            _toHeaderMargin = pageConfiguration.Margin.Header;
+            _topMargin = pageConfiguration.Margin.Top;
         }
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            var contentSize = base.CalculateContentSizeCore(prerenderArea);
+            var contentSize = base.CalculateContentSizeCore(prerenderArea.Restrict(_renderableWidth));
             return contentSize.ExpandToMax(new XSize(prerenderArea.Width, _topMargin));
         }
 
         protected override RenderResult RenderCore(IRenderArea renderArea)
         {
             var headerContentArea = renderArea
+                .PanLeft(_leftMargin)
+                .Restrict(_renderableWidth)
                 .PanDown(_toHeaderMargin);
 
             var state = base.RenderCore(headerContentArea);

@@ -9,9 +9,9 @@ namespace Sidea.DocxToPdf.Renderers.Headers
     {
         private readonly XUnit _topMargin;
 
-        public NoHeaderRenderer(PageMargin pageMargin)
+        public NoHeaderRenderer(PageConfiguration pageConfiguration)
         {
-            _topMargin = pageMargin.Top;
+            _topMargin = pageConfiguration.Margin.Top;
         }
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)

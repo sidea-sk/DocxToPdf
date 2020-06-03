@@ -7,8 +7,10 @@ namespace Sidea.DocxToPdf.Renderers
 {
     internal static class FooterXmlExtensions
     {
-        public static Footer FindFooterForPage(this MainDocumentPart mainDocumentPart, int pageNumber)
+        public static Footer FindFooterForPage(this MainDocumentPart mainDocumentPart, int pageNumber, bool hasTitlePage)
         {
+            var useEvenOdd = mainDocumentPart.DocumentSettingsPart.EvenOddHeadersAndFooters();
+
             var sectionProperties = mainDocumentPart.Document.Body
                 .ChildsOfType<SectionProperties>()
                 .SingleOrDefault();
@@ -16,7 +18,7 @@ namespace Sidea.DocxToPdf.Renderers
             var footerReference = sectionProperties
                 .ChildsOfType<FooterReference>()
                 .ToArray()
-                .ChooseHeaderReference(pageNumber);
+                .ChooseFooterReference(pageNumber, hasTitlePage, useEvenOdd);
 
             if(footerReference == null)
             {
@@ -27,15 +29,19 @@ namespace Sidea.DocxToPdf.Renderers
             return footerPart.Footer;
         }
 
-        private static FooterReference ChooseHeaderReference(this IReadOnlyCollection<FooterReference> references, int pageNumber)
+        private static FooterReference ChooseFooterReference(
+            this IReadOnlyCollection<FooterReference> references,
+            int pageNumber,
+            bool hasTitlePage,
+            bool useEvenOdd)
         {
-            if(pageNumber == 1)
+            if (hasTitlePage && pageNumber == 1)
             {
                 return references.FirstOrDefault(r => r.Type == HeaderFooterValues.First)
                     ?? references.FirstOrDefault(r => r.Type == HeaderFooterValues.Default);
             }
 
-            if(pageNumber % 2 == 1)
+            if(!useEvenOdd || pageNumber % 2 == 1)
             {
                 return references.FirstOrDefault(r => r.Type == HeaderFooterValues.Default);
             }

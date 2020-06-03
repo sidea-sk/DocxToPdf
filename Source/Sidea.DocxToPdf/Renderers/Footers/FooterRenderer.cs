@@ -10,21 +10,28 @@ namespace Sidea.DocxToPdf.Renderers.Footers
 {
     internal class FooterRenderer : CompositeRenderer, IFooterRenderer
     {
+        private readonly XUnit _leftMargin;
+        private readonly XUnit _renderableWidth;
         private readonly XUnit _bottomMargin;
         private readonly XUnit _toFooterMargin;
 
         public FooterRenderer(
             Word.Footer footer,
-            PageMargin pageMargin,
+            PageConfiguration pageConfiguration,
             IStyleAccessor styleAccessor) : base(footer, styleAccessor)
         {
-            _bottomMargin = pageMargin.Bottom;
-            _toFooterMargin = pageMargin.Footer;
+            _leftMargin = pageConfiguration.Margin.Left;
+            _renderableWidth = pageConfiguration.Size.Width
+                - pageConfiguration.Margin.Left
+                - pageConfiguration.Margin.Right;
+
+            _bottomMargin = pageConfiguration.Margin.Bottom;
+            _toFooterMargin = pageConfiguration.Margin.Footer;
         }
 
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
-            var contentSize = base.CalculateContentSizeCore(prerenderArea);
+            var contentSize = base.CalculateContentSizeCore(prerenderArea.Restrict(_renderableWidth));
             var h = Math.Max(contentSize.Height + _toFooterMargin, _bottomMargin);
             return contentSize.ExpandToMax(new XSize(prerenderArea.Width, h));
         }
@@ -32,7 +39,8 @@ namespace Sidea.DocxToPdf.Renderers.Footers
         protected override RenderResult RenderCore(IRenderArea renderArea)
         {
             var footerArea = renderArea
-                .PanDown(renderArea.Height - this.PrecalulatedSize.Height);
+                .PanLeftDown(_leftMargin, renderArea.Height - this.PrecalulatedSize.Height)
+                .Restrict(_renderableWidth);
 
             // child rendering state ignored. The footer has no chance to extend its height during the rendering
             base.RenderCore(footerArea);
