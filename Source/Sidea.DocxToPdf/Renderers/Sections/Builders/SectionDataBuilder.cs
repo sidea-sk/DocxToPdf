@@ -108,9 +108,12 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                 ? RenderBehaviour.NewPage
                 : RenderBehaviour.Continue;
 
-            var columns = wordSectionProperties.GetSectionColumns(pageCongifuration);
+            var hasTitlePage = wordSectionProperties.ChildsOfType<Word.TitlePage>().SingleOrDefault()
+                .IsOn(ifOnOffTypeNull: false, ifOnOffValueNull: true);
 
-            return new SectionProperties(pageCongifuration, columns, renderBehaviour);
+            var columns = wordSectionProperties.GetSectionColumns(pageCongifuration);
+            
+            return new SectionProperties(pageCongifuration, new HeaderFooterConfiguration(hasTitlePage), columns, renderBehaviour);
         }
 
         private static IEnumerable<SectionColumn> GetSectionColumns(this Word.SectionProperties wordSectionProperties, PageConfiguration page)

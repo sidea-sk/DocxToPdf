@@ -11,6 +11,7 @@ using Sidea.DocxToPdf.Renderers.Footers;
 using Sidea.DocxToPdf.Renderers.Headers;
 using Sidea.DocxToPdf.Renderers.Sections;
 using Sidea.DocxToPdf.Renderers.Sections.Builders;
+using Sidea.DocxToPdf.Renderers.Sections.Models;
 using Sidea.DocxToPdf.Renderers.Styles;
 
 namespace Sidea.DocxToPdf.Renderers
@@ -57,16 +58,16 @@ namespace Sidea.DocxToPdf.Renderers
             IRenderArea renderArea = null;
             foreach (var sectionRenderer in _sectionRenderers)
             {
-                if(sectionRenderer.SectionProperties.RenderBehaviour == Sections.Models.RenderBehaviour.NewPage)
+                if(sectionRenderer.SectionProperties.RenderBehaviour == RenderBehaviour.NewPage)
                 {
-                    renderArea = this.CreateNewRenderArea(pdf, sectionRenderer.SectionProperties.PageConfiguration);
+                    renderArea = this.CreateNewRenderArea(pdf, sectionRenderer.SectionProperties);
                 }
 
                 do
                 {
                     sectionRenderer.Render(renderArea);
                     renderArea = sectionRenderer.RenderResult.Status != RenderingStatus.Done
-                        ? this.CreateNewRenderArea(pdf, sectionRenderer.SectionProperties.PageConfiguration)
+                        ? this.CreateNewRenderArea(pdf, sectionRenderer.SectionProperties)
                         : renderArea.PanDown(sectionRenderer.RenderResult.RenderedHeight);
                 } while (sectionRenderer.RenderResult.Status != RenderingStatus.Done);
             }
@@ -91,14 +92,14 @@ namespace Sidea.DocxToPdf.Renderers
             return sectionRenderers;
         }
 
-        private IRenderArea RenderHeaderAndFooter(RenderArea renderArea)
+        private IRenderArea RenderHeaderAndFooter(RenderArea renderArea, SectionProperties sectionProperties)
         {
             var page = _headerRenderers.Count;
 
-            var headerRenderer = this.CreateAndRenderHeader(renderArea, page + 1);
+            var headerRenderer = this.CreateAndRenderHeader(renderArea, page + 1, sectionProperties);
             _headerRenderers.Add(headerRenderer);
 
-            var footerRenderer = this.CreateAndRenderFooter(renderArea, page + 1);
+            var footerRenderer = this.CreateAndRenderFooter(renderArea, page + 1, sectionProperties);
             _footerRenderers.Add(footerRenderer);
 
             var bodyRenderArea = ((IRenderArea)renderArea)
@@ -108,14 +109,16 @@ namespace Sidea.DocxToPdf.Renderers
             return bodyRenderArea;
         }
 
-        private IHeaderRenderer CreateAndRenderHeader(RenderArea renderArea, int pageNumber)
+        private IHeaderRenderer CreateAndRenderHeader(
+            RenderArea renderArea,
+            int pageNumber,
+            SectionProperties sectionProperties)
         {
-            var header = _docx.MainDocumentPart.FindHeaderForPage(pageNumber);
-            var pageMargin = _docx.MainDocumentPart.GetPageMargin();
+            var header = _docx.MainDocumentPart.FindHeaderForPage(pageNumber, sectionProperties.HeaderFooterConfiguration.HasTitlePage);
 
             var renderer = header == null
-                ? (IHeaderRenderer)new NoHeaderRenderer(pageMargin)
-                : new HeaderRenderer(header, pageMargin, _styleAccessor);
+                ? (IHeaderRenderer)new NoHeaderRenderer(sectionProperties.PageConfiguration)
+                : new HeaderRenderer(header, sectionProperties.PageConfiguration, _styleAccessor);
 
             renderer.CalculateContentSize(renderArea);
             renderer.Render(renderArea);
@@ -123,14 +126,12 @@ namespace Sidea.DocxToPdf.Renderers
             return renderer;
         }
 
-        private IFooterRenderer CreateAndRenderFooter(RenderArea renderArea, int pageNumber)
+        private IFooterRenderer CreateAndRenderFooter(RenderArea renderArea, int pageNumber, SectionProperties sectionProperties)
         {
-            var footer = _docx.MainDocumentPart.FindFooterForPage(pageNumber);
-            var pageMargin = _docx.MainDocumentPart.GetPageMargin();
-
+            var footer = _docx.MainDocumentPart.FindFooterForPage(pageNumber, sectionProperties.HeaderFooterConfiguration.HasTitlePage);
             var renderer = footer == null
-                ? (IFooterRenderer)new NoFooterRenderer(pageMargin)
-                : new FooterRenderer(footer, pageMargin, _styleAccessor);
+                ? (IFooterRenderer)new NoFooterRenderer(sectionProperties.PageConfiguration)
+                : new FooterRenderer(footer, sectionProperties.PageConfiguration, _styleAccessor);
 
             renderer.CalculateContentSize(renderArea);
             renderer.Render(renderArea);
@@ -152,9 +153,9 @@ namespace Sidea.DocxToPdf.Renderers
 
         private IRenderArea CreateNewRenderArea(
             PdfDocument pdf,
-            PageConfiguration pageConfiguration)
+            SectionProperties sectionProperties)
         {
-            var page = this.CreatePage(pdf, pageConfiguration);
+            var page = this.CreatePage(pdf, sectionProperties.PageConfiguration);
             var graphics = XGraphics.FromPdfPage(page);
             _currentPage++;
 
@@ -164,7 +165,9 @@ namespace Sidea.DocxToPdf.Renderers
                 new ImageAccessor(_docx.MainDocumentPart),
                 _renderingOptions);
 
-            IRenderArea sectionRenderArea = this.RenderHeaderAndFooter(renderArea);
+            IRenderArea sectionRenderArea = this.RenderHeaderAndFooter(
+                renderArea,
+                sectionProperties);
             return sectionRenderArea;
         }
 

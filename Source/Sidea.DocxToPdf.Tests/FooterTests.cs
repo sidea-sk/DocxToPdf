@@ -16,6 +16,18 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        public void Default()
+        {
+            this.Generate(nameof(Default));
+        }
+
+        [TestMethod]
+        public void EvenOdd()
+        {
+            this.Generate(nameof(EvenOdd));
+        }
+
+        [TestMethod]
         public void FirstEvenOdd()
         {
             this.Generate(nameof(FirstEvenOdd));

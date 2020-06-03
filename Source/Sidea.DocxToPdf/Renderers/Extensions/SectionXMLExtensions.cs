@@ -8,15 +8,6 @@ namespace Sidea.DocxToPdf.Renderers
 {
     internal static class SectionXMLExtensions
     {
-        public static PageMargin GetPageMargin(this MainDocumentPart mainDocumentPart)
-        {
-            var sectionProperties = mainDocumentPart.Document.Body
-                .ChildsOfType<Word.SectionProperties>()
-                .Single();
-
-            return sectionProperties.GetPageMargin();
-        }
-
         public static PageConfiguration GetPageConfiguration(this Word.SectionProperties sectionProperties)
         {
             var pageSize = sectionProperties.ChildsOfType<Word.PageSize>().Single();

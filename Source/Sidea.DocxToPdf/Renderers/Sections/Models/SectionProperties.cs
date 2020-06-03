@@ -9,15 +9,19 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Models
     {
         public SectionProperties(
             PageConfiguration pageConfiguration,
+            HeaderFooterConfiguration headerFooterConfiguration,
             IEnumerable<SectionColumn> columns,
             RenderBehaviour renderBehaviour)
         {
             this.PageConfiguration = pageConfiguration;
+            this.HeaderFooterConfiguration = headerFooterConfiguration;
             this.Columns = columns.ToArray();
             this.RenderBehaviour = renderBehaviour;
         }
 
         public PageConfiguration PageConfiguration { get; }
+        public HeaderFooterConfiguration HeaderFooterConfiguration { get; }
+        public bool HasTitlePage { get; }
         public IReadOnlyCollection<SectionColumn> Columns { get; }
         public RenderBehaviour RenderBehaviour { get; }
 
