@@ -13,6 +13,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
     {
         public static IEnumerable<SectionData> SplitToSections(
             this Word.Body body,
+            bool useEvenOddFootersAndHeaders,
             IStyleAccessor styleAccessor)
         {
             var sectionData = new List<SectionData>();
@@ -33,7 +34,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                 }
 
                 var sectionParts = sectionElements.SplitToSectionParts(styleAccessor);
-                var sd = new SectionData(sp.ToModel(sectionData.Count == 0), sectionParts);
+                var sd = new SectionData(sp.ToModel(sectionData.Count == 0, useEvenOddFootersAndHeaders), sectionParts);
                 sectionData.Add(sd);
                 sectionElements.Clear();
             }
@@ -43,7 +44,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                .Single();
 
             var lastSectionParts = sectionElements.SplitToSectionParts(styleAccessor);
-            sectionData.Add(new SectionData(lastSectionProperties.ToModel(sectionData.Count == 0), lastSectionParts));
+            sectionData.Add(new SectionData(lastSectionProperties.ToModel(sectionData.Count == 0, useEvenOddFootersAndHeaders), lastSectionParts));
             return sectionData;
         }
 
@@ -100,7 +101,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
             return paragraph.ParagraphProperties?.SectionProperties;
         }
 
-        private static SectionProperties ToModel(this Word.SectionProperties wordSectionProperties, bool isFirstSection)
+        private static SectionProperties ToModel(this Word.SectionProperties wordSectionProperties, bool isFirstSection, bool useEvenOddFootersAndHeaders)
         {
             var pageCongifuration = wordSectionProperties.GetPageConfiguration();
             var sectionMark = wordSectionProperties.ChildsOfType<Word.SectionType>().SingleOrDefault()?.Val ?? Word.SectionMarkValues.NextPage;
@@ -108,12 +109,59 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                 ? RenderBehaviour.NewPage
                 : RenderBehaviour.Continue;
 
-            var hasTitlePage = wordSectionProperties.ChildsOfType<Word.TitlePage>().SingleOrDefault()
-                .IsOn(ifOnOffTypeNull: false, ifOnOffValueNull: true);
-
             var columns = wordSectionProperties.GetSectionColumns(pageCongifuration);
-            
-            return new SectionProperties(pageCongifuration, new HeaderFooterConfiguration(hasTitlePage), columns, renderBehaviour);
+            var headerFooterConfiguration = wordSectionProperties.GetHeaderFooterConfiguration(useEvenOddFootersAndHeaders);
+
+            return new SectionProperties(
+                pageCongifuration,
+                headerFooterConfiguration,
+                columns,
+                renderBehaviour);
+        }
+
+        private static PageConfiguration GetPageConfiguration(this Word.SectionProperties sectionProperties)
+        {
+            var pageSize = sectionProperties.ChildsOfType<Word.PageSize>().Single();
+            var w = pageSize.Width.DxaToPoint();
+            var h = pageSize.Height.DxaToPoint();
+
+            var orientation = (pageSize.Orient?.Value ?? Word.PageOrientationValues.Portrait) == Word.PageOrientationValues.Portrait
+                ? PdfSharp.PageOrientation.Portrait
+                : PdfSharp.PageOrientation.Landscape;
+
+            var margin = sectionProperties.GetPageMargin();
+
+            return new PageConfiguration(new XSize(w, h), margin, orientation);
+        }
+
+        private static PageMargin GetPageMargin(this Word.SectionProperties sectionProperties)
+        {
+            var pageMargin = sectionProperties.ChildsOfType<Word.PageMargin>().Single();
+            return new PageMargin(
+                pageMargin.Top.DxaToPoint(),
+                pageMargin.Right.DxaToPoint(),
+                pageMargin.Bottom.DxaToPoint(),
+                pageMargin.Left.DxaToPoint(),
+                pageMargin.Header.DxaToPoint(),
+                pageMargin.Footer.DxaToPoint());
+        }
+
+        private static  HeaderFooterConfiguration GetHeaderFooterConfiguration(
+            this Word.SectionProperties wordSectionProperties,
+            bool useEvenOddFootersAndHeaders)
+        {
+            var hasTitlePage = wordSectionProperties.ChildsOfType<Word.TitlePage>().SingleOrDefault()
+                  .IsOn(ifOnOffTypeNull: false, ifOnOffValueNull: true);
+
+            var headerRefs = wordSectionProperties
+                .ChildsOfType<Word.HeaderReference>()
+                .Select(fr => new HeaderFooterRef(fr.Id, fr.Type));
+
+            var footerRefs = wordSectionProperties
+                .ChildsOfType<Word.FooterReference>()
+                .Select(fr => new HeaderFooterRef(fr.Id, fr.Type));
+
+            return new HeaderFooterConfiguration(hasTitlePage, useEvenOddFootersAndHeaders, headerRefs, footerRefs);
         }
 
         private static IEnumerable<SectionColumn> GetSectionColumns(this Word.SectionProperties wordSectionProperties, PageConfiguration page)

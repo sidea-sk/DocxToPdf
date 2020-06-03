@@ -75,8 +75,10 @@ namespace Sidea.DocxToPdf.Renderers
 
         private IEnumerable<SectionRenderer> PrepareSectionRenderers(PdfDocument pdf)
         {
+            var useEvenOdd = _docx.MainDocumentPart.DocumentSettingsPart.EvenOddHeadersAndFooters();
+
             var sectionRenderers = _docx.MainDocumentPart.Document.Body
-                .SplitToSections(_styleAccessor)
+                .SplitToSections(useEvenOdd, _styleAccessor)
                 .Select(sectionData => {
                     var prerenderArea = this.CreatePrerenderArea(pdf, sectionData.Properties.PageConfiguration);
 
@@ -95,7 +97,6 @@ namespace Sidea.DocxToPdf.Renderers
         private IRenderArea RenderHeaderAndFooter(RenderArea renderArea, SectionProperties sectionProperties)
         {
             var page = _headerRenderers.Count;
-
             var headerRenderer = this.CreateAndRenderHeader(renderArea, page + 1, sectionProperties);
             _headerRenderers.Add(headerRenderer);
 
@@ -114,7 +115,8 @@ namespace Sidea.DocxToPdf.Renderers
             int pageNumber,
             SectionProperties sectionProperties)
         {
-            var header = _docx.MainDocumentPart.FindHeaderForPage(pageNumber, sectionProperties.HeaderFooterConfiguration.HasTitlePage);
+            var headerReferenceId = sectionProperties.HeaderFooterConfiguration.GetHeaderReferenceId(pageNumber);
+            var header = _docx.MainDocumentPart.FindHeader(headerReferenceId);
 
             var renderer = header == null
                 ? (IHeaderRenderer)new NoHeaderRenderer(sectionProperties.PageConfiguration)
@@ -128,7 +130,8 @@ namespace Sidea.DocxToPdf.Renderers
 
         private IFooterRenderer CreateAndRenderFooter(RenderArea renderArea, int pageNumber, SectionProperties sectionProperties)
         {
-            var footer = _docx.MainDocumentPart.FindFooterForPage(pageNumber, sectionProperties.HeaderFooterConfiguration.HasTitlePage);
+            var footerReferenceId = sectionProperties.HeaderFooterConfiguration.GetFooterReferenceId(pageNumber);
+            var footer = _docx.MainDocumentPart.FindFooter(footerReferenceId);
             var renderer = footer == null
                 ? (IFooterRenderer)new NoFooterRenderer(sectionProperties.PageConfiguration)
                 : new FooterRenderer(footer, sectionProperties.PageConfiguration, _styleAccessor);
