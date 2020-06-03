@@ -71,15 +71,14 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Builders
 
                 if(element is RBreak)
                 {
-                    if(segmentElements.Count > 0)
-                    {
-                        fromElements.Push(element);
-                    }
-                    else
-                    {
-                        segmentElements.Add(element);
-                    }
-
+                    //if(segmentElements.Count > 0)
+                    //{
+                    //    fromElements.Push(element);
+                    //}
+                    //else
+                    //{
+                    //    segmentElements.Add(element);
+                    //}
                     continueSearch = false;
                 }
                 else if (left + element.PrecalulatedSize.Width <= lineSegment.Width)
