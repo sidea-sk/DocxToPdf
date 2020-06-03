@@ -6,7 +6,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Models
 {
     internal class HeaderFooterConfiguration
     {
-        private readonly HeaderFooterRef[]_headers;
+        private readonly HeaderFooterRef[] _headers;
         private readonly HeaderFooterRef[] _footers;
         private readonly bool _hasTitlePage;
         private readonly bool _useEvenOddHeadersAndFooters;
