@@ -26,5 +26,29 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(PageOrientation));
         }
+
+        [TestMethod]
+        public void HeaderFooterOnContinuosSections()
+        {
+            this.Generate(nameof(HeaderFooterOnContinuosSections));
+        }
+
+        [TestMethod]
+        public void DifferentHeaderFooterForSections()
+        {
+            this.Generate(nameof(DifferentHeaderFooterForSections));
+        }
+
+        [TestMethod]
+        public void DifferentHeaderSameFooterForSections()
+        {
+            this.Generate(nameof(DifferentHeaderSameFooterForSections));
+        }
+
+        [TestMethod]
+        public void SameHeaderDifferentFooterForSections()
+        {
+            this.Generate(nameof(SameHeaderDifferentFooterForSections));
+        }
     }
 }

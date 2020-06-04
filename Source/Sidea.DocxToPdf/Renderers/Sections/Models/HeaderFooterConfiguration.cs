@@ -6,12 +6,14 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Models
 {
     internal class HeaderFooterConfiguration
     {
+        public static readonly HeaderFooterConfiguration Empty = new HeaderFooterConfiguration(false, false, new HeaderFooterRef[0], new HeaderFooterRef[0]);
+
         private readonly HeaderFooterRef[] _headers;
         private readonly HeaderFooterRef[] _footers;
         private readonly bool _hasTitlePage;
         private readonly bool _useEvenOddHeadersAndFooters;
 
-        public HeaderFooterConfiguration(
+        private HeaderFooterConfiguration(
             bool hasTitlePage,
             bool useEvenOddHeadersAndFooters,
             IEnumerable<HeaderFooterRef> headers,
@@ -31,6 +33,27 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Models
         public string GetFooterReferenceId(int pageNumber)
         {
             return this.GetReferenceId(_footers, pageNumber);
+        }
+
+        public HeaderFooterConfiguration Inherited(
+            bool hasTitlePage,
+            bool useEvenOddHeadersAndFooters,
+            IEnumerable<HeaderFooterRef> headers,
+            IEnumerable<HeaderFooterRef> footers)
+        {
+            var h = headers.ToArray();
+            if(h.Length == 0)
+            {
+                h = _headers.ToArray();
+            }
+
+            var f = footers.ToArray();
+            if (f.Length == 0)
+            {
+                f = _footers.ToArray();
+            }
+
+            return new HeaderFooterConfiguration(hasTitlePage, useEvenOddHeadersAndFooters, h, f);
         }
 
         private string GetReferenceId(IEnumerable<HeaderFooterRef> references, int pageNumber)
