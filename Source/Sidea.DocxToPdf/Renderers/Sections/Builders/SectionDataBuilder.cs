@@ -19,6 +19,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
             var sectionData = new List<SectionData>();
 
             var sectionElements = new List<OpenXmlCompositeElement>();
+            var headerFooterConfiguration = HeaderFooterConfiguration.Empty;
             foreach(var e in body.RenderableChildren())
             {
                 sectionElements.Add(e);
@@ -34,8 +35,11 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                 }
 
                 var sectionParts = sectionElements.SplitToSectionParts(styleAccessor);
-                var sd = new SectionData(sp.ToModel(sectionData.Count == 0, useEvenOddFootersAndHeaders), sectionParts);
+                var sd = new SectionData(sp.ToModel(sectionData.Count == 0, useEvenOddFootersAndHeaders, headerFooterConfiguration), sectionParts);
+
+                headerFooterConfiguration = sd.Properties.HeaderFooterConfiguration;
                 sectionData.Add(sd);
+
                 sectionElements.Clear();
             }
 
@@ -44,7 +48,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                .Single();
 
             var lastSectionParts = sectionElements.SplitToSectionParts(styleAccessor);
-            sectionData.Add(new SectionData(lastSectionProperties.ToModel(sectionData.Count == 0, useEvenOddFootersAndHeaders), lastSectionParts));
+            sectionData.Add(new SectionData(lastSectionProperties.ToModel(sectionData.Count == 0, useEvenOddFootersAndHeaders, headerFooterConfiguration), lastSectionParts));
             return sectionData;
         }
 
@@ -101,7 +105,11 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
             return paragraph.ParagraphProperties?.SectionProperties;
         }
 
-        private static SectionProperties ToModel(this Word.SectionProperties wordSectionProperties, bool isFirstSection, bool useEvenOddFootersAndHeaders)
+        private static SectionProperties ToModel(
+            this Word.SectionProperties wordSectionProperties,
+            bool isFirstSection,
+            bool useEvenOddFootersAndHeaders,
+            HeaderFooterConfiguration inheritHeaderFooterConfiguration)
         {
             var pageCongifuration = wordSectionProperties.GetPageConfiguration();
             var sectionMark = wordSectionProperties.ChildsOfType<Word.SectionType>().SingleOrDefault()?.Val ?? Word.SectionMarkValues.NextPage;
@@ -110,7 +118,8 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                 : RenderBehaviour.Continue;
 
             var columns = wordSectionProperties.GetSectionColumns(pageCongifuration);
-            var headerFooterConfiguration = wordSectionProperties.GetHeaderFooterConfiguration(useEvenOddFootersAndHeaders);
+            var headerFooterConfiguration = wordSectionProperties
+                .GetHeaderFooterConfiguration(useEvenOddFootersAndHeaders, inheritHeaderFooterConfiguration);
 
             return new SectionProperties(
                 pageCongifuration,
@@ -148,7 +157,8 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
 
         private static  HeaderFooterConfiguration GetHeaderFooterConfiguration(
             this Word.SectionProperties wordSectionProperties,
-            bool useEvenOddFootersAndHeaders)
+            bool useEvenOddFootersAndHeaders,
+            HeaderFooterConfiguration previousHeaderFooterConfiguration)
         {
             var hasTitlePage = wordSectionProperties.ChildsOfType<Word.TitlePage>().SingleOrDefault()
                   .IsOn(ifOnOffTypeNull: false, ifOnOffValueNull: true);
@@ -161,7 +171,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections.Builders
                 .ChildsOfType<Word.FooterReference>()
                 .Select(fr => new HeaderFooterRef(fr.Id, fr.Type));
 
-            return new HeaderFooterConfiguration(hasTitlePage, useEvenOddFootersAndHeaders, headerRefs, footerRefs);
+            return previousHeaderFooterConfiguration.Inherited(hasTitlePage, useEvenOddFootersAndHeaders, headerRefs, footerRefs);
         }
 
         private static IEnumerable<SectionColumn> GetSectionColumns(this Word.SectionProperties wordSectionProperties, PageConfiguration page)
