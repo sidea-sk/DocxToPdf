@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <Folder Include="Models\Paragraphs\" />
-    <Folder Include="Models\Styles\Paragraphs\" />
   </ItemGroup>
 
 </Project>
