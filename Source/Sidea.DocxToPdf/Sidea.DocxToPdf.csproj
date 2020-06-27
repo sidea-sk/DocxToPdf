@@ -24,4 +24,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Paragraphs\" />
+    <Folder Include="Models\Styles\Paragraphs\" />
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
 </Project>
