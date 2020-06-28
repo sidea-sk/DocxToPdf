@@ -5,7 +5,7 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class ParagraphTests : TestBase
     {
-        public ParagraphTests(): base("Paragraphs")
+        public ParagraphTests(): base("Paragraphs", useNextGeneration: true)
         {
         }
 
@@ -56,5 +56,7 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(VeryLongTextWithoutSpaces));
         }
+
+
     }
 }

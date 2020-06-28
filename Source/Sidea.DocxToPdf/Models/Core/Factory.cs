@@ -10,7 +10,7 @@ namespace Sidea.DocxToPdf.Models
         {
             return openXmlComposite switch
             {
-                //Word.Paragraph p => new Paragraphs.Paragraph(p, styleFactory),
+                Word.Paragraph p => new Paragraphs.Paragraph(p, styleFactory),
                 //Word.Table t => new Tables.Table(t, styleFactory),
                 _ => throw new RendererException("Unhandled element")
             };

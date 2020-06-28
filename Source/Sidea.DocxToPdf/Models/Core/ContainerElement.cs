@@ -1,10 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Sidea.DocxToPdf.Core;
 
 namespace Sidea.DocxToPdf.Models
 {
-    internal class ContainerElement
+    internal abstract class ContainerElement
     {
+        public abstract void Initialize();
+
+        public abstract void Prepare(
+            IPage page,
+            Rectangle region,
+            IPageManager pageManager);
     }
 }

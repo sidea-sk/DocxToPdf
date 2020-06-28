@@ -112,7 +112,7 @@ namespace Sidea.DocxToPdf.Renderers.Sections
 
         private void RenderSectionBorder(IRenderArea renderArea)
         {
-            if (!renderArea.Options.RenderSectionRegionBoundaries)
+            if (!renderArea.Options.SectionRegionBoundaries)
             {
                 return;
             }

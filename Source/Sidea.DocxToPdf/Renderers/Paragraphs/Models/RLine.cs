@@ -55,7 +55,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
                 box.Element.Render(elementArea);
             }
 
-            if (_isLastLineOfParagraph && renderArea.Options.RenderHiddenChars)
+            if (_isLastLineOfParagraph && renderArea.Options.HiddenChars)
             {
                 var pan = _elements.Length > 0
                     ? new XUnit(_elements.Last().Offset.X + _elements.Last().Element.PrecalulatedSize.Width)

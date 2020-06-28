@@ -1,25 +1,46 @@
 ﻿namespace Sidea.DocxToPdf
 {
-    public class RenderingOptions   
+    public class RenderingOptions
     {
         public static readonly RenderingOptions Default = new RenderingOptions();
 
         public RenderingOptions(
-            bool renderParagraphCharacter = false,
-            bool renderSectionRegionBoundaries = false)
+            bool hiddenChars = false,
+            bool sectionRegionBoundaries = false,
+            bool paragraphRegionBoundaries = false,
+            bool lineRegionBoundaries = false,
+            bool wordRegionBoundaries = false)
         {
-            this.RenderHiddenChars = renderParagraphCharacter;
-            this.RenderSectionRegionBoundaries = renderSectionRegionBoundaries;
+            this.HiddenChars = hiddenChars;
+            this.SectionRegionBoundaries = sectionRegionBoundaries;
+            this.ParagraphRegionBoundaries = paragraphRegionBoundaries;
+            this.LineRegionBoundaries = lineRegionBoundaries;
+            this.WordRegionBoundaries = wordRegionBoundaries;
         }
 
         /// <summary>
         /// e.g. Paragraph, PageBreak, SectionBreak
         /// </summary>
-        public bool RenderHiddenChars { get; }
+        public bool HiddenChars { get; }
 
         /// <summary>
         /// Bounding rectangle of a section
         /// </summary>
-        public bool RenderSectionRegionBoundaries { get; }
+        public bool SectionRegionBoundaries { get; }
+
+        /// <summary>
+        /// Bounding rectangle of a section
+        /// </summary>
+        public bool ParagraphRegionBoundaries { get; }
+
+        /// <summary>
+        /// Bounding rectangle of a section
+        /// </summary>
+        public bool LineRegionBoundaries { get; }
+
+        /// <summary>
+        /// Bounding rectangle of a section
+        /// </summary>
+        public bool WordRegionBoundaries { get; }
     }
 }

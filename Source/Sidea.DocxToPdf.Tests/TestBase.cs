@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Text;
-using DocumentFormat.OpenXml.Packaging;
 
 namespace Sidea.DocxToPdf.Tests
 {
@@ -8,20 +7,27 @@ namespace Sidea.DocxToPdf.Tests
     {
         private readonly string _samplesFolder;
         private readonly string _outputFolder;
+        private readonly bool _useNextGeneration;
 
-        protected TestBase(string samplesSubFolder)
+        protected RenderingOptions Options { get; set; } = new RenderingOptions(
+                hiddenChars: true,
+                sectionRegionBoundaries: true
+                );
+
+        protected TestBase(string samplesSubFolder, bool useNextGeneration = false)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             _samplesFolder = $"../../../../Samples/{samplesSubFolder}";
             _outputFolder = $"../../../../TestOutputs/{samplesSubFolder}";
+            _useNextGeneration = useNextGeneration;
         }
 
         protected void Generate(string docxSampleFileName)
         {
             var options = new RenderingOptions(
-                renderParagraphCharacter: true,
-                renderSectionRegionBoundaries: true
+                paragraphRegionBoundaries: true,
+                sectionRegionBoundaries: true
                 );
 
             if (!Directory.Exists(_outputFolder))
@@ -37,10 +43,25 @@ namespace Sidea.DocxToPdf.Tests
 
             var inputFileName = $"{_samplesFolder}/{docxSampleFileName}.docx";
             using var fileStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read);
-            var pdfGenerator = new PdfGenerator();
-            var pdf = pdfGenerator.Generate(fileStream, options);
 
+            var pdf = _useNextGeneration
+                ? this.GenerateV2(fileStream, this.Options)
+                : this.GenerateV1(fileStream, this.Options);
             pdf.Save(outputFileName);
+        }
+
+        private PdfSharp.Pdf.PdfDocument GenerateV1(Stream docxStream, RenderingOptions options)
+        {
+            var pdfGenerator = new PdfGenerator();
+            var pdf = pdfGenerator.Generate(docxStream, options);
+            return pdf;
+        }
+
+        private PdfSharp.Pdf.PdfDocument GenerateV2(Stream docxStream, RenderingOptions options)
+        {
+            var pdfGenerator = new PdfGeneratorGen2();
+            var pdf = pdfGenerator.Generate(docxStream, options);
+            return pdf;
         }
     }
 }

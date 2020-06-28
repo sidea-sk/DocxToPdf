@@ -23,7 +23,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
         protected override XSize CalculateContentSizeCore(IPrerenderArea prerenderArea)
         {
             var size = new XSize(0, 0);
-            if (prerenderArea.Options.RenderHiddenChars)
+            if (prerenderArea.Options.HiddenChars)
             {
                 size = prerenderArea.MeasureText(_text, _textStyle.Font);
             }
@@ -32,7 +32,7 @@ namespace Sidea.DocxToPdf.Renderers.Paragraphs.Models
 
         protected override RenderResult RenderCore(IRenderArea renderArea)
         {
-            if (renderArea.Options.RenderHiddenChars)
+            if (renderArea.Options.HiddenChars)
             {
                 var rect = new XRect(0, 0, this.PrecalulatedSize.Width, renderArea.Height);
                 renderArea.DrawText(_text, _textStyle.Font, _textStyle.Brush, rect, XStringFormats.BottomLeft);
