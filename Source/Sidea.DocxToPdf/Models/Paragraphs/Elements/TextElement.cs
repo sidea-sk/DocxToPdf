@@ -52,7 +52,11 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                 page.RenderRectangle(layout, _textStyle.Background);
             }
 
-            page.RenderText(_content, _textStyle, layout);
+            var s = page.Options.HiddenChars && !string.IsNullOrEmpty(_hiddenContent)
+                ? _hiddenContent
+                : _content;
+
+            page.RenderText(s, _textStyle, layout);
         }
 
         //public override sealed void Render()

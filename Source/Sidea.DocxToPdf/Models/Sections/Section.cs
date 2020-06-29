@@ -73,7 +73,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             if(_pages.All(p => p.PageNumber != pageNumber))
             {
                 var newPage = new Page(pageNumber, _properties.PageConfiguration);
-                newPage.Margin = new Common.Margin(80, 80, 80, 80);
+                newPage.Margin = new Common.Margin(80, _properties.Margin.Right, 80, _properties.Margin.Left);
                 _pages.Add(newPage);
             }
 
