@@ -6,7 +6,12 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
     internal abstract class ElementBase
     {
         public DocumentPosition Position { get; private set; } = DocumentPosition.None;
+
         public Size Size { get; protected set; } = Size.Zero;
+
+        public double Width => this.Size.Width;
+
+        public double Height => this.Size.Height;
 
         public Rectangle PageRegion => new Rectangle(this.Position.Offset, this.Size);
 
@@ -14,5 +19,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         {
             this.Position = position;
         }
+
+        public abstract void Render(IRendererPage page);
     }
 }

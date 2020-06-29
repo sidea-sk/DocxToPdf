@@ -24,6 +24,11 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             this.SetPosition(position);
         }
 
+        public override void Render(IRendererPage page)
+        {
+
+        }
+
         //public override void SetLineBoundingBox(Rectangle rectangle, double baseLineOffset)
         //{
         //    _lineBoundingBox = rectangle;

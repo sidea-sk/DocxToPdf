@@ -59,8 +59,9 @@ namespace Sidea.DocxToPdf.Models
                 {
                     renderer.CreatePage(page.PageNumber, page.Configuration);
                 }
+
+                section.Render(renderer);
             }
-            
         }
     }
 }

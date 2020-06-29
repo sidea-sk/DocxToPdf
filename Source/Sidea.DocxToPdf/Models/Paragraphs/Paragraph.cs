@@ -7,6 +7,7 @@ using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 using static Sidea.DocxToPdf.Models.FieldUpdateResult;
 using System;
+using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
@@ -44,20 +45,39 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         }
 
         public override void Prepare(
-            PageContext pageContext,
+            PageContext startOn,
             Func<PageNumber, PageContext> pageFactory)
         {
-            this.ReconstructLines(pageContext.Region.Width);
+            this.ReconstructLines(startOn.Region.Width);
 
-            var pageNumber = pageContext.PageNumber;
-            var pageYOffset = pageContext.Region.Y;
+            var pageNumber = startOn.PageNumber;
+            var availableRegion = startOn.Region;
+            var paragraphPosition = new DocumentPosition(pageNumber, availableRegion.TopLeft);
+            var maxY = availableRegion.BottomY;
+            var yOffset = 0.0;
 
             foreach(var line in _lines)
             {
+                var lineHeightAndSpace = line.Size.Height + this.ParagraphStyle.Spacing.Line.CalculateSpaceAfterLine(line.Size.Height);
 
+                if (availableRegion.Y + yOffset + lineHeightAndSpace > maxY)
+                {
+                    this.SetPageRegion(new PageRegion(pageNumber, availableRegion));
+
+                    pageNumber = pageNumber.Next();
+                    var nextPage = pageFactory(pageNumber);
+
+                    availableRegion = nextPage.Region;
+                    paragraphPosition = new DocumentPosition(pageNumber, availableRegion.TopLeft);
+                    maxY = availableRegion.BottomY;
+                    yOffset = 0.0;
+                }
+
+                line.SetPosition(paragraphPosition.MoveY(yOffset));
+                yOffset += lineHeightAndSpace;
             }
 
-            this.SetPageRegion(new PageRegion(pageNumber, new Rectangle(0, 0, 10, 10)));
+            this.SetPageRegion(new PageRegion(pageNumber, new Rectangle(availableRegion.TopLeft, availableRegion.Width, yOffset)));
         }
 
         private void ReconstructLines(double maxWidth)
@@ -77,6 +97,14 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             }
         }
 
+        public override void Render(IRenderer renderer)
+        {
+            foreach(var line in _lines)
+            {
+                var page = renderer.Get(line.Position.PageNumber);
+                line.Render(page);
+            }
+        }
 
         // nochange, resized
         //public void Update(PageRegion startRegion, DocumentVariables variables)

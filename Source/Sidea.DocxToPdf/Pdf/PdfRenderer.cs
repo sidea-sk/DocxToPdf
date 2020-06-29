@@ -20,6 +20,11 @@ namespace Sidea.DocxToPdf.Pdf
 
         public void CreatePage(PageNumber pageNumber, PageConfiguration configuration)
         {
+            if (_pages.ContainsKey(pageNumber))
+            {
+                return;
+            }
+
             var pdfPage = new PdfPage
             {
                 Width = configuration.Size.Width,

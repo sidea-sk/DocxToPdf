@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Sidea.DocxToPdf.Core
 {
-    internal class PageNumber : IEquatable<PageNumber>
+    [DebuggerDisplay("PageNumber: {_number}")]
+    internal class PageNumber : IEquatable<PageNumber>, IComparable<PageNumber>
     {
         public static readonly PageNumber None = new PageNumber(0);
         public static readonly PageNumber First = new PageNumber(1);
@@ -30,6 +32,11 @@ namespace Sidea.DocxToPdf.Core
         public override bool Equals(object obj)
         {
             return this.Equals(obj as PageNumber);
+        }
+
+        public int CompareTo(PageNumber other)
+        {
+            return _number - other._number;
         }
 
         public static bool operator==(PageNumber p1, PageNumber p2)

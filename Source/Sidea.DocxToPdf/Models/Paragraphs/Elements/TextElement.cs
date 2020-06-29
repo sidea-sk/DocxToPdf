@@ -43,6 +43,12 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             this.SetPosition(position + new Point(0, y));
         }
 
+        public override void Render(IRendererPage page)
+        {
+            var layout = new Rectangle(this.Position.Offset, this.Size);
+            page.RenderText(_content, _textStyle, layout);
+        }
+
         //public override sealed void Render()
         //{
         //    var t = this.Renderer.Options.HiddenChars && !string.IsNullOrEmpty(_hiddenContent)

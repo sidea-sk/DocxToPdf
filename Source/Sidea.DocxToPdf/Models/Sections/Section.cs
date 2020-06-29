@@ -46,17 +46,21 @@ namespace Sidea.DocxToPdf.Models.Sections
 
         public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace)
         {
-            //var nextPageNumber = lastPageOfPreviosSection.PageNumber.Next();
-            //_pageManager.EnsurePage(nextPageNumber);
-            //var page = _pageManager.GetPage(nextPageNumber);
-            //_pages.Add(page);
-
-            //var availableRegion = page.GetContentRegion();
-
             var pageContext = this.OnNewPage(lastPageOfPreviosSection.PageNumber.Next());
+
             foreach(var child in _childs)
             {
                 child.Prepare(pageContext, this.OnNewPage);
+                var lastPage = child.LastPageRegion;
+                pageContext = this.CreatePageContext(lastPage.PageNumber, lastPage.Region);
+            }
+        }
+
+        public void Render(IRenderer renderer)
+        {
+            foreach(var child in _childs)
+            {
+                child.Render(renderer);
             }
         }
 
@@ -75,6 +79,16 @@ namespace Sidea.DocxToPdf.Models.Sections
 
             var page = _pages.Single(p => p.PageNumber == pageNumber);
             return new PageContext(pageNumber, page.GetContentRegion());
+        }
+
+        private PageContext CreatePageContext(PageNumber pageNumber, Rectangle occupiedRegion)
+        {
+            var page = _pages.Single(p => p.PageNumber == pageNumber);
+            var content = page
+                .GetContentRegion()
+                .Clip(occupiedRegion.BottomLeft);
+            
+            return new PageContext(pageNumber, content);
         }
     }
 }

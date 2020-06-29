@@ -9,7 +9,7 @@ namespace Sidea.DocxToPdf.Models
     {
         private PageRegion[] _pageRegions = new PageRegion[0];
 
-        public IReadOnlyCollection<PageRegion> PageRegions { get; }
+        public IReadOnlyCollection<PageRegion> PageRegions => _pageRegions;
         public PageRegion LastPageRegion => _pageRegions.LastOrDefault() ?? PageRegion.None;
 
         public abstract void Initialize();
@@ -17,6 +17,8 @@ namespace Sidea.DocxToPdf.Models
         public abstract void Prepare(
             PageContext pageContext,
             Func<PageNumber, PageContext> pageFactory);
+
+        public abstract void Render(IRenderer renderer);
 
         protected void ClearPageRegions()
         {

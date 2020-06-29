@@ -87,6 +87,14 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             return _elements.Max(e => e.GetBaseLineOffset());
         }
 
+        public override void Render(IRendererPage page)
+        {
+            foreach(var e in _trimmedElements)
+            {
+                e.Render(page);
+            }
+        }
+
         //public override void Render()
         //{
         //    _trimmedElements.Render();

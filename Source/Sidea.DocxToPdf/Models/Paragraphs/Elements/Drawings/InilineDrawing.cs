@@ -22,6 +22,11 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             this.SetPosition(position);
         }
 
+        public override void Render(IRendererPage page)
+        {
+
+        }
+
         //public override void Render()
         //{
         //    this.Renderer.RenderImage(_imageId, this.BoundingBox.TopLeft, this.BoundingBox.Size);

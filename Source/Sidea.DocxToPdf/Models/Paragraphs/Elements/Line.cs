@@ -30,6 +30,14 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             }
         }
 
+        public override void Render(IRendererPage page)
+        {
+            foreach(var segment in _segments)
+            {
+                segment.Render(page);
+            }
+        }
+
         //public FieldUpdateResult Update(DocumentPosition documentPosition, DocumentVariables variables)
         //{
         //    foreach (var s in _segments)

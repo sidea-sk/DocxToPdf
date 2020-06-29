@@ -109,6 +109,14 @@ namespace Sidea.DocxToPdf.Core
             return new Rectangle(this.X, this.Y + top, this.Width, this.Height - top - bottom);
         }
 
+        public Rectangle Clip(Point topLeft)
+        { 
+            var width = this.Width - (topLeft.X - this.X);
+            var height = this.Height - (topLeft.Y - this.Y);
+
+            return new Rectangle(topLeft, width, height);
+        }
+
         public Rectangle Union(params Rectangle[] rectangles)
         {
             if (rectangles.Length == 0)

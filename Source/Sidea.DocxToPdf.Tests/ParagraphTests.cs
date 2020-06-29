@@ -52,11 +52,10 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        [Ignore]
         public void VeryLongTextWithoutSpaces()
         {
             this.Generate(nameof(VeryLongTextWithoutSpaces));
         }
-
-
     }
 }
