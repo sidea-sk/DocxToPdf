@@ -1,4 +1,5 @@
 ﻿using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models
 {
@@ -7,8 +8,9 @@ namespace Sidea.DocxToPdf.Models
         PageNumber PageNumber { get; }
 
         PageConfiguration Configuration { get; }
-        
-        double TopMargin { get; }
-        double BottomMargin { get; }
+
+        Margin Margin { get; }
+
+        Rectangle GetContentRegion();
     }
 }

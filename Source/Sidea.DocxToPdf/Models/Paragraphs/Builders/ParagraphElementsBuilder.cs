@@ -9,7 +9,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
 {
     internal static class ParagraphElementsBuilder
     {
-        public static IEnumerable<ParagraphElement> CreateParagraphElements(
+        public static IEnumerable<LineElement> CreateParagraphElements(
             this Word.Paragraph paragraph,
             // PageVariables variables,
             IStyleFactory styleFactory)
@@ -18,7 +18,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
                 .SelectRuns()
                 .ToStack();
 
-            var elements = new List<ParagraphElement>();
+            var elements = new List<LineElement>();
 
             while (runs.Count > 0)
             {
@@ -56,7 +56,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             return drawings;
         }
 
-        private static IEnumerable<ParagraphElement> CreateParagraphElements(
+        private static IEnumerable<LineElement> CreateParagraphElements(
             this Word.Run run,
             IStyleFactory styleAccessor)
         {
@@ -69,9 +69,9 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
                     return c switch
                     {
                         Word.Text t => t.SplitTextToElements(textStyle),
-                        Word.TabChar t => new ParagraphElement[] { new TabElement(textStyle) },
+                        Word.TabChar t => new LineElement[] { new TabElement(textStyle) },
                         Word.Drawing d => d.CreateInlineDrawing(),
-                        Word.CarriageReturn _ => new ParagraphElement[] { new NewLineElement(textStyle) },
+                        Word.CarriageReturn _ => new LineElement[] { new NewLineElement(textStyle) },
                         Word.Break b => b.CreateBreakElement(textStyle),
                         _ => throw new RendererException("unprocessed child")
                     };
@@ -81,17 +81,17 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             return elements;
         }
 
-        private static IEnumerable<ParagraphElement> CreateBreakElement(this Word.Break breakXml, TextStyle textStyle)
+        private static IEnumerable<LineElement> CreateBreakElement(this Word.Break breakXml, TextStyle textStyle)
         {
             if(breakXml.Type == null)
             {
-                return new ParagraphElement[] { new NewLineElement(textStyle) };
+                return new LineElement[] { new NewLineElement(textStyle) };
             }
 
-            return new ParagraphElement[0];
+            return new LineElement[0];
         }
 
-        private static IEnumerable<ParagraphElement> SplitTextToElements(
+        private static IEnumerable<LineElement> SplitTextToElements(
             this Word.Text text,
             TextStyle textStyle)
         {
@@ -101,7 +101,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
                 {
                     return s switch
                     {
-                        " " => (ParagraphElement)new SpaceElement(textStyle),
+                        " " => (LineElement)new SpaceElement(textStyle),
                         _ => new WordElement(s, textStyle)
                     };
                 })

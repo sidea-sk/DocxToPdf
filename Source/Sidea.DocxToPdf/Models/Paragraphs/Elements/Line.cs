@@ -1,24 +1,33 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
-
+using Sidea.DocxToPdf.Models.Common;
 using static Sidea.DocxToPdf.Models.FieldUpdateResult;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
-    internal class Line // : SinglePageElementBase, IFieldsElement
+    internal class Line: ElementBase // : SinglePageElementBase, IFieldsElement
     {
         private readonly LineSegment[] _segments;
 
-        public Rectangle BoundingBox { get; set; } = Rectangle.Empty;
-
-        public IEnumerable<ParagraphElement> GetAllElements()
+        public IEnumerable<LineElement> GetAllElements()
             => _segments.SelectMany(s => s.GetAllElements());
 
         public Line(IEnumerable<LineSegment> segments)
         {
             _segments = segments.ToArray();
-            this.BoundingBox = Rectangle.Union(_segments.Select(s => s.BoundingBox));
+
+            var boundingRectangle = Rectangle.Union(segments.Select(s => s.PageRegion));
+            this.Size = boundingRectangle.Size;
+        }
+
+        public override void SetPosition(DocumentPosition position)
+        {
+            base.SetPosition(position);
+            foreach(var segment in _segments)
+            {
+                segment.SetPosition(position);
+            }
         }
 
         //public FieldUpdateResult Update(DocumentPosition documentPosition, DocumentVariables variables)

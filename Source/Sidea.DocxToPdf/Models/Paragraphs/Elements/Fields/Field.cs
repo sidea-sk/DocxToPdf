@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
     [DebuggerDisplay("{GetType().Name}:{_content}")]
-    internal abstract class Field : ParagraphElement
+    internal abstract class Field : LineElement
     {
         private readonly TextStyle _textStyle;
         private Rectangle _lineBoundingBox = Rectangle.Empty;
@@ -17,6 +18,11 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public override double GetBaseLineOffset()
             => _textStyle.CellAscent;
+
+        public override sealed void Justify(DocumentPosition position, double baseLineOffset, double lineHeight)
+        {
+            this.SetPosition(position);
+        }
 
         //public override void SetLineBoundingBox(Rectangle rectangle, double baseLineOffset)
         //{

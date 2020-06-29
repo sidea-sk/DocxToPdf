@@ -9,7 +9,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
 {
     internal static class FieldBuilder
     {
-        public static ParagraphElement CreateField(
+        public static LineElement CreateField(
             this ICollection<Word.Run> runs,
             // PageVariables variables,
             IStyleFactory styleFactory)

@@ -8,7 +8,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
     internal static class LineSegmentBuilder
     {
         public static LineSegment CreateLineSegment(
-            this Stack<ParagraphElement> fromElements,
+            this Stack<LineElement> fromElements,
             HorizontalSpace space,
             LineAlignment lineAlignment,
             double defaultLineHeight)
@@ -21,12 +21,12 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             return new LineSegment(elements, lineAlignment, space, defaultLineHeight);
         }
 
-        private static IEnumerable<ParagraphElement> GetElementsToFitMaxWidth(
-            this Stack<ParagraphElement> fromElements,
+        private static IEnumerable<LineElement> GetElementsToFitMaxWidth(
+            this Stack<LineElement> fromElements,
             double maxWidth)
         {
             var aggregatedWidth = 0.0;
-            var elements = new List<ParagraphElement>();
+            var elements = new List<LineElement>();
             var spaces = new List<SpaceElement>();
 
             while (fromElements.Count > 0 && aggregatedWidth <= maxWidth)
@@ -39,7 +39,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
                     continue;
                 }
 
-                aggregatedWidth += spaces.TotalWidth() + element.BoundingBox.Width;
+                aggregatedWidth += spaces.TotalWidth() + element.Size.Width;
                 if (aggregatedWidth < maxWidth)
                 {
                     elements.AddRange(spaces);
@@ -60,9 +60,9 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             return elements.Union(spaces);
         }
 
-        private static double TotalWidth(this IEnumerable<ParagraphElement> elements)
+        private static double TotalWidth(this IEnumerable<LineElement> elements)
         {
-            var w = elements.Sum(e => e.BoundingBox.Width);
+            var w = elements.Sum(e => e.Size.Width);
             return w;
         }
     }

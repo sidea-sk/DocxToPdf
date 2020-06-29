@@ -9,7 +9,7 @@ namespace Sidea.DocxToPdf.Models.Sections
 {
     internal class Section
     {
-        private SectionPageManager _pageManager;
+        // private SectionPageManager _pageManager;
 
         private List<IPage> _pages = new List<IPage>();
 
@@ -26,7 +26,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             SectionProperties properties,
             IStyleFactory styleFactory)
         {
-            _pageManager = new SectionPageManager(properties.PageConfiguration, this.OnPageCreated);
+            // _pageManager = new SectionPageManager(properties.PageConfiguration, this.OnPageCreated);
             _openXmlElements = openXmlElements.ToArray();
             _properties = properties;
             _styleFactory = styleFactory;
@@ -44,22 +44,37 @@ namespace Sidea.DocxToPdf.Models.Sections
                 .ToArray();
         }
 
-        public void Prepare(IPage previousPage, Rectangle occupiedSpace)
+        public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace)
         {
-            var nextPageNumber = previousPage.PageNumber.Next();
-            _pageManager.EnsurePage(nextPageNumber);
-            var page = _pageManager.GetPage(nextPageNumber);
-            _pages.Add(page);
+            //var nextPageNumber = lastPageOfPreviosSection.PageNumber.Next();
+            //_pageManager.EnsurePage(nextPageNumber);
+            //var page = _pageManager.GetPage(nextPageNumber);
+            //_pages.Add(page);
+
+            //var availableRegion = page.GetContentRegion();
+
+            var pageContext = this.OnNewPage(lastPageOfPreviosSection.PageNumber.Next());
+            foreach(var child in _childs)
+            {
+                child.Prepare(pageContext, this.OnNewPage);
+            }
         }
 
         public void Update(object previousPageInfo)
         {
         }
 
-        private void OnPageCreated(Page page)
+        private PageContext OnNewPage(PageNumber pageNumber)
         {
-            page.TopMargin = 80;
-            page.BottomMargin = 80;
+            if(_pages.All(p => p.PageNumber != pageNumber))
+            {
+                var newPage = new Page(pageNumber, _properties.PageConfiguration);
+                newPage.Margin = new Common.Margin(80, 80, 80, 80);
+                _pages.Add(newPage);
+            }
+
+            var page = _pages.Single(p => p.PageNumber == pageNumber);
+            return new PageContext(pageNumber, page.GetContentRegion());
         }
     }
 }

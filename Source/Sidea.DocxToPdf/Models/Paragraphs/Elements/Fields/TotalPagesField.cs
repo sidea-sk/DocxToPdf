@@ -8,10 +8,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Elements.Fields
         {
         }
 
-        public override void SetLineBoundingBox(Rectangle rectangle, double baseLineOffset)
-        {
-        }
-
         //private PageVariables _variables;
 
         //public TotalPagesField(PageVariables variables, TextStyle textStyle) : base(textStyle)

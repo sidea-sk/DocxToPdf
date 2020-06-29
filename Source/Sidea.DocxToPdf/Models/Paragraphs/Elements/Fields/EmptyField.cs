@@ -8,11 +8,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Elements.Fields
         {
         }
 
-        public override void SetLineBoundingBox(Rectangle rectangle, double baseLineOffset)
-        {
-            throw new System.NotImplementedException();
-        }
-
         protected override string GetContent() => string.Empty;
 
         //protected override void UpdateCore(PageVariables variables)

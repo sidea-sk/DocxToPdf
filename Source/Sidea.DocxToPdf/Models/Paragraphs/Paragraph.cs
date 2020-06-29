@@ -6,6 +6,7 @@ using Sidea.DocxToPdf.Models.Styles;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 using static Sidea.DocxToPdf.Models.FieldUpdateResult;
+using System;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
@@ -16,7 +17,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         private List<Line> _lines = new List<Line>();
         private FixedDrawing[] _fixedDrawings = new FixedDrawing[0];
-        private List<ParagraphElement> _paragraphElements = new List<ParagraphElement>();
+        private Stack<LineElement> _paragraphElements = new Stack<LineElement>();
 
         public Paragraph(Word.Paragraph paragraph, IStyleFactory styleFactory)
         {
@@ -39,16 +40,43 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
             _paragraphElements = _paragraph
                 .CreateParagraphElements(_styleFactory)
-                .ToList();
+                .ToStack();
         }
 
         public override void Prepare(
-            IPage page,
-            Rectangle region,
-            IPageManager pageManager)
+            PageContext pageContext,
+            Func<PageNumber, PageContext> pageFactory)
         {
+            this.ReconstructLines(pageContext.Region.Width);
 
+            var pageNumber = pageContext.PageNumber;
+            var pageYOffset = pageContext.Region.Y;
+
+            foreach(var line in _lines)
+            {
+
+            }
+
+            this.SetPageRegion(new PageRegion(pageNumber, new Rectangle(0, 0, 10, 10)));
         }
+
+        private void ReconstructLines(double maxWidth)
+        {
+            if(_paragraphElements.Count == 0)
+            {
+                return;
+            }
+
+            var defaultLineHeight = _styleFactory.TextStyle.Font.Height;
+            var relativeYOffset = 0.0;
+
+            while (_paragraphElements.Count > 0)
+            {
+                var line = _paragraphElements.CreateLine(this.ParagraphStyle.LineAlignment, relativeYOffset, _fixedDrawings, maxWidth, defaultLineHeight);
+                _lines.Add(line);
+            }
+        }
+
 
         // nochange, resized
         //public void Update(PageRegion startRegion, DocumentVariables variables)

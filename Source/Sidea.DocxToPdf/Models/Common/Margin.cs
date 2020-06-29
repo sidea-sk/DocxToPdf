@@ -2,6 +2,8 @@
 {
     public class Margin
     {
+        public static readonly Margin None = new Margin(0, 0, 0, 0);
+
         public Margin(double top, double right, double bottom, double left)
         {
             this.Top = top;

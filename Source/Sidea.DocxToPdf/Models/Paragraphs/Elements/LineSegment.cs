@@ -9,17 +9,17 @@ using static Sidea.DocxToPdf.Models.FieldUpdateResult;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
-    internal class LineSegment
+    internal class LineSegment : ElementBase
     {
-        private readonly ParagraphElement[] _elements;
-        private readonly ParagraphElement[] _trimmedElements;
+        private readonly LineElement[] _elements;
+        private readonly LineElement[] _trimmedElements;
         private readonly LineAlignment _lineAlignment;
         private readonly HorizontalSpace _space;
         private double _baselineOffset = 0;
         private double _lineHeight = 0;
 
         public LineSegment(
-            IEnumerable<ParagraphElement> elements,
+            IEnumerable<LineElement> elements,
             LineAlignment lineAlignment,
             HorizontalSpace space,
             double defaultLineHeight)
@@ -35,11 +35,15 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             _lineAlignment = lineAlignment;
             _space = space;
 
-            var _lineHeight = _trimmedElements.MaxOrDefault(e => e.BoundingBox.Height, defaultLineHeight);
-            this.BoundingBox = new Rectangle(0, 0, _space.Width, _lineHeight);
+            var _lineHeight = _trimmedElements.MaxOrDefault(e => e.Size.Height, defaultLineHeight);
+            this.Size = new Size(_space.Width, _lineHeight);
         }
 
-        public Rectangle BoundingBox { get; set; } = Rectangle.Empty;
+        public override void SetPosition(DocumentPosition position)
+        {
+            base.SetPosition(position + new Point(_space.X, 0));
+            this.JustifyElementsToBaseLineAndLineHeight();
+        }
 
         //public FieldUpdateResult Update(DocumentPosition documentPosition, DocumentVariables variables)
         //{
@@ -69,7 +73,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             _baselineOffset = baseLineOffset;
             _lineHeight = lineHeight;
 
-            this.BoundingBox = new Rectangle(0, 0, _space.Width, _lineHeight);
+            this.Size = new Size(_space.Width, _lineHeight);
             this.JustifyElementsToBaseLineAndLineHeight();
         }
 
@@ -113,91 +117,67 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             return NoChange;
         }
 
-        public void ReturnElementsToStack(Stack<ParagraphElement> stack)
+        public void ReturnElementsToStack(Stack<LineElement> stack)
         {
             stack.Push(_elements);
         }
 
-        public IEnumerable<ParagraphElement> GetAllElements() => _elements;
-
-        //protected override PreparationState PrepareCore(IPageRegion renderer)
-        //{
-        //    _renderer = renderer
-        //        .ClipFromLeftWidth(_space.X, _space.Width);
-
-        //    foreach(var element in _trimmedElements)
-        //    {
-        //        element.Prepare(_renderer);
-        //    }
-
-        //    return PreparationState.Prepared;
-        //}
+        public IEnumerable<LineElement> GetAllElements() => _elements;
 
         private void JustifyElementsToBaseLineAndLineHeight()
         {
-            var totalWidth = _trimmedElements.Sum(e => e.BoundingBox.Width);
+            var totalWidth = _trimmedElements.Sum(e => e.Size.Width);
             switch (_lineAlignment)
             {
                 case LineAlignment.Left:
-                    AlignElements(_trimmedElements, 0, _lineHeight, _baselineOffset);
+                    this.AlignElements(0, _lineHeight, _baselineOffset);
                     break;
                 case LineAlignment.Center:
-                    AlignElements(_trimmedElements, (_space.Width - totalWidth) / 2, _lineHeight, _baselineOffset);
+                    this.AlignElements((_space.Width - totalWidth) / 2, _lineHeight, _baselineOffset);
                     break;
                 case LineAlignment.Right:
-                    AlignElements(_trimmedElements, _space.Width - totalWidth, _lineHeight, _baselineOffset);
+                    this.AlignElements(_space.Width - totalWidth, _lineHeight, _baselineOffset);
                     break;
                 case LineAlignment.Justify:
-                    JustifyElements(_trimmedElements, _lineHeight, _baselineOffset, _space.Width - totalWidth);
+                    this.JustifyElements(_baselineOffset, _lineHeight, _space.Width - totalWidth);
                     break;
             }
-
-            // this.UpdateBoundingBox();
         }
 
-        private double CalculateTotalWidthOfElements()
-        {
-            return _trimmedElements.Sum(e => e.BoundingBox.Width);
-        }
-
-        private static void AlignElements(
-            IEnumerable<ParagraphElement> elements,
+        private void AlignElements(
             double startX,
             double maxHeight,
             double baselineOffset)
         {
             var x = startX;
-            foreach (var element in elements)
+            foreach (var element in _trimmedElements)
             {
-                var boundingBox = new Rectangle(x, 0, element.BoundingBox.Width, maxHeight);
-                element.SetLineBoundingBox(boundingBox, baselineOffset);
-                x += element.BoundingBox.Width;
+                element.Justify(this.Position + new Point(x, 0), baselineOffset, maxHeight);
+                x += element.Size.Width;
             }
         }
 
-        private static void JustifyElements(
-            IReadOnlyCollection<ParagraphElement> elements,
-            double lineHeight,
+        private void JustifyElements(
             double baselineOffset,
+            double lineHeight,
             double freeSpaceWidth)
         {
             // TODO: improve justify algorithm from this naive to a better one.
-            var sw = CalculateSpaceExpansion(elements, freeSpaceWidth);
+            var sw = CalculateSpaceExpansion(_trimmedElements, freeSpaceWidth);
             var x = 0.0;
 
-            foreach (var element in elements)
+            foreach (var element in _trimmedElements)
             {
                 var width = element is SpaceElement
-                    ? sw + element.BoundingBox.Width
-                    : element.BoundingBox.Width;
+                    ? sw + element.Size.Width
+                    : element.Size.Width;
 
-                var boundingBox = new Rectangle(x, 0, width, lineHeight);
-                element.SetLineBoundingBox(boundingBox, baselineOffset);
+                element.Justify(this.Position + new Point(x, 0), baselineOffset, lineHeight);
                 x += width;
             }
         }
 
-        private static double CalculateSpaceExpansion(IReadOnlyCollection<ParagraphElement> elements, double freeSpace)
+        private static double CalculateSpaceExpansion(IReadOnlyCollection<LineElement> elements, double freeSpace)
         {
             var spaceElements = elements
                 .OfType<SpaceElement>()
@@ -211,7 +191,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             var sw = elements
                 .OfType<SpaceElement>()
                 .First()
-                .BoundingBox.Width;
+                .Size.Width;
 
             var result = Math.Min(sw, freeSpace / spaceElements);
             return result;
