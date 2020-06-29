@@ -57,6 +57,8 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                 : _content;
 
             page.RenderText(s, _textStyle, layout);
+
+            this.RenderBorderIf(page, page.Options.WordRegionBoundaries);
         }
 
         //public override sealed void Render()

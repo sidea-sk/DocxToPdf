@@ -21,5 +21,20 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         }
 
         public abstract void Render(IRendererPage page);
+
+        protected void RenderBorderIf(IRendererPage page, bool condition)
+        {
+            if (!condition)
+            {
+                return;
+            }
+
+            var region = this.PageRegion;
+            var color = System.Drawing.Color.Orange;
+            page.RenderLine(region.TopLine(color));
+            page.RenderLine(region.RightLine(color));
+            page.RenderLine(region.BottomLine(color));
+            page.RenderLine(region.LeftLine(color));
+        }
     }
 }

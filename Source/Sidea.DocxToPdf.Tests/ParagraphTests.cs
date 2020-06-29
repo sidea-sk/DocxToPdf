@@ -7,6 +7,10 @@ namespace Sidea.DocxToPdf.Tests
     {
         public ParagraphTests(): base("Paragraphs", useNextGeneration: true)
         {
+            this.Options = new RenderingOptions(
+                hiddenChars: true,
+                lineRegionBoundaries: true,
+                wordRegionBoundaries: false);
         }
 
         [TestMethod]

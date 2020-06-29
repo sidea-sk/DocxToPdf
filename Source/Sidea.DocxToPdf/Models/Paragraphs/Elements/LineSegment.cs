@@ -93,6 +93,8 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             {
                 e.Render(page);
             }
+
+            this.RenderBorderIf(page, page.Options.LineRegionBoundaries);
         }
 
         //public override void Render()
