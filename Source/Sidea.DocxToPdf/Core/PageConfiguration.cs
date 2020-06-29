@@ -1,6 +1,4 @@
-﻿using Sidea.DocxToPdf.Core;
-
-namespace Sidea.DocxToPdf.Models
+﻿namespace Sidea.DocxToPdf.Core
 {
     internal class PageConfiguration
     {

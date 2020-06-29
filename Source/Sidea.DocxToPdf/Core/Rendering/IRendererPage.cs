@@ -2,6 +2,7 @@
 {
     internal interface IRendererPage
     {
+        RenderingOptions Options { get; }
         // void RenderText
         // void RenderImage
         // void RenderLine

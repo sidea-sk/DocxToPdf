@@ -4,6 +4,8 @@ namespace Sidea.DocxToPdf.Models
 {
     internal class Page : IPage
     {
+        public static readonly Page None = new Page(PageNumber.None, new PageConfiguration(Size.Zero, PageOrientation.Portrait));
+
         public Page(PageNumber pageNumber, PageConfiguration configuration)
         {
             this.PageNumber = pageNumber;

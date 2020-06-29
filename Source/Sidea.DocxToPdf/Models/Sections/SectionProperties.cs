@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Sidea.DocxToPdf.Core;
 
 namespace Sidea.DocxToPdf.Models.Sections
 {

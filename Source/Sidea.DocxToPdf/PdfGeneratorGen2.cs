@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using DocumentFormat.OpenXml.Packaging;
 using PdfSharp.Pdf;
-// using Sidea.DocxToPdf.Pdf;
+using Sidea.DocxToPdf.Pdf;
 using Sidea.DocxToPdf.Models;
 
 namespace Sidea.DocxToPdf
@@ -34,10 +34,9 @@ namespace Sidea.DocxToPdf
             var renderingOptions = options ?? RenderingOptions.Default;
 
             var pdfDocument = new PdfDocument();
-            // var renderer = new PdfDocumentRenderer(pdfDocument, renderingOptions);
+            var renderer = new PdfRenderer(pdfDocument, renderingOptions);
             var document = new Document(docx);
-
-            document.Render(null);
+            document.Render(renderer);
             return pdfDocument;
         }
     }

@@ -2,7 +2,7 @@
 {
     internal interface IRenderer
     {
-        void CreatePages(/*page configurations*/);
+        void CreatePage(PageNumber pageNumber, PageConfiguration configuration);
 
         IRendererPage Get(PageNumber pageNumber);
     }

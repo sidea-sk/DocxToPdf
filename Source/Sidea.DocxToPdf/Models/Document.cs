@@ -22,6 +22,10 @@ namespace Sidea.DocxToPdf.Models
         public void Render(IRenderer renderer)
         {
             this.InitializeSections();
+
+            this.PrepareSections();
+
+            this.RenderSections(renderer);
         }
 
         private void InitializeSections()
@@ -34,6 +38,29 @@ namespace Sidea.DocxToPdf.Models
             {
                 section.Initialize();
             }
+        }
+
+        private void PrepareSections()
+        {
+            var lastPage = Page.None;
+            var occupiedSpace = Rectangle.Empty;
+
+            foreach (var section in _sections)
+            {
+                section.Prepare(lastPage, occupiedSpace);
+            }
+        }
+
+        private void RenderSections(IRenderer renderer)
+        {
+            foreach(var section in _sections)
+            {
+                foreach(var page in section.Pages)
+                {
+                    renderer.CreatePage(page.PageNumber, page.Configuration);
+                }
+            }
+            
         }
     }
 }

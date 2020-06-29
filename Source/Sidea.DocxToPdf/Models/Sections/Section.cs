@@ -46,7 +46,10 @@ namespace Sidea.DocxToPdf.Models.Sections
 
         public void Prepare(IPage previousPage, Rectangle occupiedSpace)
         {
-
+            var nextPageNumber = previousPage.PageNumber.Next();
+            _pageManager.EnsurePage(nextPageNumber);
+            var page = _pageManager.GetPage(nextPageNumber);
+            _pages.Add(page);
         }
 
         public void Update(object previousPageInfo)

@@ -1,4 +1,4 @@
-﻿namespace Sidea.DocxToPdf.Models
+﻿namespace Sidea.DocxToPdf.Core
 {
     internal enum PageOrientation
     {
