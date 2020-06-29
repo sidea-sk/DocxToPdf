@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 using Sidea.DocxToPdf.Models.Styles;
 using OpenXml = DocumentFormat.OpenXml;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
@@ -9,8 +10,6 @@ namespace Sidea.DocxToPdf.Models.Sections
 {
     internal class Section
     {
-        // private SectionPageManager _pageManager;
-
         private List<IPage> _pages = new List<IPage>();
 
         private readonly SectionProperties _properties;
@@ -56,6 +55,10 @@ namespace Sidea.DocxToPdf.Models.Sections
             }
         }
 
+        public void Update(IPage lastPageOfPreviosSection, Rectangle occupiedSpace)
+        {
+        }
+
         public void Render(IRenderer renderer)
         {
             foreach(var child in _childs)
@@ -64,21 +67,17 @@ namespace Sidea.DocxToPdf.Models.Sections
             }
         }
 
-        public void Update(object previousPageInfo)
-        {
-        }
-
         private PageContext OnNewPage(PageNumber pageNumber)
         {
             if(_pages.All(p => p.PageNumber != pageNumber))
             {
                 var newPage = new Page(pageNumber, _properties.PageConfiguration);
-                newPage.Margin = new Common.Margin(80, _properties.Margin.Right, 80, _properties.Margin.Left);
+                newPage.Margin = new Margin(80, _properties.Margin.Right, 80, _properties.Margin.Left);
                 _pages.Add(newPage);
             }
 
             var page = _pages.Single(p => p.PageNumber == pageNumber);
-            return new PageContext(pageNumber, page.GetContentRegion());
+            return new PageContext(pageNumber, page.GetContentRegion(), new Variables(totalPages: _pages.Count));
         }
 
         private PageContext CreatePageContext(PageNumber pageNumber, Rectangle occupiedRegion)
@@ -88,7 +87,7 @@ namespace Sidea.DocxToPdf.Models.Sections
                 .GetContentRegion()
                 .Clip(occupiedRegion.BottomLeft);
             
-            return new PageContext(pageNumber, content);
+            return new PageContext(pageNumber, content, new Variables(totalPages: _pages.Count));
         }
     }
 }

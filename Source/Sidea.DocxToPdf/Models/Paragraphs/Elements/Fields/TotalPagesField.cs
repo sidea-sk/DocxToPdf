@@ -1,26 +1,22 @@
 ﻿using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs.Elements.Fields
 {
     internal class TotalPagesField : Field
     {
+        private PageVariables _variables = PageVariables.Empty;
+
         public TotalPagesField(TextStyle textStyle) : base(textStyle)
         {
         }
 
-        //private PageVariables _variables;
-
-        //public TotalPagesField(PageVariables variables, TextStyle textStyle) : base(textStyle)
-        //{
-        //    _variables = variables;
-        //}
-
-        //protected override void UpdateCore(PageVariables variables)
-        //{
-        //    _variables = variables;
-        //}
-
         protected override string GetContent()
-            => string.Empty; // _variables.TotalPages.ToString();
+            => _variables.TotalPages.ToString();
+
+        protected override void UpdateCore(PageVariables variables)
+        {
+            _variables = variables;
+        }
     }
 }

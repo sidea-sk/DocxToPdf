@@ -11,7 +11,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
     {
         public static IEnumerable<LineElement> CreateParagraphElements(
             this Word.Paragraph paragraph,
-            // PageVariables variables,
             IStyleFactory styleFactory)
         {
             var runs = paragraph

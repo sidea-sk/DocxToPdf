@@ -3,6 +3,7 @@
     internal enum FieldUpdateResult
     {
         NoChange,
+        Resized,
         BoundingBoxResized,
         ReconstructionNecessary
     }

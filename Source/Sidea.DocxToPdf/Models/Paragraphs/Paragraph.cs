@@ -48,7 +48,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             PageContext startOn,
             Func<PageNumber, PageContext> pageFactory)
         {
-            this.ReconstructLines(startOn.Region.Width);
+            this.ReconstructLines(startOn.Region.Width, startOn.PageVariables);
 
             var pageNumber = startOn.PageNumber;
             var availableRegion = startOn.Region;
@@ -80,7 +80,17 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             this.SetPageRegion(new PageRegion(pageNumber, new Rectangle(availableRegion.TopLeft, availableRegion.Width, yOffset)));
         }
 
-        private void ReconstructLines(double maxWidth)
+        public void Update(
+            PageContext startOn,
+            Func<PageNumber, PageContext> pageFactory)
+        {
+            foreach(var line in _lines)
+            {
+
+            }
+        }
+
+        private void ReconstructLines(double maxWidth, PageVariables variables)
         {
             if(_paragraphElements.Count == 0)
             {
@@ -92,7 +102,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
             while (_paragraphElements.Count > 0)
             {
-                var line = _paragraphElements.CreateLine(this.ParagraphStyle.LineAlignment, relativeYOffset, _fixedDrawings, maxWidth, defaultLineHeight);
+                var line = _paragraphElements.CreateLine(this.ParagraphStyle.LineAlignment, relativeYOffset, _fixedDrawings, maxWidth, defaultLineHeight, variables);
                 _lines.Add(line);
             }
         }

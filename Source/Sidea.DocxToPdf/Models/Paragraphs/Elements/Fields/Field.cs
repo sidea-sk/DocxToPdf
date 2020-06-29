@@ -8,7 +8,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
     internal abstract class Field : LineElement
     {
         private readonly TextStyle _textStyle;
-        private Rectangle _lineBoundingBox = Rectangle.Empty;
         private string _content = string.Empty;
 
         protected Field(TextStyle textStyle)
@@ -26,8 +25,32 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public override void Render(IRendererPage page)
         {
+            var layout = new Rectangle(this.Position.Offset, this.Size);
 
+            if (_textStyle.Background != System.Drawing.Color.Empty)
+            {
+                page.RenderRectangle(layout, _textStyle.Background);
+            }
+
+            page.RenderText(_content, _textStyle, layout);
+
+            this.RenderBorderIf(page, page.Options.WordRegionBoundaries);
         }
+
+        public FieldUpdateResult Update(PageVariables variables)
+        {
+            this.UpdateCore(variables);
+
+            var w = this.Width;
+            _content = this.GetContent();
+            this.Size = _textStyle.MeasureText(_content);
+
+            return w < this.Size.Width
+                ? FieldUpdateResult.NoChange
+                : FieldUpdateResult.Resized;
+        }
+
+        protected abstract void UpdateCore(PageVariables variables);
 
         //public override void SetLineBoundingBox(Rectangle rectangle, double baseLineOffset)
         //{

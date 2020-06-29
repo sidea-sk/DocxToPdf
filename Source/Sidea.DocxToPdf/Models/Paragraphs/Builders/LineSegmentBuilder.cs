@@ -11,11 +11,12 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             this Stack<LineElement> fromElements,
             HorizontalSpace space,
             LineAlignment lineAlignment,
-            double defaultLineHeight)
+            double defaultLineHeight,
+            PageVariables variables)
         {
             var overflow = lineAlignment == LineAlignment.Justify ? 2 : 0;
             var elements = fromElements
-                .GetElementsToFitMaxWidth(space.Width + overflow)
+                .GetElementsToFitMaxWidth(space.Width + overflow, variables)
                 .ToArray();
 
             return new LineSegment(elements, lineAlignment, space, defaultLineHeight);
@@ -23,7 +24,8 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
 
         private static IEnumerable<LineElement> GetElementsToFitMaxWidth(
             this Stack<LineElement> fromElements,
-            double maxWidth)
+            double maxWidth,
+            PageVariables variables)
         {
             var aggregatedWidth = 0.0;
             var elements = new List<LineElement>();
@@ -32,6 +34,10 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             while (fromElements.Count > 0 && aggregatedWidth <= maxWidth)
             {
                 var element = fromElements.Pop();
+                if(element is Field field)
+                {
+                    field.Update(variables);
+                }
 
                 if(element is SpaceElement space)
                 {

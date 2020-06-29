@@ -1,4 +1,5 @@
 ﻿using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs.Elements.Fields
 {
@@ -10,8 +11,8 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Elements.Fields
 
         protected override string GetContent() => string.Empty;
 
-        //protected override void UpdateCore(PageVariables variables)
-        //{
-        //}
+        protected override void UpdateCore(PageVariables variables)
+        {
+        }
     }
 }

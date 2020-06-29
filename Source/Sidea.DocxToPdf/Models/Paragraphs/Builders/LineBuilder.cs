@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 using Sidea.DocxToPdf.Models.Styles;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
@@ -14,10 +15,11 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             double relativeYOffset,
             IEnumerable<FixedDrawing> fixedDrawings,
             double availableWidth,
-            double defaultLineHeight)
+            double defaultLineHeight,
+            PageVariables variables)
         {
             var (lineSegments, lineHeight) = fromElements
-                .CreateLineSegments(lineAlignment, relativeYOffset, fixedDrawings.Select(d => d.BoundingBox), availableWidth, defaultLineHeight);
+                .CreateLineSegments(lineAlignment, relativeYOffset, fixedDrawings.Select(d => d.BoundingBox), availableWidth, defaultLineHeight, variables);
 
             var baseLineOffset = lineSegments.Max(ls => ls.GetBaseLineOffset());
             foreach (var ls in lineSegments)
@@ -34,7 +36,8 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             double relativeYOffset,
             IEnumerable<Rectangle> fixedDrawings,
             double availableWidth,
-            double defaultLineHeight)
+            double defaultLineHeight,
+            PageVariables variables)
         {
             var reserveSpaceHelper = new LineReservedSpaceHelper(fixedDrawings, relativeYOffset, availableWidth);
 
@@ -48,7 +51,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
                     .ToArray();
 
                 var lineSegments = segmentSpaces
-                    .Select((space, i) => fromElements.CreateLineSegment(space, lineAlignment, defaultLineHeight))
+                    .Select((space, i) => fromElements.CreateLineSegment(space, lineAlignment, defaultLineHeight, variables))
                     .ToArray();
 
                 var maxHeight = lineSegments.Max(l => l.Size.Height);

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 using Sidea.DocxToPdf.Models.Paragraphs.Elements.Fields;
 using Sidea.DocxToPdf.Models.Styles;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
@@ -11,7 +12,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
     {
         public static LineElement CreateField(
             this ICollection<Word.Run> runs,
-            // PageVariables variables,
             IStyleFactory styleFactory)
         {
             var style = styleFactory.EffectiveTextStyle(runs.First().RunProperties);
@@ -26,23 +26,21 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
 
             var text = fieldCode.Text;
             var field = text.CreateField(style);
-            // field.Update();
+            field.Update(PageVariables.Empty);
             return field;
         }
 
         private static Field CreateField(
             this string text,
-            TextStyle style
-            // PageVariables variables
-            )
+            TextStyle style)
         {
             var items = text.Split("\\");
             switch (items[0].Trim())
             {
-                //case "PAGE":
-                //    return new PageNumberField(variables, style);
-                //case "NUMPAGES":
-                //    return new TotalPagesField(variables, style);
+                case "PAGE":
+                    return new PageNumberField(style);
+                case "NUMPAGES":
+                    return new TotalPagesField(style);
                 default:
                     return new EmptyField(style);
             }
