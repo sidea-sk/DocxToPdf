@@ -27,10 +27,11 @@ namespace Sidea.DocxToPdf.Pdf
 
             var pdfPage = new PdfPage
             {
-                Width = configuration.Size.Width,
-                Height = configuration.Size.Height,
                 Orientation = (PdfSharp.PageOrientation)configuration.PageOrientation
             };
+
+            pdfPage.Width = configuration.Size.Width;
+            pdfPage.Height = configuration.Size.Height;
 
             _pdfDocument.AddPage(pdfPage);
             _pages.Add(pageNumber, new PdfRendererPage(pageNumber, XGraphics.FromPdfPage(pdfPage), _renderingOptions));
