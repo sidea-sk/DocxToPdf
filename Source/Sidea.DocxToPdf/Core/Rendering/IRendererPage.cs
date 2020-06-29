@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Drawing = System.Drawing;
 
 namespace Sidea.DocxToPdf.Core
 {
@@ -7,6 +8,7 @@ namespace Sidea.DocxToPdf.Core
         RenderingOptions Options { get; }
 
         void RenderText(string text, TextStyle textStyle, Rectangle layout);
+        void RenderRectangle(Rectangle rectangle, Drawing.Color brush);
         void RenderLine(Line line);
         void RenderImage(Stream imageStream, Point position, Size size);
     }

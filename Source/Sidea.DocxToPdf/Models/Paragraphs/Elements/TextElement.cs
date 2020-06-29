@@ -46,6 +46,12 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         public override void Render(IRendererPage page)
         {
             var layout = new Rectangle(this.Position.Offset, this.Size);
+
+            if(_textStyle.Background != System.Drawing.Color.Empty)
+            {
+                page.RenderRectangle(layout, _textStyle.Background);
+            }
+
             page.RenderText(_content, _textStyle, layout);
         }
 

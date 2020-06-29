@@ -24,6 +24,11 @@ namespace Sidea.DocxToPdf.Pdf
             _graphics.DrawString(text, textStyle.ToXFont(), textStyle.ToXBrush(), layout.ToXRect(), XStringFormats.TopLeft);
         }
 
+        public void RenderRectangle(Rectangle rectangle, Drawing.Color brush)
+        {
+            _graphics.DrawRectangle(brush.ToXBrush(), rectangle.ToXRect());
+        }
+
         public void RenderLine(Line line)
         {
             var start = line.Start.ToXPoint();
