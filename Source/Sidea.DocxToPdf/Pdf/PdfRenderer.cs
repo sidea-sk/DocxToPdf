@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using Sidea.DocxToPdf.Core;
 
@@ -27,7 +28,7 @@ namespace Sidea.DocxToPdf.Pdf
             };
 
             _pdfDocument.AddPage(pdfPage);
-            _pages.Add(pageNumber, new PdfRendererPage(pageNumber, pdfPage, _renderingOptions));
+            _pages.Add(pageNumber, new PdfRendererPage(pageNumber, XGraphics.FromPdfPage(pdfPage), _renderingOptions));
         }
 
         public IRendererPage Get(PageNumber pageNumber)

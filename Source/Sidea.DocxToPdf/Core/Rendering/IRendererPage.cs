@@ -1,10 +1,13 @@
-﻿namespace Sidea.DocxToPdf.Core
+﻿using System.IO;
+
+namespace Sidea.DocxToPdf.Core
 {
     internal interface IRendererPage
     {
         RenderingOptions Options { get; }
-        // void RenderText
-        // void RenderImage
-        // void RenderLine
+
+        void RenderText(string text, TextStyle textStyle, Rectangle layout);
+        void RenderLine(Line line);
+        void RenderImage(Stream imageStream, Point position, Size size);
     }
 }
