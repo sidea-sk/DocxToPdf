@@ -4,8 +4,6 @@ using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
 using Sidea.DocxToPdf.Models.Styles;
-using OpenXml = DocumentFormat.OpenXml;
-using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Models.Sections
 {
@@ -17,6 +15,7 @@ namespace Sidea.DocxToPdf.Models.Sections
         private readonly SectionColumn[] _columns;
         private readonly IStyleFactory _styleFactory;
 
+        public IReadOnlyCollection<PageRegion> PageRegions { get; private set; } = new PageRegion[0];
         public IReadOnlyCollection<IPage> Pages => _pages;
 
         public Section(
@@ -37,7 +36,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             }
         }
 
-        public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace)
+        public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace, Variables documentVariables)
         {
             var pageNumber = lastPageOfPreviosSection.PageNumber.Next();
             this.EnsurePage(pageNumber);
@@ -45,7 +44,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             for (var i = 0; i < _columns.Length; i++)
             {
                 // todo: handle column and page breaks
-                var context = this.CreateContextForColumn(pageNumber, Rectangle.Empty, i);
+                var context = this.CreateContextForColumn(pageNumber, Rectangle.Empty, i, documentVariables);
                 var column = _columns[i];
                 column.Prepare(context, this.OnNewPage);
 
@@ -62,14 +61,13 @@ namespace Sidea.DocxToPdf.Models.Sections
                         break;
                 }
             }
+
+            this.PageRegions = _columns.UnionPageRegions().ToArray();
         }
 
         public void Render(IRenderer renderer)
         {
-            foreach(var child in _columns)
-            {
-                child.Render(renderer);
-            }
+            _columns.Render(renderer);
         }
 
         private PageContext OnNewPage(PageNumber pageNumber, ContainerElement requestingColumn)
@@ -87,7 +85,11 @@ namespace Sidea.DocxToPdf.Models.Sections
             return new PageContext(pageNumber, page.GetContentRegion(), new Variables(totalPages: _pages.Count));
         }
 
-        private PageContext CreateContextForColumn(PageNumber pageNumber, Rectangle occupiedRegion, int columnIndex)
+        private PageContext CreateContextForColumn(
+            PageNumber pageNumber,
+            Rectangle occupiedRegion,
+            int columnIndex,
+            Variables documentVariables)
         {
             var page = _pages.Single(p => p.PageNumber == pageNumber);
             var xOffset = _properties.ColumnOffset(columnIndex) + page.Margin.Left;
@@ -100,7 +102,7 @@ namespace Sidea.DocxToPdf.Models.Sections
                 .Clip(new Point(0, y))
                 .RestrictLeftWidth(xOffset, width);
 
-            return new PageContext(pageNumber, content, new Variables(totalPages: _pages.Count));
+            return new PageContext(pageNumber, content, documentVariables);
         }
 
         private void EnsurePage(PageNumber pageNumber)

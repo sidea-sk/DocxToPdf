@@ -45,29 +45,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             this.JustifyElementsToBaseLineAndLineHeight();
         }
 
-        //public FieldUpdateResult Update(DocumentPosition documentPosition, DocumentVariables variables)
-        //{
-        //    var justifyIsNecessary = false;
-        //    var pageVariables = new PageVariables(documentPosition.PageNumber, variables.TotalPages);
-        //    foreach (var e in _elements.OfType<Field>())
-        //    {
-        //        justifyIsNecessary = justifyIsNecessary || e.Update(pageVariables) == BoundingBoxResized;
-        //    }
-
-        //    if (!justifyIsNecessary)
-        //    {
-        //        return NoChange;
-        //    }
-
-        //    this.JustifyElementsToBaseLineAndLineHeight();
-
-        //    var result = _space.Width < CalculateTotalWidthOfElements()
-        //        ? ReconstructionNecessary
-        //        : NoChange;
-
-        //    return result;
-        //}
-
         public void JustifyElements(double baseLineOffset, double lineHeight)
         {
             _baselineOffset = baseLineOffset;
@@ -89,11 +66,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public override void Render(IRendererPage page)
         {
-            foreach(var e in _trimmedElements)
-            {
-                e.Render(page);
-            }
-
+            _trimmedElements.Render(page);
             this.RenderBorderIf(page, page.Options.LineRegionBoundaries);
         }
 
@@ -102,7 +75,8 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             var justifyIsNecessary = false;
             foreach (var e in _elements.OfType<Field>())
             {
-                justifyIsNecessary = justifyIsNecessary || e.Update(pageVariables) == Resized;
+                var resized = e.Update(pageVariables) == Resized;
+                justifyIsNecessary = justifyIsNecessary || resized;
             }
 
             if (!justifyIsNecessary)
@@ -115,36 +89,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                 : NoChange;
 
             return result;
-        }
-
-        //public override void Render()
-        //{
-        //    _trimmedElements.Render();
-        //    _renderer.RenderBorderIf(this.BoundingBox, _renderer.Options.LineRegionBoundaries);
-        //}
-
-        public FieldUpdateResult UpdateFields()
-        {
-            //var justifyIsNecessary = false;
-            //foreach (var e in _elements.OfType<Field>())
-            //{
-            //    justifyIsNecessary = justifyIsNecessary || e.Update() == BoundingBoxResized;
-            //}
-
-            //if (!justifyIsNecessary)
-            //{
-            //    return NoChange;
-            //}
-
-            //this.JustifyElementsToBaseLineAndLineHeight();
-
-            //var result = _space.Width < CalculateTotalWidthOfElements()
-            //    ? ReconstructionNecessary
-            //    : NoChange;
-
-            //return result;
-
-            return NoChange;
         }
 
         public void ReturnElementsToStack(Stack<LineElement> stack)

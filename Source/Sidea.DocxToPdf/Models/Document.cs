@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 using Sidea.DocxToPdf.Models.Sections;
 using Sidea.DocxToPdf.Models.Sections.Builders;
 using Sidea.DocxToPdf.Models.Styles;
@@ -42,13 +43,29 @@ namespace Sidea.DocxToPdf.Models
 
         private void PrepareSections()
         {
-            var lastPage = Page.None;
+            IPage lastPage = Page.None;
             var occupiedSpace = Rectangle.Empty;
+            var lastPageNumber = lastPage.PageNumber;
 
-            foreach (var section in _sections)
+            bool isFinished;
+            do
             {
-                section.Prepare(lastPage, occupiedSpace);
-            }
+                foreach (var section in _sections)
+                {
+                    section.Prepare(lastPage, occupiedSpace, new Variables(lastPageNumber));
+
+                    lastPage = section.Pages.Last();
+                    occupiedSpace = section.PageRegions.Last().Region;
+                }
+
+                var secionLastPage = _sections.Last()
+                    .Pages
+                    .Last();
+
+                isFinished = lastPageNumber == secionLastPage.PageNumber;
+                lastPageNumber = secionLastPage.PageNumber;
+                lastPage = Page.None;
+            } while (!isFinished);
         }
 
         private void RenderSections(IRenderer renderer)

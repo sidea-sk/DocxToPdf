@@ -65,28 +65,13 @@ namespace Sidea.DocxToPdf.Models.Sections
 
         public override void Render(IRenderer renderer)
         {
-            foreach(var child in _childs)
-            {
-                child.Render(renderer);
-            }
+            _childs.Render(renderer);
         }
 
         private void UpdatePageRegionsFromChildren()
         {
             this.ClearPageRegions();
-
-            var groups = _childs.SelectMany(c => c.PageRegions)
-                .GroupBy(pr => pr.PageNumber)
-                .ToArray();
-
-            var pageRegions = groups
-                .Select(grp =>
-                {
-                    var rectangle = Rectangle.Union(grp.Select(r => r.Region));
-                    return new PageRegion(grp.Key, rectangle);
-                })
-                .ToArray();
-
+            var pageRegions = _childs.UnionPageRegions();
             foreach(var pageRegion in pageRegions)
             {
                 this.SetPageRegion(pageRegion);

@@ -7,7 +7,7 @@ using static Sidea.DocxToPdf.Models.FieldUpdateResult;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
-    internal class Line: ElementBase // : SinglePageElementBase, IFieldsElement
+    internal class Line: ElementBase
     {
         private readonly LineSegment[] _segments;
         private readonly LineSpacing _lineSpacing;
@@ -49,53 +49,16 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public override void Render(IRendererPage page)
         {
-            foreach(var segment in _segments)
-            {
-                segment.Render(page);
-            }
+            _segments.Render(page);
         }
 
         public IEnumerable<LineElement> GetAllElements()
             => _segments.SelectMany(s => s.GetAllElements());
-
-        //public FieldUpdateResult Update(DocumentPosition documentPosition, DocumentVariables variables)
-        //{
-        //    foreach (var s in _segments)
-        //    {
-        //        var result = s.Update(documentPosition, variables);
-        //        if(result == ReconstructionNecessary)
-        //        {
-        //            return result;
-        //        }
-        //    }
-
-        //    return NoChange;
-        //}
-
-        //protected override PreparationState PrepareCore(IPageRegion renderer)
-        //{
-        //    if(this.BoundingBox.Height > renderer.Size.Height)
-        //    {
-        //        return OutOfRenderArea;
-        //    }
-
-        //    foreach(var segment in _segments)
-        //    {
-        //        segment.Prepare(renderer);
-        //    }
-
-        //    return Prepared;
-        //}
 
         public FieldUpdateResult UpdateFields()
         {
             // var updateResult = _segments.UpdateFields();
             return NoChange;
         }
-
-        //public override sealed void Render()
-        //{
-        //    _segments.Render();
-        //}
     }
 }

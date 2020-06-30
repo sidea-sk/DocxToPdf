@@ -5,7 +5,7 @@ using Sidea.DocxToPdf.Core;
 
 namespace Sidea.DocxToPdf.Models
 {
-    internal abstract class ContainerElement
+    internal abstract class ContainerElement : IRenderable
     {
         private PageRegion[] _pageRegions = new PageRegion[0];
 
