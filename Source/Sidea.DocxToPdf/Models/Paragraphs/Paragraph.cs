@@ -82,7 +82,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                 var updateResult = line.Update(context.PageVariables);
                 if(updateResult == ReconstructionNecessary)
                 {
-                    ClearLines(i);
+                    ClearLinesFromIndex(i);
                     break;
                 }
 
@@ -134,9 +134,10 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             this.RenderBordersIf(renderer, renderer.Options.ParagraphRegionBoundaries);
         }
 
-        private void ClearLines(int fromIndex)
+        private void ClearLinesFromIndex(int fromIndex)
         {
             var elements = _lines.Skip(fromIndex).Reverse().SelectMany(l => l.GetAllElements());
+            _lines = _lines.Take(fromIndex).ToList();
             _unprocessedElements.Push(elements);
         }
 
