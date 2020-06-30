@@ -8,15 +8,16 @@ namespace Sidea.DocxToPdf.Pdf
     internal class PdfRenderer : IRenderer
     {
         private readonly PdfDocument _pdfDocument;
-        private readonly RenderingOptions _renderingOptions;
 
         private Dictionary<PageNumber, PdfRendererPage> _pages = new Dictionary<PageNumber, PdfRendererPage>();
 
         public PdfRenderer(PdfDocument pdfDocument, RenderingOptions renderingOptions)
         {
             _pdfDocument = pdfDocument;
-            _renderingOptions = renderingOptions;
+            this.Options = renderingOptions;
         }
+
+        public RenderingOptions Options { get; }
 
         public void CreatePage(PageNumber pageNumber, PageConfiguration configuration)
         {
@@ -34,7 +35,7 @@ namespace Sidea.DocxToPdf.Pdf
             pdfPage.Height = configuration.Size.Height;
 
             _pdfDocument.AddPage(pdfPage);
-            _pages.Add(pageNumber, new PdfRendererPage(pageNumber, XGraphics.FromPdfPage(pdfPage), _renderingOptions));
+            _pages.Add(pageNumber, new PdfRendererPage(pageNumber, XGraphics.FromPdfPage(pdfPage), this.Options));
         }
 
         public IRendererPage Get(PageNumber pageNumber)

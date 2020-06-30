@@ -9,7 +9,8 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Options = new RenderingOptions(
                 hiddenChars: true,
-                lineRegionBoundaries: true,
+                paragraphRegionBoundaries: true,
+                lineRegionBoundaries: false,
                 wordRegionBoundaries: false);
         }
 

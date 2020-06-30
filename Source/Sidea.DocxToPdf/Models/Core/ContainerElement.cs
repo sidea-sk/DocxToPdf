@@ -33,5 +33,39 @@ namespace Sidea.DocxToPdf.Models
                 .OrderBy(pr => pr.PageNumber)
                 .ToArray();
         }
+
+        protected void RenderBordersIf(IRenderer renderer, bool condition)
+        {
+            if (!condition)
+            {
+                return;
+            }
+
+            var index = -1;
+            foreach(var pageRegion in _pageRegions)
+            {
+                index++;
+                var page = renderer.Get(pageRegion.PageNumber);
+                this.RenderBorder(page, pageRegion.Region, index == 0, index == _pageRegions.Length - 1);
+            }
+        }
+
+        private void RenderBorder(IRendererPage page, Rectangle region, bool isFirst, bool isLast)
+        {
+            var color = System.Drawing.Color.Orange;
+            if (isFirst)
+            {
+                page.RenderLine(region.TopLine(color));
+            }
+
+            page.RenderLine(region.RightLine(color));
+
+            if (isLast)
+            {
+                page.RenderLine(region.BottomLine(color));
+            }
+
+            page.RenderLine(region.LeftLine(color));
+        }
     }
 }

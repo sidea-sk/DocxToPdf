@@ -130,6 +130,8 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                 var page = renderer.Get(line.Position.PageNumber);
                 line.Render(page);
             }
+
+            this.RenderBordersIf(renderer, renderer.Options.ParagraphRegionBoundaries);
         }
 
         private void ClearLines(int fromIndex)
