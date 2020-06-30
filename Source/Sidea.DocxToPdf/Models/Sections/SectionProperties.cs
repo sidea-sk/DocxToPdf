@@ -36,8 +36,10 @@ namespace Sidea.DocxToPdf.Models.Sections
 
         public double ColumnOffset(int columnIndex)
         {
+            var columnConfigIndex = columnIndex % this.ColumnConfigs.Count;
+
             var result = this.ColumnConfigs
-                .Take(columnIndex)
+                .Take(columnConfigIndex)
                 .Aggregate(0.0, (acc, column) =>
                 {
                     return acc + column.Width + column.Space;
@@ -48,7 +50,8 @@ namespace Sidea.DocxToPdf.Models.Sections
 
         public double ColumnWidth(int columnIndex)
         {
-            return this.ColumnConfigs.ElementAt(columnIndex).Width;
+            var columnConfigIndex = columnIndex % this.ColumnConfigs.Count;
+            return this.ColumnConfigs.ElementAt(columnConfigIndex).Width;
         }
     }
 }

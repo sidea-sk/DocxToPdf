@@ -17,8 +17,6 @@ namespace Sidea.DocxToPdf.Models.Sections
         private readonly SectionColumn[] _columns;
         private readonly IStyleFactory _styleFactory;
 
-        // private ContainerElement[] _childs = new ContainerElement[0];
-
         public IReadOnlyCollection<IPage> Pages => _pages;
 
         public Section(
@@ -44,12 +42,25 @@ namespace Sidea.DocxToPdf.Models.Sections
             var pageNumber = lastPageOfPreviosSection.PageNumber.Next();
             this.EnsurePage(pageNumber);
 
-            for(var i = 0; i < _columns.Length; i++)
+            for (var i = 0; i < _columns.Length; i++)
             {
                 // todo: handle column and page breaks
                 var context = this.CreateContextForColumn(pageNumber, Rectangle.Empty, i);
                 var column = _columns[i];
                 column.Prepare(context, this.OnNewPage);
+
+                switch (column.SectionBreak)
+                {
+                    case SectionBreak.None:
+                        break;
+                    case SectionBreak.Column:
+                        break;
+                    case SectionBreak.Page:
+                        // create new Page for the Next Column
+                        pageNumber = column.LastPageRegion.PageNumber.Next();
+                        this.EnsurePage(pageNumber);
+                        break;
+                }
             }
         }
 

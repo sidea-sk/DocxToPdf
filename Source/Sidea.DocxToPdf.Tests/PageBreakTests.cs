@@ -7,6 +7,9 @@ namespace Sidea.DocxToPdf.Tests
     {
         public PageBreakTests() : base("PageBreaks", useNextGeneration: true)
         {
+            this.Options = new RenderingOptions(
+                hiddenChars: true,
+                paragraphRegionBoundaries: true);
         }
 
         [TestMethod]
