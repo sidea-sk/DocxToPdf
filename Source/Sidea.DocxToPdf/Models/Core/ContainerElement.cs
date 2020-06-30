@@ -16,7 +16,7 @@ namespace Sidea.DocxToPdf.Models
 
         public abstract void Prepare(
             PageContext pageContext,
-            Func<PageNumber, PageContext> pageFactory);
+            Func<PageNumber, ContainerElement, PageContext> pageFactory);
 
         public abstract void Render(IRenderer renderer);
 

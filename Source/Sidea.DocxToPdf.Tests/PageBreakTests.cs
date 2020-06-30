@@ -5,7 +5,7 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class PageBreakTests : TestBase
     {
-        public PageBreakTests() : base("PageBreaks")
+        public PageBreakTests() : base("PageBreaks", useNextGeneration: true)
         {
         }
 

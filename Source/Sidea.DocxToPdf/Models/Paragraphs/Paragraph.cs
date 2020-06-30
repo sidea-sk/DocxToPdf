@@ -46,7 +46,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public override void Prepare(
             PageContext startOn,
-            Func<PageNumber, PageContext> pageFactory)
+            Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
             ExecuteResult execResult;
             int continueOnLineIndex = 0;
@@ -58,7 +58,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                 if(execResult == ExecuteResult.RequestNextPage)
                 {
                     this.SetPageRegion(new PageRegion(context.PageNumber, context.Region));
-                    context = pageFactory(context.PageNumber.Next());
+                    context = pageFactory(context.PageNumber.Next(), this);
                 }
             } while (execResult != ExecuteResult.Done);
 

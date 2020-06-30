@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
@@ -13,81 +14,96 @@ namespace Sidea.DocxToPdf.Models.Sections
         private List<IPage> _pages = new List<IPage>();
 
         private readonly SectionProperties _properties;
+        private readonly SectionColumn[] _columns;
         private readonly IStyleFactory _styleFactory;
 
-        private readonly IReadOnlyCollection<OpenXml.OpenXmlCompositeElement> _openXmlElements;
-        private ContainerElement[] _childs = new ContainerElement[0];
+        // private ContainerElement[] _childs = new ContainerElement[0];
 
         public IReadOnlyCollection<IPage> Pages => _pages;
 
         public Section(
-            IEnumerable<OpenXml.OpenXmlCompositeElement> openXmlElements,
             SectionProperties properties,
+            IEnumerable<SectionColumn> columns,
             IStyleFactory styleFactory)
         {
-            // _pageManager = new SectionPageManager(properties.PageConfiguration, this.OnPageCreated);
-            _openXmlElements = openXmlElements.ToArray();
             _properties = properties;
+            _columns = columns.ToArray();
             _styleFactory = styleFactory;
         }
 
         public void Initialize()
         {
-            _childs = _openXmlElements
-                .OfType<Word.Paragraph>()
-                .Select(e => {
-                    var p = Factory.Create(e, _styleFactory);
-                    p.Initialize();
-                    return p;
-                })
-                .ToArray();
+            foreach(var column in _columns)
+            {
+                column.Initialize();
+            }
         }
 
         public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace)
         {
-            var pageContext = this.OnNewPage(lastPageOfPreviosSection.PageNumber.Next());
+            var pageNumber = lastPageOfPreviosSection.PageNumber.Next();
+            this.EnsurePage(pageNumber);
 
-            foreach(var child in _childs)
+            for(var i = 0; i < _columns.Length; i++)
             {
-                child.Prepare(pageContext, this.OnNewPage);
-                var lastPage = child.LastPageRegion;
-                pageContext = this.CreatePageContext(lastPage.PageNumber, lastPage.Region);
+                // todo: handle column and page breaks
+                var context = this.CreateContextForColumn(pageNumber, Rectangle.Empty, i);
+                var column = _columns[i];
+                column.Prepare(context, this.OnNewPage);
             }
-        }
-
-        public void Update(IPage lastPageOfPreviosSection, Rectangle occupiedSpace)
-        {
         }
 
         public void Render(IRenderer renderer)
         {
-            foreach(var child in _childs)
+            foreach(var child in _columns)
             {
                 child.Render(renderer);
             }
         }
 
-        private PageContext OnNewPage(PageNumber pageNumber)
+        private PageContext OnNewPage(PageNumber pageNumber, ContainerElement requestingColumn)
         {
-            if(_pages.All(p => p.PageNumber != pageNumber))
+            this.EnsurePage(pageNumber);
+
+            var index = _columns.IndexOf(c => c == requestingColumn);
+            if(index == -1)
             {
-                var newPage = new Page(pageNumber, _properties.PageConfiguration);
-                newPage.Margin = new Margin(80, _properties.Margin.Right, 80, _properties.Margin.Left);
-                _pages.Add(newPage);
+                throw new RendererException("Column not found");
             }
 
             var page = _pages.Single(p => p.PageNumber == pageNumber);
+
             return new PageContext(pageNumber, page.GetContentRegion(), new Variables(totalPages: _pages.Count));
         }
 
-        private PageContext CreatePageContext(PageNumber pageNumber, Rectangle occupiedRegion)
+        private PageContext CreateContextForColumn(PageNumber pageNumber, Rectangle occupiedRegion, int columnIndex)
         {
             var page = _pages.Single(p => p.PageNumber == pageNumber);
+            var xOffset = _properties.ColumnOffset(columnIndex) + page.Margin.Left;
+            var width = _properties.ColumnWidth(columnIndex);
+
+            var y = Math.Max(page.Margin.Top, occupiedRegion.BottomY);
+
             var content = page
                 .GetContentRegion()
-                .Clip(occupiedRegion.BottomLeft);
-            
+                .Clip(new Point(0, y))
+                .RestrictLeftWidth(xOffset, width);
+
             return new PageContext(pageNumber, content, new Variables(totalPages: _pages.Count));
+        }
+
+        private void EnsurePage(PageNumber pageNumber)
+        {
+            if(_pages.Any(p => p.PageNumber == pageNumber))
+            {
+                return;
+            }
+
+            var newPage = new Page(pageNumber, _properties.PageConfiguration)
+            {
+                Margin = new Margin(80, _properties.Margin.Right, 80, _properties.Margin.Left)
+            };
+            _pages.Add(newPage);
         }
     }
 }
