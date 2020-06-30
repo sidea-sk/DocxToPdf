@@ -20,5 +20,17 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(PageNumberTotalPages));
         }
+
+        [TestMethod]
+        public void PageNumberTotalPages_Over10()
+        {
+            this.Generate(nameof(PageNumberTotalPages_Over10));
+        }
+
+        [TestMethod]
+        public void TotalPages_ReconstructParagraph()
+        {
+            this.Generate(nameof(TotalPages_ReconstructParagraph));
+        }
     }
 }
