@@ -132,66 +132,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             }
         }
 
-        // nochange, resized
-        //public void Update(PageRegion startRegion, DocumentVariables variables)
-        //{
-        //    _pageRegions.Clear();
-
-        //    var pageVariables = new PageVariables(startRegion.PageNumber, variables.TotalPages);
-        //    var index = 0;
-
-        //    do
-        //    {
-        //        var line = _lines[index];
-        //        var updateResult = line.Update(startRegion.DocumentPosition, pageVariables);
-
-        //        if (updateResult == ReconstructionNecessary)
-        //        {
-        //            var elements = _lines
-        //                .Skip(index)
-        //                .SelectMany(l => l.GetAllElements())
-        //                .ToStack();
-
-        //            var relY = line.BoundingBox.TopLeft.Y;
-
-        //            _lines = _lines
-        //                .Take(index)
-        //                .ToList();
-
-        //            var updatedLines = this.CreateLinesFromElements(elements, relY);
-        //            _lines.AddRange(updatedLines);
-        //        }
-        //        else
-        //        {
-        //            index++;
-        //        }
-        //    } while (index < _lines.Count);
-        //}
-
-        //private void ReconstructLines(PageRegion startRegion, PageVariables pageVariables)
-        //{
-        //    var elements = _paragraph
-        //           .CreateParagraphElements(_styleFactory)
-        //           .ToStack();
-
-        //    var defaultLineHeight = _styleFactory.TextStyle.Font.Height;
-        //    var relativeYOffset = 0.0;
-
-        //    while (elements.Count > 0)
-        //    {
-        //        var line = elements.CreateLine(relativeYOffset, this.ParagraphStyle.LineAlignment, _maxAvailableRegion.Width, _fixedDrawings.Select(f => f.BoundingBox), defaultLineHeight);
-        //        line.SetOffset(new Point(0, relativeYOffset));
-        //        _lines.Add(line);
-        //        relativeYOffset += line.BoundingBox.Height + this.ParagraphStyle.Spacing.Line.CalculateSpaceAfterLine(line.BoundingBox.Height);
-        //    }
-        //}
-
-        //private IEnumerable<Line> CreateLinesFromElements(
-        //    Stack<ParagraphElement> elements,
-        //    double lineRelativeOffset)
-        //{
-        //}
-
         private void ClearLines(int fromIndex)
         {
             var elements = _lines.Skip(fromIndex).Reverse().SelectMany(l => l.GetAllElements());
