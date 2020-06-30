@@ -5,7 +5,7 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class PdfGeneratorTests : TestBase
     {
-        public PdfGeneratorTests() : base("")
+        public PdfGeneratorTests() : base("", useNextGeneration: true)
         {
         }
 

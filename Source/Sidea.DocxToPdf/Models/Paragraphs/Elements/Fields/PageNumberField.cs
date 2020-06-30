@@ -15,8 +15,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Elements.Fields
             => ((int)_variables.PageNumber).ToString();
 
         protected override void UpdateCore(PageVariables variables)
-        {
-            
-        }
+            => _variables = variables;
     }
 }

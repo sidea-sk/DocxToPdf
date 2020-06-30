@@ -97,6 +97,26 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             this.RenderBorderIf(page, page.Options.LineRegionBoundaries);
         }
 
+        public FieldUpdateResult Update(PageVariables pageVariables)
+        {
+            var justifyIsNecessary = false;
+            foreach (var e in _elements.OfType<Field>())
+            {
+                justifyIsNecessary = justifyIsNecessary || e.Update(pageVariables) == Resized;
+            }
+
+            if (!justifyIsNecessary)
+            {
+                return NoChange;
+            }
+
+            var result = _space.Width < this.CalculateTotalWidthOfElements()
+                ? ReconstructionNecessary
+                : NoChange;
+
+            return result;
+        }
+
         //public override void Render()
         //{
         //    _trimmedElements.Render();
@@ -134,9 +154,14 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public IEnumerable<LineElement> GetAllElements() => _elements;
 
+        private double CalculateTotalWidthOfElements()
+        {
+            return _trimmedElements.Sum(e => e.Size.Width);
+        }
+
         private void JustifyElementsToBaseLineAndLineHeight()
         {
-            var totalWidth = _trimmedElements.Sum(e => e.Size.Width);
+            var totalWidth = this.CalculateTotalWidthOfElements();
             switch (_lineAlignment)
             {
                 case LineAlignment.Left:

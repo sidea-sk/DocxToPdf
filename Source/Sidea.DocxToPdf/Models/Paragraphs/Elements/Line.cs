@@ -2,6 +2,7 @@
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
+using Sidea.DocxToPdf.Models.Styles;
 using static Sidea.DocxToPdf.Models.FieldUpdateResult;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
@@ -9,17 +10,19 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
     internal class Line: ElementBase // : SinglePageElementBase, IFieldsElement
     {
         private readonly LineSegment[] _segments;
+        private readonly LineSpacing _lineSpacing;
 
-        public IEnumerable<LineElement> GetAllElements()
-            => _segments.SelectMany(s => s.GetAllElements());
-
-        public Line(IEnumerable<LineSegment> segments)
+        public Line(IEnumerable<LineSegment> segments, LineSpacing lineSpacing)
         {
             _segments = segments.ToArray();
 
             var boundingRectangle = Rectangle.Union(segments.Select(s => s.PageRegion));
             this.Size = boundingRectangle.Size;
+            _lineSpacing = lineSpacing;
         }
+
+        public double HeightWithSpacing
+            => this.Size.Height + _lineSpacing.CalculateSpaceAfterLine(this.Size.Height);
 
         public override void SetPosition(DocumentPosition position)
         {
@@ -30,6 +33,20 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             }
         }
 
+        public FieldUpdateResult Update(PageVariables variables)
+        {
+            foreach(var segment in _segments)
+            {
+                var result = segment.Update(variables);
+                if(result == ReconstructionNecessary)
+                {
+                    return result;
+                }
+            }
+
+            return NoChange;
+        }
+
         public override void Render(IRendererPage page)
         {
             foreach(var segment in _segments)
@@ -37,6 +54,9 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                 segment.Render(page);
             }
         }
+
+        public IEnumerable<LineElement> GetAllElements()
+            => _segments.SelectMany(s => s.GetAllElements());
 
         //public FieldUpdateResult Update(DocumentPosition documentPosition, DocumentVariables variables)
         //{

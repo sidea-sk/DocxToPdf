@@ -16,7 +16,8 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             IEnumerable<FixedDrawing> fixedDrawings,
             double availableWidth,
             double defaultLineHeight,
-            PageVariables variables)
+            PageVariables variables,
+            LineSpacing lineSpacing)
         {
             var (lineSegments, lineHeight) = fromElements
                 .CreateLineSegments(lineAlignment, relativeYOffset, fixedDrawings.Select(d => d.BoundingBox), availableWidth, defaultLineHeight, variables);
@@ -27,7 +28,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
                 ls.JustifyElements(baseLineOffset, lineHeight);
             }
 
-            return new Line(lineSegments);
+            return new Line(lineSegments, lineSpacing);
         }
 
         private static (LineSegment[], double) CreateLineSegments(
