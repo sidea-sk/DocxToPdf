@@ -136,8 +136,16 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         private void ClearLinesFromIndex(int fromIndex)
         {
-            var elements = _lines.Skip(fromIndex).Reverse().SelectMany(l => l.GetAllElements());
-            _lines = _lines.Take(fromIndex).ToList();
+            var elements = _lines
+                .Skip(fromIndex)
+                .Reverse()
+                .SelectMany(l => l.GetAllElements())
+                .ToArray();
+
+            _lines = _lines
+                .Take(fromIndex)
+                .ToList();
+
             _unprocessedElements.Push(elements);
         }
 
