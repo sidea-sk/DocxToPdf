@@ -32,5 +32,11 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(TotalPages_ReconstructParagraph));
         }
+
+        [TestMethod]
+        public void TotalPages_ReconstructMultipleParagraphs()
+        {
+            this.Generate(nameof(TotalPages_ReconstructMultipleParagraphs));
+        }
     }
 }
