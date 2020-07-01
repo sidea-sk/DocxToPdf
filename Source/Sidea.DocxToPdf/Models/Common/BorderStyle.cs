@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Sidea.DocxToPdf.Models.Tables.Elements
+namespace Sidea.DocxToPdf.Models.Common
 {
     internal class BorderStyle
     {

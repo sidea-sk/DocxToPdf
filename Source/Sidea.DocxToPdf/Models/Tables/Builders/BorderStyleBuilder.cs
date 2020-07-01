@@ -1,9 +1,9 @@
-﻿using Sidea.DocxToPdf.Models.Tables.Elements;
+﻿using Sidea.DocxToPdf.Models.Common;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Models.Tables.Builders
 {
-    internal static class XmlExtensions
+    internal static class BorderStyleBuilder
     {
         public static BorderStyle GetBorderStyle(this Word.TableCell cell)
             => cell.TableCellProperties.GetBorderStyle();

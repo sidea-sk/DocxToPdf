@@ -4,7 +4,6 @@ using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Styles;
 using OpenXml = DocumentFormat.OpenXml;
-using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Models.Sections
 {
@@ -31,12 +30,7 @@ namespace Sidea.DocxToPdf.Models.Sections
         public override void Initialize()
         {
             _childs = _openXmlElements
-                .OfType<Word.Paragraph>()
-                .Select(e => {
-                    var p = Factory.Create(e, _styleFactory);
-                    p.Initialize();
-                    return p;
-                })
+                .CreateInitializeElements(_styleFactory)
                 .ToArray();
         }
 

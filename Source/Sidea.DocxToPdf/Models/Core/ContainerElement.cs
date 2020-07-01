@@ -34,6 +34,13 @@ namespace Sidea.DocxToPdf.Models
                 .ToArray();
         }
 
+        protected void ResetPageRegionsFrom(IEnumerable<ContainerElement> children)
+        {
+            _pageRegions = children
+                .UnionPageRegions()
+                .ToArray();
+        }
+
         protected void RenderBordersIf(IRenderer renderer, bool condition)
         {
             if (!condition)
