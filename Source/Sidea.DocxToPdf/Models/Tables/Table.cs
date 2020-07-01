@@ -11,13 +11,13 @@ namespace Sidea.DocxToPdf.Models.Tables
 {
     internal class Table : ContainerElement
     {
-        private readonly Grid _grid;
         private readonly Cell[] _cells = new Cell[0];
+        private readonly Grid _grid;
 
-        private Table(IEnumerable<Cell> cells, Grid gris)
+        private Table(IEnumerable<Cell> cells, Grid grid)
         {
             _cells = cells.ToArray();
-            _grid = gris;
+            _grid = grid;
         }
 
         public override void Prepare(PageContext pageContext, Func<PageNumber, ContainerElement, PageContext> pageFactory)
@@ -56,14 +56,13 @@ namespace Sidea.DocxToPdf.Models.Tables
             var previousCellPageRegion = this.FindTopPreviousCell(cell.GridPosition);
             var horizontalSpace = _grid.CalculateCellSpace(cell.GridPosition);
 
+            var xOffset = fromPageContext.Region.X + horizontalSpace.X;
             var yOffset = fromPageContext.PageNumber == previousCellPageRegion.PageNumber
                 ? previousCellPageRegion.Region.Y + previousCellPageRegion.Region.Height
-                : 0;
-
-            var r = fromPageContext.Region.Width - horizontalSpace.Width;
+                : fromPageContext.Region.Y;
 
             var cellPageContext = fromPageContext
-                    .Crop(yOffset, r, 0, horizontalSpace.X);
+                    .Clip(new Point(xOffset, yOffset), horizontalSpace.Width);
 
             return cellPageContext;
         }
@@ -71,7 +70,7 @@ namespace Sidea.DocxToPdf.Models.Tables
         private PageRegion FindTopPreviousCell(GridPosition toGridPosition)
         {
             var cell = _cells
-                .FirstOrDefault(c => c.GridPosition.IsInColumn(toGridPosition.Column) && c.GridPosition.IsInRow(toGridPosition.Row));
+                .FirstOrDefault(c => c.GridPosition.IsInColumn(toGridPosition.Column) && c.GridPosition.IsInRow(toGridPosition.Row - 1));
 
             return cell?.LastPageRegion ?? PageRegion.None;
         }
