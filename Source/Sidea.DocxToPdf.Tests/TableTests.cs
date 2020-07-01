@@ -5,7 +5,7 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class TableTests : TestBase
     {
-        public TableTests() : base("Tables")
+        public TableTests() : base("Tables", useNextGeneration: true)
         {
         }
 

@@ -16,14 +16,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
         {
             _columnWidths = columnWidths.ToArray();
             _gridRows = rowHeights.ToArray();
-
-            var w = _columnWidths.Sum();
-            var h = _gridRows.Select(r => r.Height).Sum();
-
-            this.Size = new Size(w, h);
         }
-
-        public Size Size { get; }
 
         public int ColumnsCount => _columnWidths.Length;
 
@@ -56,5 +49,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
         }
 
         public double RowHeight(int rowIndex) => _gridRows[rowIndex].Height;
+
+        public double RowOffset(int rowIndex) => _gridRows.Take(rowIndex).Sum(r => r.Height);
     }
 }

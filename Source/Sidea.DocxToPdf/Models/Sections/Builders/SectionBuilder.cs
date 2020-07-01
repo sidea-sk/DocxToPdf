@@ -97,7 +97,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                                 }
 
                                 partElements.Add(begin);
-                                sectionParts.Add(new SectionColumn(@break, partElements.ToArray(), styleFactory));
+                                sectionParts.Add(SectionColumn.Create(@break, partElements.ToArray(), styleFactory));
                                 partElements.Clear();
                             }
                         }
@@ -110,7 +110,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
 
             if (partElements.Count > 0)
             {
-                sectionParts.Add(new SectionColumn(SectionBreak.None, partElements, styleFactory));
+                sectionParts.Add(SectionColumn.Create(SectionBreak.None, partElements, styleFactory));
             }
 
             return sectionParts;

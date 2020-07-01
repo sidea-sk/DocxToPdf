@@ -18,6 +18,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Builders
                     var rowCells = row.InitializeCells(index, spans, styleFactory);
                     return rowCells;
                 })
+                .Where(c => !c.GridPosition.IsRowMergedCell)
                 .ToArray();
             return cells;
         }
@@ -33,7 +34,8 @@ namespace Sidea.DocxToPdf.Models.Tables.Builders
                 .Select((cell, index) =>
                 {
                     var gridPosition = GetCellGridPosition(rowIndex, index, spans);
-                    return new Cell(cell, gridPosition, styleFactory);
+                    var c = Cell.From(cell, gridPosition, styleFactory);
+                    return c;
                 })
                 .ToArray();
 
@@ -84,7 +86,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Builders
                     || spans[rowIndex + 1].FindSpanInfoForColumn(info.Column).RowSpan > 0;
             }
 
-            return new GridPosition(rowIndex, info.Column, rowSpan, info.ColSpan, isLastCellOfRow);
+            return new GridPosition(info.Column, info.ColSpan, rowIndex, rowSpan, isLastCellOfRow);
         }
 
         private static List<GridSpanInfo[]> PrepareCellSpans(this Word.Table table)

@@ -1,11 +1,10 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
-using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Models.Tables.Elements
 {
     internal class GridRow
     {
-        public GridRow(double height, Word.HeightRuleValues heightRule)
+        public GridRow(double height, HeightRuleValues heightRule)
         {
             this.Height = height;
             this.HeightRule = heightRule;

@@ -21,5 +21,30 @@ namespace Sidea.DocxToPdf.Models
         public PageVariables PageVariables { get; }
 
         public DocumentPosition TopLeft { get; }
+
+        public PageContext Clip()
+        {
+            return this;
+        }
+
+        public PageContext Crop(Margin margin)
+            => this.Crop(margin.Top, margin.Right, margin.Bottom, margin.Left);
+
+        public PageContext Clip(Point point, double width)
+        {
+            var region = this.Region.Clip(point, width);
+            return this.WithRegion(region);
+        }
+
+        public PageContext Crop(double top, double right, double bottom, double left)
+        {
+            var region = this.Region.Crop(top, right, bottom, left);
+            return this.WithRegion(region);
+        }
+
+        private PageContext WithRegion(Rectangle region)
+        {
+            return new PageContext(this.PageNumber, region, this.PageVariables);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
@@ -11,42 +12,62 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 {
     internal class Cell : ContainerElement
     {
-        private readonly Word.TableCell _wordCell;
         private readonly BorderStyle _borderStyle;
-        private readonly IStyleFactory _styleFactory;
-
+        private readonly Margin _contentMargin;
         private ContainerElement[] _childs = new ContainerElement[0];
 
-        public Cell(
-            Word.TableCell wordCell,
-            GridPosition gridPosition,
-            IStyleFactory styleFactory)
+        private Cell(IEnumerable<ContainerElement> childs, GridPosition gridPosition, BorderStyle borderStyle)
         {
-            _wordCell = wordCell;
-
+            _contentMargin = new Margin(1, 3, 1, 3);
+            _childs = childs.ToArray();
+            _borderStyle = borderStyle;
             this.GridPosition = gridPosition;
-
-            _borderStyle = wordCell.GetBorderStyle();
-            _styleFactory = styleFactory;
         }
 
         public GridPosition GridPosition { get; }
 
-        public override void Initialize()
-        {
-            _childs = _wordCell
-                .RenderableChildren()
-                .CreateInitializeElements(_styleFactory)
-                .ToArray();
-        }
-
         public override void Prepare(PageContext pageContext, Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
+            var currentPageContext = pageContext;
 
+            Func<PageNumber, ContainerElement, PageContext> onNewPage = (pageNumber, childElement) =>
+            {
+                var c = pageFactory(pageNumber, this);
+                currentPageContext = c;
+                return c;
+            };
+
+            Rectangle availableRegion = pageContext.Region;
+            foreach (var child in _childs)
+            {
+                child.Prepare(new PageContext(currentPageContext.PageNumber, availableRegion, currentPageContext.PageVariables), onNewPage);
+                var lastPage = child.LastPageRegion.Region;
+
+                availableRegion = currentPageContext.Region.Clip(lastPage.BottomLeft);
+            }
+
+            this.ResetPageRegionsFrom(_childs);
         }
 
         public override void Render(IRenderer renderer)
         {
+            _childs.Render(renderer);
+            this.RenderBordersIf(renderer, true);
+        }
+
+        public static Cell From(
+            Word.TableCell wordCell,
+            GridPosition gridPosition,
+            IStyleFactory styleFactory)
+        {
+            var childs = wordCell
+                .RenderableChildren()
+                .CreateInitializeElements(styleFactory)
+                .ToArray();
+
+            var borderStyle = wordCell.GetBorderStyle();
+
+            return new Cell(childs, gridPosition, borderStyle);
         }
     }
 }

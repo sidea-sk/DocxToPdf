@@ -28,14 +28,6 @@ namespace Sidea.DocxToPdf.Models.Sections
             _styleFactory = styleFactory;
         }
 
-        public void Initialize()
-        {
-            foreach(var column in _columns)
-            {
-                column.Initialize();
-            }
-        }
-
         public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace, Variables documentVariables)
         {
             var pageNumber = lastPageOfPreviosSection.PageNumber.Next();
@@ -100,7 +92,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             var content = page
                 .GetContentRegion()
                 .Clip(new Point(0, y))
-                .RestrictLeftWidth(xOffset, width);
+                .CropHorizontal(xOffset, width);
 
             return new PageContext(pageNumber, content, documentVariables);
         }

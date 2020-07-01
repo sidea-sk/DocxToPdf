@@ -12,8 +12,6 @@ namespace Sidea.DocxToPdf.Models
         public IReadOnlyCollection<PageRegion> PageRegions => _pageRegions;
         public PageRegion LastPageRegion => _pageRegions.LastOrDefault() ?? PageRegion.None;
 
-        public abstract void Initialize();
-
         public abstract void Prepare(
             PageContext pageContext,
             Func<PageNumber, ContainerElement, PageContext> pageFactory);

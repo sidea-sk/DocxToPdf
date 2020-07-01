@@ -34,11 +34,6 @@ namespace Sidea.DocxToPdf.Models
             _sections = _docx.MainDocumentPart
                 .SplitToSections(_styleAccessor)
                 .ToArray();
-
-            foreach(var section in _sections)
-            {
-                section.Initialize();
-            }
         }
 
         private void PrepareSections()

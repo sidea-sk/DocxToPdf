@@ -9,36 +9,44 @@ namespace Sidea.DocxToPdf.Models.Sections
 {
     internal class SectionColumn : ContainerElement
     {
-        private readonly OpenXml.OpenXmlCompositeElement[] _openXmlElements;
-        private readonly IStyleFactory _styleFactory;
+        private readonly ContainerElement[] _childs;
 
-        private ContainerElement[] _childs = new ContainerElement[0];
+        //public SectionColumn(
+        //    SectionBreak sectionBreak,
+        //    IEnumerable<OpenXml.OpenXmlCompositeElement> openXmlElements,
+        //    IStyleFactory styleFactory)
+        //{
+        //    this.SectionBreak = sectionBreak;
 
-        public SectionColumn(
+        //    _openXmlElements = openXmlElements.ToArray();
+        //    _styleFactory = styleFactory;
+        //}
+
+        private SectionColumn(IEnumerable<ContainerElement> childs, SectionBreak sectionBreak)
+        {
+            _childs = childs.ToArray();
+            this.SectionBreak = sectionBreak;
+        }
+
+        public static SectionColumn Create(
             SectionBreak sectionBreak,
             IEnumerable<OpenXml.OpenXmlCompositeElement> openXmlElements,
             IStyleFactory styleFactory)
         {
-            this.SectionBreak = sectionBreak;
+            var childs = openXmlElements
+                .CreateInitializeElements(styleFactory)
+                .ToArray();
 
-            _openXmlElements = openXmlElements.ToArray();
-            _styleFactory = styleFactory;
+            return new SectionColumn(childs, sectionBreak);
         }
 
         public SectionBreak SectionBreak { get; }
-
-        public override void Initialize()
-        {
-            _childs = _openXmlElements
-                .CreateInitializeElements(_styleFactory)
-                .ToArray();
-        }
 
         public override void Prepare(PageContext pageContext, Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
             var currentPageContext = pageContext;
 
-            Func<PageNumber, ContainerElement, PageContext> onNewPage = (pageNumber, childElement) => 
+            Func<PageNumber, ContainerElement, PageContext> onNewPage = (pageNumber, childElement) =>
             {
                 var c = pageFactory(pageNumber, this);
                 currentPageContext = c;
@@ -54,22 +62,12 @@ namespace Sidea.DocxToPdf.Models.Sections
                 availableRegion = currentPageContext.Region.Clip(lastPage.BottomLeft);
             }
 
-            this.UpdatePageRegionsFromChildren();
+            this.ResetPageRegionsFrom(_childs);
         }
 
         public override void Render(IRenderer renderer)
         {
             _childs.Render(renderer);
-        }
-
-        private void UpdatePageRegionsFromChildren()
-        {
-            this.ClearPageRegions();
-            var pageRegions = _childs.UnionPageRegions();
-            foreach(var pageRegion in pageRegions)
-            {
-                this.SetPageRegion(pageRegion);
-            }
         }
     }
 }

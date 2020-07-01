@@ -96,18 +96,11 @@ namespace Sidea.DocxToPdf.Core
         public Rectangle Expand(double width, double height)
             => new Rectangle(this.X, this.Y, this.Width + width, this.Height + height);
 
-        public Rectangle RestrictLeftRight(double left, double right)
-            => this.RestrictLeftWidth(left, this.Width - left - right);
+        public Rectangle Crop(double top, double right, double bottom, double left)
+            => new Rectangle(this.X + left, this.Y + top, this.Width - left - right, this.Height - top - bottom);
 
-        public Rectangle RestrictLeftWidth(double left, double width)
-        {
-            return new Rectangle(this.X + left, this.Y, width, this.Height);
-        }
-
-        public Rectangle Shrink(double top, double bottom)
-        {
-            return new Rectangle(this.X, this.Y + top, this.Width, this.Height - top - bottom);
-        }
+        public Rectangle CropHorizontal(double left, double width)
+            => new Rectangle(this.X + left, this.Y, this.Width - width, this.Height);
 
         public Rectangle Clip(Point topLeft)
         { 
@@ -115,6 +108,11 @@ namespace Sidea.DocxToPdf.Core
             var height = this.Height - (topLeft.Y - this.Y);
 
             return new Rectangle(topLeft, width, height);
+        }
+
+        public Rectangle Clip(Point topLeft, double width)
+        {
+            return new Rectangle(topLeft, width, this.Height);
         }
 
         public Rectangle Union(params Rectangle[] rectangles)

@@ -11,20 +11,19 @@ namespace Sidea.DocxToPdf.Models
         public static IEnumerable<ContainerElement> CreateInitializeElements(this IEnumerable<OpenXmlCompositeElement> openXmlComposites, IStyleFactory styleFactory)
         {
             return openXmlComposites
-                .Select(e =>
+                .Select(xml =>
                 {
-                    var p = Factory.CreateElement(e, styleFactory);
-                    p.Initialize();
-                    return p;
+                    var e = xml.CreateElement(styleFactory);
+                    return e;
                 });
         }
 
-        private static ContainerElement CreateElement(OpenXmlCompositeElement openXmlComposite, IStyleFactory styleFactory)
+        private static ContainerElement CreateElement(this OpenXmlCompositeElement openXmlComposite, IStyleFactory styleFactory)
         {
             return openXmlComposite switch
             {
-                Word.Paragraph p => new Paragraphs.Paragraph(p, styleFactory),
-                Word.Table t => new Tables.Table(t, styleFactory),
+                Word.Paragraph p => Paragraphs.Paragraph.Create(p, styleFactory),
+                Word.Table t => Tables.Table.From(t, styleFactory),
                 _ => throw new RendererException("Unhandled element")
             };
         }

@@ -13,17 +13,31 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 {
     internal class Paragraph : ContainerElement
     {
-        private readonly Word.Paragraph _paragraph;
         private readonly IStyleFactory _styleFactory;
 
         private List<Line> _lines = new List<Line>();
         private FixedDrawing[] _fixedDrawings = new FixedDrawing[0];
         private Stack<LineElement> _unprocessedElements = new Stack<LineElement>();
 
-        public Paragraph(Word.Paragraph paragraph, IStyleFactory styleFactory)
+        private Paragraph(IEnumerable<LineElement> elements, IEnumerable<FixedDrawing> fixedDrawings, IStyleFactory styleFactory)
         {
-            _paragraph = paragraph;
-            _styleFactory = styleFactory.ForParagraph(paragraph.ParagraphProperties);
+            _unprocessedElements = elements.ToStack();
+            _fixedDrawings = fixedDrawings.ToArray();
+            _styleFactory = styleFactory;
+        }
+
+        public static Paragraph Create(Word.Paragraph paragraph, IStyleFactory styleFactory)
+        {
+            var paragraphStyleFactory = styleFactory.ForParagraph(paragraph.ParagraphProperties);
+            var fixedDrawings = paragraph
+                .CreateFixedDrawingElements()
+                .OrderBy(d => d.BoundingBox.Y)
+                .ToArray();
+
+            var elements = paragraph
+                .CreateParagraphElements(paragraphStyleFactory);
+
+            return new Paragraph(elements, fixedDrawings, paragraphStyleFactory);
         }
 
         private ParagraphStyle ParagraphStyle => _styleFactory.ParagraphStyle;
@@ -31,18 +45,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         public double SpaceBefore => this.ParagraphStyle.Spacing.Before;
 
         public double SpaceAfter => this.ParagraphStyle.Spacing.After;
-
-        public override sealed void Initialize()
-        {
-            _fixedDrawings = _paragraph
-                .CreateFixedDrawingElements()
-                .OrderBy(d => d.BoundingBox.Y)
-                .ToArray();
-
-            _unprocessedElements = _paragraph
-                .CreateParagraphElements(_styleFactory)
-                .ToStack();
-        }
 
         public override void Prepare(
             PageContext startOn,
