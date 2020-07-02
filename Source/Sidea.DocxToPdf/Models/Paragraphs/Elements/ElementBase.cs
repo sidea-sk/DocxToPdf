@@ -30,11 +30,12 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             }
 
             var region = this.PageRegion;
-            var color = System.Drawing.Color.Orange;
-            page.RenderLine(region.TopLine(color));
-            page.RenderLine(region.RightLine(color));
-            page.RenderLine(region.BottomLine(color));
-            page.RenderLine(region.LeftLine(color));
+            var pen = new System.Drawing.Pen(System.Drawing.Color.Orange, 0.5f);
+
+            page.RenderLine(region.TopLine(pen));
+            page.RenderLine(region.RightLine(pen));
+            page.RenderLine(region.BottomLine(pen));
+            page.RenderLine(region.LeftLine(pen));
         }
     }
 }

@@ -58,20 +58,20 @@ namespace Sidea.DocxToPdf.Models
 
         private void RenderBorder(IRendererPage page, Rectangle region, bool isFirst, bool isLast)
         {
-            var color = System.Drawing.Color.Orange;
+            var pen = new System.Drawing.Pen(System.Drawing.Color.Orange, 0.5f);
             if (isFirst)
             {
-                page.RenderLine(region.TopLine(color));
+                page.RenderLine(region.TopLine(pen));
             }
 
-            page.RenderLine(region.RightLine(color));
+            page.RenderLine(region.RightLine(pen));
 
             if (isLast)
             {
-                page.RenderLine(region.BottomLine(color));
+                page.RenderLine(region.BottomLine(pen));
             }
 
-            page.RenderLine(region.LeftLine(color));
+            page.RenderLine(region.LeftLine(pen));
         }
     }
 }

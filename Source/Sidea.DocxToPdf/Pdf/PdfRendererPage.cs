@@ -57,12 +57,14 @@ namespace Sidea.DocxToPdf.Pdf
         private void RenderNoImagePlaceholder(Point position, Size size)
         {
             var rect = new Rectangle(position, size);
-            this.RenderLine(rect.TopLine(Drawing.Color.Red));
-            this.RenderLine(rect.RightLine(Drawing.Color.Red));
-            this.RenderLine(rect.BottomLine(Drawing.Color.Red));
-            this.RenderLine(rect.LeftLine(Drawing.Color.Red));
-            this.RenderLine(rect.TopLeftBottomRightDiagonal(Drawing.Color.Red));
-            this.RenderLine(rect.BottomLeftTopRightDiagonal(Drawing.Color.Red));
+            var pen = new Drawing.Pen(Drawing.Color.Red, 0.5f);
+
+            this.RenderLine(rect.TopLine(pen));
+            this.RenderLine(rect.RightLine(pen));
+            this.RenderLine(rect.BottomLine(pen));
+            this.RenderLine(rect.LeftLine(pen));
+            this.RenderLine(rect.TopLeftBottomRightDiagonal(pen));
+            this.RenderLine(rect.BottomLeftTopRightDiagonal(pen));
         }
     }
 }

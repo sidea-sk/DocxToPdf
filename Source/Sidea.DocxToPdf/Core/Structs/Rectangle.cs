@@ -59,23 +59,23 @@ namespace Sidea.DocxToPdf.Core
         public Point BottomRight { get; }
         public Point BottomLeft { get; }
 
-        public Line TopLine(Drawing.Color? color)
-            => new Line(this.TopLeft, this.TopRight, color: color);
+        public Line TopLine(Drawing.Pen? pen)
+            => new Line(this.TopLeft, this.TopRight, pen: pen);
 
-        public Line RightLine(Drawing.Color? color)
-            => new Line(this.TopRight, this.BottomRight, color: color);
+        public Line RightLine(Drawing.Pen? pen)
+            => new Line(this.TopRight, this.BottomRight, pen: pen);
 
-        public Line BottomLine(Drawing.Color? color)
-            => new Line(this.BottomRight, this.BottomLeft, color: color);
+        public Line BottomLine(Drawing.Pen? pen)
+            => new Line(this.BottomRight, this.BottomLeft, pen: pen);
 
-        public Line LeftLine(Drawing.Color? color)
-            => new Line(this.BottomLeft, this.TopLeft, color: color);
+        public Line LeftLine(Drawing.Pen? pen)
+            => new Line(this.BottomLeft, this.TopLeft, pen: pen);
 
-        public Line TopLeftBottomRightDiagonal(Drawing.Color? color)
-            => new Line(this.TopLeft, this.BottomRight, color: color);
+        public Line TopLeftBottomRightDiagonal(Drawing.Pen? pen)
+            => new Line(this.TopLeft, this.BottomRight, pen: pen);
 
-        public Line BottomLeftTopRightDiagonal(Drawing.Color? color)
-            => new Line(this.BottomLeft, this.TopRight, color: color);
+        public Line BottomLeftTopRightDiagonal(Drawing.Pen? pen)
+            => new Line(this.BottomLeft, this.TopRight, pen: pen);
 
         public Size Size { get; }
 
