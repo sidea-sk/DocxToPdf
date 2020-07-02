@@ -64,6 +64,7 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        [Ignore]
         public void TableAlignment()
         {
             this.Generate(nameof(TableAlignment));

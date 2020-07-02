@@ -18,7 +18,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 
         private Cell(IEnumerable<ContainerElement> childs, GridPosition gridPosition, BorderStyle borderStyle)
         {
-            _contentMargin = new Margin(1, 3, 1, 5);
+            _contentMargin = new Margin(0, 0, 0, 0);
             _childs = childs.ToArray();
             _borderStyle = borderStyle;
 
@@ -48,6 +48,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
                 availableRegion = currentPageContext.Region.Clip(lastPage.BottomLeft);
             }
 
+            // fix this!
             this.ResetPageRegionsFrom(_childs, _contentMargin);
         }
 
