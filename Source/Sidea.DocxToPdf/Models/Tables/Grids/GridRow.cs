@@ -5,14 +5,12 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 {
     internal class GridRow
     {
-        public GridRow(double defaultHeight, HeightRuleValues heightRule)
+        public GridRow(double height, HeightRuleValues heightRule)
         {
-            this.MinimalHeight = defaultHeight;
-            this.Height = defaultHeight;
+            this.Height = height;
             this.HeightRule = heightRule;
         }
 
-        public double MinimalHeight { get; private set; }
         public double Height { get; private set; }
 
         public HeightRuleValues HeightRule { get; }
