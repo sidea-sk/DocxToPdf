@@ -5,7 +5,7 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class SectionTests : TestBase
     {
-        public SectionTests() : base("Sections")
+        public SectionTests() : base("Sections", useNextGeneration: true)
         {
         }
 
@@ -31,6 +31,12 @@ namespace Sidea.DocxToPdf.Tests
         public void Columns()
         {
             this.Generate(nameof(Columns));
+        }
+
+        [TestMethod]
+        public void TextOverMultipleColumns()
+        {
+            this.Generate(nameof(TextOverMultipleColumns));
         }
 
         [TestMethod]

@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
-using Sidea.DocxToPdf.Models.Styles;
 using Sidea.DocxToPdf.Models.Tables.Borders;
-using Sidea.DocxToPdf.Models.Tables.Builders;
 using Sidea.DocxToPdf.Models.Tables.Elements;
 using Sidea.DocxToPdf.Models.Tables.Grids;
-using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Models.Tables
 {
@@ -17,7 +14,7 @@ namespace Sidea.DocxToPdf.Models.Tables
         private readonly Grid _grid;
         private readonly TableBorderStyle _tableBorder;
 
-        private Table(IEnumerable<Cell> cells, Grid grid, TableBorderStyle tableBorder)
+        public Table(IEnumerable<Cell> cells, Grid grid, TableBorderStyle tableBorder)
         {
             _cells = cells.ToArray();
             _grid = grid;
@@ -56,23 +53,6 @@ namespace Sidea.DocxToPdf.Models.Tables
         {
             _cells.Render(renderer);
             new Border(_tableBorder, _grid).Render(_cells, renderer);
-        }
-
-        public static Table From(Word.Table wordTable, IStyleFactory styleFactory)
-        {
-            var grid = wordTable.InitializeGrid();
-            var cells = wordTable
-                .InitializeCells(styleFactory)
-                .OrderBy(c => c.GridPosition.Row)
-                .ThenBy(c => c.GridPosition.Column)
-                .ToArray();
-
-            var tableBorder = wordTable
-                .Properties()
-                .TableBorders
-                .GetBorder();
-
-            return new Table(cells, grid, tableBorder);
         }
     }
 }

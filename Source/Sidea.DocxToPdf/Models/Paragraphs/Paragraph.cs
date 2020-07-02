@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Paragraphs.Builders;
 using Sidea.DocxToPdf.Models.Styles;
-using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 using static Sidea.DocxToPdf.Models.FieldUpdateResult;
-using System;
-using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
@@ -19,25 +17,11 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         private FixedDrawing[] _fixedDrawings = new FixedDrawing[0];
         private Stack<LineElement> _unprocessedElements = new Stack<LineElement>();
 
-        private Paragraph(IEnumerable<LineElement> elements, IEnumerable<FixedDrawing> fixedDrawings, IStyleFactory styleFactory)
+        public Paragraph(IEnumerable<LineElement> elements, IEnumerable<FixedDrawing> fixedDrawings, IStyleFactory styleFactory)
         {
             _unprocessedElements = elements.ToStack();
             _fixedDrawings = fixedDrawings.ToArray();
             _styleFactory = styleFactory;
-        }
-
-        public static Paragraph Create(Word.Paragraph paragraph, IStyleFactory styleFactory)
-        {
-            var paragraphStyleFactory = styleFactory.ForParagraph(paragraph.ParagraphProperties);
-            var fixedDrawings = paragraph
-                .CreateFixedDrawingElements()
-                .OrderBy(d => d.BoundingBox.Y)
-                .ToArray();
-
-            var elements = paragraph
-                .CreateParagraphElements(paragraphStyleFactory);
-
-            return new Paragraph(elements, fixedDrawings, paragraphStyleFactory);
         }
 
         private ParagraphStyle ParagraphStyle => _styleFactory.ParagraphStyle;
