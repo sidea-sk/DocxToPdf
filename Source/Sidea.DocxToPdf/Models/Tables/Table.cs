@@ -20,7 +20,14 @@ namespace Sidea.DocxToPdf.Models.Tables
             _grid = grid;
         }
 
-        public override void Prepare(PageContext pageContext, Func<PageNumber, ContainerElement, PageContext> pageFactory)
+        private IEnumerable<Cell> PreparationOrderedCells => _cells
+            .OrderBy(c => c.GridPosition.RowSpan) // start with smalles cells
+            .ThenBy(c => c.GridPosition.Row)      // from top
+            .ThenBy(c => c.GridPosition.Column);  // from left
+
+        public override void Prepare(
+            PageContext pageContext,
+            Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
             var currentPageContext = pageContext;
 
@@ -28,14 +35,15 @@ namespace Sidea.DocxToPdf.Models.Tables
                 => this.OnCellNewPage(pageNumber, (Cell)childElement, pageFactory);
 
             Rectangle availableRegion = pageContext.Region;
-            foreach (var cell in _cells)
+            foreach (var cell in this.PreparationOrderedCells)
             {
-                var cellPageContext = this.CreatePageContextForCell(currentPageContext, cell);
+                var cellPageContext = this.CreatePageContextForCell(currentPageContext, cell, pageFactory);
                 cell.Prepare(cellPageContext, onNewPage);
+
+                _grid.JustifyGridRows(cell.GridPosition, cell.PageRegions);
             }
 
             // update rowHeights
-
             // update cells
 
             this.ResetPageRegionsFrom(_cells);
@@ -48,31 +56,37 @@ namespace Sidea.DocxToPdf.Models.Tables
 
         private PageContext OnCellNewPage(PageNumber pageNumber, Cell cell, Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
-            return pageFactory(pageNumber, this);
+            var pageContext = pageFactory(pageNumber, this);
+            return this.CreatePageContextForCell(pageContext, cell, pageFactory);
         }
 
-        private PageContext CreatePageContextForCell(PageContext fromPageContext, Cell cell)
+        private PageContext CreatePageContextForCell(
+            PageContext fromPageContext,
+            Cell cell,
+            Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
-            var previousCellPageRegion = this.FindTopPreviousCell(cell.GridPosition);
+            var absoluteOffset = _grid.RowAbsoluteOffset(cell.GridPosition);
+            var rowContext = this.GetPageForRowOffset(absoluteOffset, fromPageContext, pageFactory);
+
             var horizontalSpace = _grid.CalculateCellSpace(cell.GridPosition);
 
-            var xOffset = fromPageContext.Region.X + horizontalSpace.X;
-            var yOffset = fromPageContext.PageNumber == previousCellPageRegion.PageNumber
-                ? previousCellPageRegion.Region.Y + previousCellPageRegion.Region.Height
-                : fromPageContext.Region.Y;
-
-            var cellPageContext = fromPageContext
-                    .Clip(new Point(xOffset, yOffset), horizontalSpace.Width);
-
-            return cellPageContext;
+            return rowContext.Crop(horizontalSpace);
         }
 
-        private PageRegion FindTopPreviousCell(GridPosition toGridPosition)
+        private PageContext GetPageForRowOffset(double rowOffset, PageContext currentPageContext, Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
-            var cell = _cells
-                .FirstOrDefault(c => c.GridPosition.IsInColumn(toGridPosition.Column) && c.GridPosition.IsInRow(toGridPosition.Row - 1));
+            var remainingOffset = rowOffset;
+            var ct = currentPageContext;
+            do
+            {
+                if (ct.Region.Height > remainingOffset)
+                {
+                    return ct.Crop(remainingOffset, 0, 0, 0);
+                }
 
-            return cell?.LastPageRegion ?? PageRegion.None;
+                remainingOffset -= ct.Region.Height;
+                ct = pageFactory(currentPageContext.PageNumber, this);
+            } while (true);
         }
 
         public static Table From(Word.Table wordTable, IStyleFactory styleFactory)

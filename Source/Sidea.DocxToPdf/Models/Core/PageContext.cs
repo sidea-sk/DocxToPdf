@@ -22,19 +22,11 @@ namespace Sidea.DocxToPdf.Models
 
         public DocumentPosition TopLeft { get; }
 
-        public PageContext Clip()
-        {
-            return this;
-        }
-
         public PageContext Crop(Margin margin)
             => this.Crop(margin.Top, margin.Right, margin.Bottom, margin.Left);
 
-        public PageContext Clip(Point point, double width)
-        {
-            var region = this.Region.Clip(point, width);
-            return this.WithRegion(region);
-        }
+        public PageContext Crop(HorizontalSpace space)
+            => this.Crop(0, this.Region.Width - space.X - space.Width, 0, space.X);
 
         public PageContext Crop(double top, double right, double bottom, double left)
         {

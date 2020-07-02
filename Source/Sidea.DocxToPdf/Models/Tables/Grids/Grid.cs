@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
@@ -8,6 +9,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
     internal class Grid
     {
         private readonly double[] _columnWidths;
+        private readonly double[] _rowHeights;
         private readonly GridRow[] _gridRows;
 
         public Grid(
@@ -16,6 +18,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
         {
             _columnWidths = columnWidths.ToArray();
             _gridRows = rowHeights.ToArray();
+            _rowHeights = rowHeights.Select(r => r.Height).ToArray();
         }
 
         public int ColumnsCount => _columnWidths.Length;
@@ -29,7 +32,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
             return new HorizontalSpace(offset, width);
         }
 
-        public double CalculateLeftOffset(GridPosition position)
+        private double CalculateLeftOffset(GridPosition position)
         {
             var width = _columnWidths
                .Take(position.Column)
@@ -38,7 +41,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
             return width; 
         }
 
-        public double CalculateWidth(GridPosition position)
+        private double CalculateWidth(GridPosition position)
         {
             var width = _columnWidths
                .Skip(position.Column)
@@ -48,8 +51,16 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
             return width;
         }
 
-        public double RowHeight(int rowIndex) => _gridRows[rowIndex].Height;
+        public double RowAbsoluteOffset(GridPosition position)
+            => _rowHeights
+                    .Take(position.Row)
+                    .Sum();
 
-        public double RowOffset(int rowIndex) => _gridRows.Take(rowIndex).Sum(r => r.Height);
+        public void JustifyGridRows(GridPosition position, IReadOnlyCollection<PageRegion> pageRegions)
+        {
+            var totalHeightOfCell = pageRegions.Sum(pr => pr.Region.Height);
+
+            _rowHeights[position.Row] = Math.Max(totalHeightOfCell, _rowHeights[position.Row]);
+        }
     }
 }

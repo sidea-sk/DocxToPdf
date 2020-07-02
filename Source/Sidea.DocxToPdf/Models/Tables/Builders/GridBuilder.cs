@@ -36,7 +36,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Builders
                 .ChildsOfType<Word.TableRowHeight>()
                 .FirstOrDefault();
 
-            var rowHeight = trh?.Val.DxaToPoint() ?? 200;
+            var rowHeight = trh?.Val.DxaToPoint() ?? 10;
             var rule = trh?.HeightType?.Value ?? Word.HeightRuleValues.Auto;
 
             return new GridRow(rowHeight, rule);
