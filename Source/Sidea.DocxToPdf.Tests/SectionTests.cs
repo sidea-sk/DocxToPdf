@@ -10,6 +10,18 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        public void DefaultMargins()
+        {
+            this.Generate(nameof(DefaultMargins));
+        }
+
+        [TestMethod]
+        public void ResizedMargins()
+        {
+            this.Generate(nameof(ResizedMargins));
+        }
+
+        [TestMethod]
         public void Margins()
         {
             this.Generate(nameof(Margins));
