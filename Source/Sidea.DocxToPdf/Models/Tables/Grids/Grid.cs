@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
+using Sidea.DocxToPdf.Models.Tables.Borders;
 
-namespace Sidea.DocxToPdf.Models.Tables.Elements
+namespace Sidea.DocxToPdf.Models.Tables.Grids
 {
     internal class Grid
     {
@@ -20,13 +21,11 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
             _gridRows = rowHeights.ToArray();
         }
 
-        public int ColumnsCount => _columnWidths.Length;
-
-        public int RowsCount => _gridRows.Length;
-
         public Func<PageNumber, PageContext> PageFactory { get; set; }
 
-        
+        public int ColumnCount => _columnWidths.Length;
+
+        public int RowCount => _gridRows.Length;
 
         public void ResetPageContexts(PageContext startOn)
         {
@@ -44,25 +43,6 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
             _pageContexts.Add(pageContext);
         }
 
-        private HorizontalSpace CalculateCellSpace(GridPosition gridPosition)
-        {
-            var offset = _columnWidths
-               .Take(gridPosition.Column)
-               .Aggregate(0d, (col, acc) => acc + col);
-
-            var width = _columnWidths
-              .Skip(gridPosition.Column)
-              .Take(gridPosition.ColumnSpan)
-              .Aggregate(0.0, (col, acc) => acc + col);
-
-            return new HorizontalSpace(offset, width);
-        }
-
-        private double RowAbsoluteOffset(GridPosition position)
-            => _gridRows
-                    .Take(position.Row)
-                    .Sum(gr => gr.Height);
-
         public PageContext CreatePageContextForCell(GridPosition position)
         {
             var rowPageContext = this.CreateRowPageContext(position);
@@ -74,9 +54,9 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
         public PageContext CreatePageContextForCell(GridPosition position, PageNumber onPage)
         {
             var rowPageContext = this.CreateRowPageContext(position);
-            while(rowPageContext.PageNumber != onPage)
+            while (rowPageContext.PageNumber != onPage)
             {
-                rowPageContext = this.GetPageContext(rowPageContext.PageNumber.Next());
+                rowPageContext = this.GetOrCreatePageContext(rowPageContext.PageNumber.Next());
             }
 
             var horizontalSpace = this.CalculateCellSpace(position);
@@ -93,23 +73,85 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
                 return;
             }
 
-            var affectedRows = _gridRows
-                .Skip(position.Row)
-                .Take(position.RowSpan)
+            var affectedRows = this.GetRowsInPosition(position)
                 .ToArray();
 
             var rowsSum = affectedRows.Sum(r => r.Height);
-            if(rowsSum > totalHeightOfCell)
+            if (rowsSum > totalHeightOfCell)
             {
                 return;
             }
 
             var distribution = Distribute(affectedRows.Select(r => r.Height).ToArray(), totalHeightOfCell - rowsSum);
-            for(var i = 0; i < distribution.Length; i++)
+            for (var i = 0; i < distribution.Length; i++)
             {
                 affectedRows[i].Expand(distribution[i]);
             }
         }
+
+        private HorizontalSpace CalculateCellSpace(GridPosition position)
+        {
+            var offset = _columnWidths
+               .Take(position.Column)
+               .Aggregate(0d, (col, acc) => acc + col);
+
+            var width = _columnWidths
+              .Skip(position.Column)
+              .Take(position.ColumnSpan)
+              .Aggregate(0.0, (col, acc) => acc + col);
+
+            return new HorizontalSpace(offset, width);
+        }
+
+        public HorizontalSpace CalculateAbsoluteCellSpace(GridPosition position)
+        {
+            var space = this.CalculateCellSpace(position);
+            var baseX = _pageContexts.FirstOrDefault()?.Region.X ?? 0.0;
+
+            return new HorizontalSpace(baseX + space.X, space.Width);
+        }
+
+        public IEnumerable<VerticalSpace> CalcualteAbsouluteVerticalSpaces(GridPosition position)
+        {
+            var rows = this
+                .GetRowsInPosition(position)
+                .ToArray();
+
+            var offset = this.RowAbsoluteOffset(position.RowIndeces.ElementAt(0));
+            var remainingHeight = rows.Sum(r => r.Height);
+
+            var coordinates = new List<VerticalSpace>();
+            foreach (var pg in _pageContexts)
+            {
+                if (pg.Region.Height < offset)
+                {
+                    offset -= pg.Region.Height;
+                    continue;
+                }
+
+                var regionHeight = pg.Region.Height - offset;
+                var h = Math.Min(regionHeight, remainingHeight);
+                coordinates.Add(new VerticalSpace(pg.PageNumber, pg.Region.Y + offset, h));
+
+                offset = 0;
+                remainingHeight -= h;
+
+                if (remainingHeight == 0)
+                {
+                    break;
+                }
+            }
+
+            return coordinates;
+        }
+
+        private double RowAbsoluteOffset(GridPosition position)
+            => this.RowAbsoluteOffset(position.Row);
+
+        private double RowAbsoluteOffset(int rowIndex)
+                => _gridRows
+                    .Take(rowIndex)
+                    .Sum(gr => gr.Height);
 
         private PageContext CreateRowPageContext(GridPosition position)
         {
@@ -124,14 +166,14 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
                 }
 
                 rowOffset -= pc.Region.Height;
-                pc = this.GetPageContext(pc.PageNumber.Next());
+                pc = this.GetOrCreatePageContext(pc.PageNumber.Next());
             } while (true);
         }
 
-        private PageContext GetPageContext(PageNumber fromPageNumber)
+        private PageContext GetOrCreatePageContext(PageNumber fromPageNumber)
         {
             var pageContext = _pageContexts.FirstOrDefault(pg => pg.PageNumber == fromPageNumber);
-            if(pageContext != null)
+            if (pageContext != null)
             {
                 return pageContext;
             }
@@ -161,5 +203,14 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 
             return copy.ToArray();
         }
+
+        private IEnumerable<GridRow> GetRowsInPosition(GridPosition position)
+        {
+            return _gridRows
+                .Skip(position.Row)
+                .Take(position.RowSpan);
+        }
+
+       
     }
 }

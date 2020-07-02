@@ -1,7 +1,7 @@
 ﻿using System;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace Sidea.DocxToPdf.Models.Tables.Elements
+namespace Sidea.DocxToPdf.Models.Tables.Grids
 {
     internal class GridRow
     {

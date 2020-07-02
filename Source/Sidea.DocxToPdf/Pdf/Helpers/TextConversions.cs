@@ -2,6 +2,7 @@
 using PdfSharp.Drawing;
 using Sidea.DocxToPdf.Core;
 
+using Drawing = System.Drawing;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Pdf
@@ -29,8 +30,13 @@ namespace Sidea.DocxToPdf.Pdf
         }
 
         public static XPen GetXPen(this Line line)
+            => line.Pen.ToXPen();
+        
+        public static XPen ToXPen(this Drawing.Pen pen)
         {
-            return new XPen(line.Color.ToXColor(), line.Width);
+            var xPen = new XPen(pen.Color.ToXColor(), pen.Width);
+            xPen.DashStyle = (XDashStyle)pen.DashStyle;
+            return xPen;
         }
 
         private static XColor ToXColor(this Word.Color color)

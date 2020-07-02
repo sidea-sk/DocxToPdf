@@ -4,6 +4,10 @@ namespace Sidea.DocxToPdf.Models.Common
 {
     internal class BorderStyle
     {
+        public BorderStyle(Pen all) : this(all, all, all, all)
+        {
+        }
+
         public BorderStyle(Pen top,Pen right, Pen bottom, Pen left)
         {
             this.Top = top;

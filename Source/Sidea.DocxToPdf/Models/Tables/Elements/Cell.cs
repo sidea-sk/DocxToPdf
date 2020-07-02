@@ -5,7 +5,7 @@ using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
 using Sidea.DocxToPdf.Models.Styles;
 using Sidea.DocxToPdf.Models.Tables.Builders;
-
+using Sidea.DocxToPdf.Models.Tables.Grids;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Models.Tables.Elements
@@ -56,7 +56,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
         public override void Render(IRenderer renderer)
         {
             _childs.Render(renderer);
-            this.RenderBordersIf(renderer, true);
+            // this.RenderBordersIf(renderer, true);
         }
 
         public static Cell From(

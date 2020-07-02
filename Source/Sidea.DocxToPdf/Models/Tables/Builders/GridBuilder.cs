@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Sidea.DocxToPdf.Models.Tables.Elements;
-
+using Sidea.DocxToPdf.Models.Tables.Grids;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Models.Tables.Builders

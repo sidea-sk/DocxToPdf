@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Sidea.DocxToPdf.Models.Tables.Elements
+namespace Sidea.DocxToPdf.Models.Tables.Grids
 {
     [DebuggerDisplay("{Column}({ColumnSpan})-{Row}({RowSpan})")]
     internal class GridPosition
