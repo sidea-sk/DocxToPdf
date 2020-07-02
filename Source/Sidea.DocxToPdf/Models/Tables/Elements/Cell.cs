@@ -12,43 +12,44 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 {
     internal class Cell : ContainerElement
     {
-        private readonly BorderStyle _borderStyle;
         private readonly Margin _contentMargin;
         private ContainerElement[] _childs = new ContainerElement[0];
 
         private Cell(IEnumerable<ContainerElement> childs, GridPosition gridPosition, BorderStyle borderStyle)
         {
-            _contentMargin = new Margin(0, 0, 0, 0);
+            _contentMargin = new Margin(1, 4, 1, 4);
             _childs = childs.ToArray();
-            _borderStyle = borderStyle;
 
             this.GridPosition = gridPosition;
+            this.BorderStyle = borderStyle;
         }
 
         public GridPosition GridPosition { get; }
+        public BorderStyle BorderStyle { get; }
 
         public override void Prepare(PageContext pageContext, Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
             var currentPageContext = pageContext
-                .Crop(_contentMargin);
+                .Crop(_contentMargin.Top, _contentMargin.Right, 0, _contentMargin.Left);
 
             Func<PageNumber, ContainerElement, PageContext> onNewPage = (pageNumber, childElement) =>
             {
-                var c = pageFactory(pageNumber, this);
-                currentPageContext = c.Crop(_contentMargin);
-                return c;
+                currentPageContext = pageFactory(pageNumber, this);
+                return currentPageContext.Crop(0, _contentMargin.Right, 0, _contentMargin.Left);
             };
 
             Rectangle availableRegion = currentPageContext.Region;
+
             foreach (var child in _childs)
             {
                 child.Prepare(new PageContext(currentPageContext.PageNumber, availableRegion, currentPageContext.PageVariables), onNewPage);
                 var lastPage = child.LastPageRegion.Region;
 
-                availableRegion = currentPageContext.Region.Clip(lastPage.BottomLeft);
+                availableRegion = currentPageContext
+                    .Region
+                    .Clip(lastPage.BottomLeft);
             }
 
-            // fix this!
             this.ResetPageRegionsFrom(_childs, _contentMargin);
         }
 

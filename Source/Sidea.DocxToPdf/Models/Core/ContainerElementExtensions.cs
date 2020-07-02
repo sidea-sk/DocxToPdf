@@ -7,24 +7,33 @@ namespace Sidea.DocxToPdf.Models
 {
     internal static class ContainerElementExtensions
     {
-        public static IEnumerable<PageRegion> UnionPageRegions(this IEnumerable<ContainerElement> elements)
-            => elements.UnionPageRegions(Margin.None);
+        public static IEnumerable<PageRegion> UnionPageRegions(this IEnumerable<ContainerElement> elements, Margin contentMargin = null)
+            => elements.UnionPageRegionsCore(contentMargin ?? Margin.None);
 
-        public static IEnumerable<PageRegion> UnionPageRegions(this IEnumerable<ContainerElement> elements, Margin margin)
+        private static IEnumerable<PageRegion> UnionPageRegionsCore(this IEnumerable<ContainerElement> elements, Margin contentMargin)
         {
             var pageRegions = elements
                 .SelectMany(c => c.PageRegions)
                 .GroupBy(pr => pr.PageNumber)
                 .Select(grp =>
                 {
-                    var rectangle = Rectangle.Union(grp.Select(r => r.Region.Inflate(margin.Top, margin.Right, margin.Bottom, margin.Left)));
+                    var rectangle = Rectangle.Union(grp.Select(r => r.Region));
                     return new PageRegion(grp.Key, rectangle);
+                })
+                .Select((pr, i) =>
+                {
+                    var top = i == 0
+                        ? contentMargin.Top
+                        : 0;
+                    var npr = new PageRegion(pr.PageNumber, pr.Region.Inflate(top, contentMargin.Right, 0, contentMargin.Left));
+                    return npr;
                 })
                 .ToArray();
 
+            var last = pageRegions.Last();
+            pageRegions[pageRegions.Length - 1] = new PageRegion(last.PageNumber, last.Region.Inflate(0, 0, contentMargin.Bottom, 0));
+
             return pageRegions;
         }
-
-        
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models.Sections
 {
@@ -33,6 +34,14 @@ namespace Sidea.DocxToPdf.Models.Sections
         public bool RequiresNewPage { get; }
         public bool HasTitlePage { get; }
         public IReadOnlyCollection<SectionColumnConfig> ColumnConfigs { get; }
+
+        public HorizontalSpace CalculateColumnSpace(int columnIndex)
+        {
+            var xOffset = this.ColumnOffset(columnIndex);
+            var width = this.ColumnWidth(columnIndex);
+
+            return new HorizontalSpace(xOffset, width);
+        }
 
         public double ColumnOffset(int columnIndex)
         {

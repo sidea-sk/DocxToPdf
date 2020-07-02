@@ -84,15 +84,13 @@ namespace Sidea.DocxToPdf.Models.Sections
             Variables documentVariables)
         {
             var page = _pages.Single(p => p.PageNumber == pageNumber);
-            var xOffset = _properties.ColumnOffset(columnIndex) + page.Margin.Left;
-            var width = _properties.ColumnWidth(columnIndex);
+            var columnSpace = _properties.CalculateColumnSpace(columnIndex);
 
             var y = Math.Max(page.Margin.Top, occupiedRegion.BottomY);
 
             var content = page
                 .GetContentRegion()
-                .Clip(new Point(0, y))
-                .CropHorizontal(xOffset, width);
+                .CropHorizontal(columnSpace.X, columnSpace.Width);
 
             return new PageContext(pageNumber, content, documentVariables);
         }

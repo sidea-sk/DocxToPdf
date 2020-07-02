@@ -36,7 +36,7 @@ namespace Sidea.DocxToPdf.Models
         protected void ResetPageRegionsFrom(IEnumerable<ContainerElement> children, Margin contentMargin = null)
         {
             _pageRegions = children
-                .UnionPageRegions(contentMargin ?? Margin.None)
+                .UnionPageRegions(contentMargin)
                 .ToArray();
         }
 

@@ -6,7 +6,7 @@ using Drawing = System.Drawing;
 
 namespace Sidea.DocxToPdf.Core
 {
-    [DebuggerDisplay("{TopLeft} - {BottomRight}: {Width}x{Height}")]
+    [DebuggerDisplay("{TopLeft}: {Width}x{Height}")]
     internal struct Rectangle
     {
         public static readonly Rectangle Empty = new Rectangle(0, 0, 0, 0);
@@ -103,7 +103,7 @@ namespace Sidea.DocxToPdf.Core
             => new Rectangle(this.X + left, this.Y + top, this.Width - left - right, this.Height - top - bottom);
 
         public Rectangle CropHorizontal(double left, double width)
-            => new Rectangle(this.X + left, this.Y, this.Width - width, this.Height);
+            => new Rectangle(this.X + left, this.Y, width, this.Height);
 
         public Rectangle Clip(Point topLeft)
         { 
