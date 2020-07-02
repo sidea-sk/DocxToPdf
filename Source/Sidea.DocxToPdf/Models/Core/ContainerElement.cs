@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models
 {
@@ -32,10 +33,10 @@ namespace Sidea.DocxToPdf.Models
                 .ToArray();
         }
 
-        protected void ResetPageRegionsFrom(IEnumerable<ContainerElement> children)
+        protected void ResetPageRegionsFrom(IEnumerable<ContainerElement> children, Margin contentMargin = null)
         {
             _pageRegions = children
-                .UnionPageRegions()
+                .UnionPageRegions(contentMargin ?? Margin.None)
                 .ToArray();
         }
 

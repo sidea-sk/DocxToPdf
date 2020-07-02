@@ -96,6 +96,9 @@ namespace Sidea.DocxToPdf.Core
         public Rectangle Expand(double width, double height)
             => new Rectangle(this.X, this.Y, this.Width + width, this.Height + height);
 
+        public Rectangle Inflate(double top, double right, double bottom, double left)
+            => new Rectangle(this.X - left, this.Y - top, this.Width + left + right, this.Height + top + bottom);
+
         public Rectangle Crop(double top, double right, double bottom, double left)
             => new Rectangle(this.X + left, this.Y + top, this.Width - left - right, this.Height - top - bottom);
 

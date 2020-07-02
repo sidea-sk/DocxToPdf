@@ -18,9 +18,10 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 
         private Cell(IEnumerable<ContainerElement> childs, GridPosition gridPosition, BorderStyle borderStyle)
         {
-            _contentMargin = new Margin(1, 3, 1, 3);
+            _contentMargin = new Margin(1, 3, 1, 5);
             _childs = childs.ToArray();
             _borderStyle = borderStyle;
+
             this.GridPosition = gridPosition;
         }
 
@@ -28,16 +29,17 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 
         public override void Prepare(PageContext pageContext, Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
-            var currentPageContext = pageContext;
+            var currentPageContext = pageContext
+                .Crop(_contentMargin);
 
             Func<PageNumber, ContainerElement, PageContext> onNewPage = (pageNumber, childElement) =>
             {
                 var c = pageFactory(pageNumber, this);
-                currentPageContext = c;
+                currentPageContext = c.Crop(_contentMargin);
                 return c;
             };
 
-            Rectangle availableRegion = pageContext.Region;
+            Rectangle availableRegion = currentPageContext.Region;
             foreach (var child in _childs)
             {
                 child.Prepare(new PageContext(currentPageContext.PageNumber, availableRegion, currentPageContext.PageVariables), onNewPage);
@@ -46,7 +48,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
                 availableRegion = currentPageContext.Region.Clip(lastPage.BottomLeft);
             }
 
-            this.ResetPageRegionsFrom(_childs);
+            this.ResetPageRegionsFrom(_childs, _contentMargin);
         }
 
         public override void Render(IRenderer renderer)

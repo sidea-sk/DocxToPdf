@@ -29,64 +29,28 @@ namespace Sidea.DocxToPdf.Models.Tables
             PageContext pageContext,
             Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
-            var currentPageContext = pageContext;
+            _grid.ResetPageContexts(pageContext);
+            _grid.PageFactory = (PageNumber pn) => pageFactory(pn, this);
 
             Func<PageNumber, ContainerElement, PageContext> onNewPage = (pageNumber, childElement)
-                => this.OnCellNewPage(pageNumber, (Cell)childElement, pageFactory);
+                => _grid.CreatePageContextForCell(((Cell)childElement).GridPosition, pageNumber);
 
             Rectangle availableRegion = pageContext.Region;
             foreach (var cell in this.PreparationOrderedCells)
             {
-                var cellPageContext = this.CreatePageContextForCell(currentPageContext, cell, pageFactory);
+                var cellPageContext = _grid.CreatePageContextForCell(cell.GridPosition);
                 cell.Prepare(cellPageContext, onNewPage);
 
                 _grid.JustifyGridRows(cell.GridPosition, cell.PageRegions);
             }
 
-            // update rowHeights
-            // update cells
-
+            _grid.PageFactory = null;
             this.ResetPageRegionsFrom(_cells);
         }
 
         public override void Render(IRenderer renderer)
         {
             _cells.Render(renderer);
-        }
-
-        private PageContext OnCellNewPage(PageNumber pageNumber, Cell cell, Func<PageNumber, ContainerElement, PageContext> pageFactory)
-        {
-            var pageContext = pageFactory(pageNumber, this);
-            return this.CreatePageContextForCell(pageContext, cell, pageFactory);
-        }
-
-        private PageContext CreatePageContextForCell(
-            PageContext fromPageContext,
-            Cell cell,
-            Func<PageNumber, ContainerElement, PageContext> pageFactory)
-        {
-            var absoluteOffset = _grid.RowAbsoluteOffset(cell.GridPosition);
-            var rowContext = this.GetPageForRowOffset(absoluteOffset, fromPageContext, pageFactory);
-
-            var horizontalSpace = _grid.CalculateCellSpace(cell.GridPosition);
-
-            return rowContext.Crop(horizontalSpace);
-        }
-
-        private PageContext GetPageForRowOffset(double rowOffset, PageContext currentPageContext, Func<PageNumber, ContainerElement, PageContext> pageFactory)
-        {
-            var remainingOffset = rowOffset;
-            var ct = currentPageContext;
-            do
-            {
-                if (ct.Region.Height > remainingOffset)
-                {
-                    return ct.Crop(remainingOffset, 0, 0, 0);
-                }
-
-                remainingOffset -= ct.Region.Height;
-                ct = pageFactory(currentPageContext.PageNumber, this);
-            } while (true);
         }
 
         public static Table From(Word.Table wordTable, IStyleFactory styleFactory)
