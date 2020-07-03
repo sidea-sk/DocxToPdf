@@ -13,19 +13,14 @@ namespace Sidea.DocxToPdf.Models.Sections.Columns
             _columns = columns.ToArray();
         }
 
+        public int ColumnsCount => _columns.Length;
+
         public HorizontalSpace CalculateColumnSpace(int columnIndex)
         {
             var xOffset = this.ColumnOffset(columnIndex);
             var width = this.ColumnWidth(columnIndex);
 
             return new HorizontalSpace(xOffset, width);
-        }
-
-        public PagePosition GetNextPagePosition(PagePosition currentPosition)
-        {
-            return currentPosition.PageColumn < _columns.Length - 1
-                ? currentPosition.NextColumn()
-                : currentPosition.NewPage();
         }
 
         private double ColumnOffset(int columnIndex)

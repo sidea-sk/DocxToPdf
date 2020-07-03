@@ -5,23 +5,37 @@ namespace Sidea.DocxToPdf.Models.Common
 {
     internal class PagePosition : IEquatable<PagePosition>, IComparable<PagePosition>
     {
-        public static readonly PagePosition None = new PagePosition(PageNumber.None, -1);
+        public static readonly PagePosition None = new PagePosition(PageNumber.None, -1, 0);
+        private readonly int _totalColumns;
 
-        public PagePosition(PageNumber pageNumber, int column)
+        public PagePosition(PageNumber pageNumber, int column, int totalColumns)
         {
             this.PageNumber = pageNumber;
             this.PageColumn = column;
+            _totalColumns = totalColumns;
         }
 
         public PageNumber PageNumber { get; }
 
         public int PageColumn { get; }
 
-        public PagePosition NextColumn()
-            => new PagePosition(this.PageNumber, this.PageColumn + 1);
+        public PagePosition Next()
+        {
+            if(_totalColumns <= 0)
+            {
+                throw new Exception("Total Columns is zero");
+            }
 
-        public PagePosition NewPage()
-            => new PagePosition(this.PageNumber.Next(), 0);
+            return this.PageColumn == _totalColumns - 1
+                ? this.NewPage()
+                : this.NextColumn();
+        }
+
+        private PagePosition NextColumn()
+            => new PagePosition(this.PageNumber, this.PageColumn + 1, _totalColumns);
+
+        private PagePosition NewPage()
+            => new PagePosition(this.PageNumber.Next(), 0, _totalColumns);
 
         public int CompareTo(PagePosition other)
         {

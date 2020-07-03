@@ -64,6 +64,24 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        public void TableInSectionColumns()
+        {
+            this.Generate(nameof(TableInSectionColumns));
+        }
+
+        [TestMethod]
+        public void TableOverSectionColumns()
+        {
+            this.Generate(nameof(TableOverSectionColumns));
+        }
+
+        [TestMethod]
+        public void TableOverSectionColumnsOverPages()
+        {
+            this.Generate(nameof(TableOverSectionColumnsOverPages));
+        }
+
+        [TestMethod]
         [Ignore]
         public void TableAlignment()
         {

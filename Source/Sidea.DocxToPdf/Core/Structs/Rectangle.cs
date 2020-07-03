@@ -52,6 +52,7 @@ namespace Sidea.DocxToPdf.Core
         public double Width { get; }
         public double Height { get; }
 
+        public double RightX => this.X + this.Width;
         public double BottomY => this.Y + this.Height;
 
         public Point TopLeft { get; }

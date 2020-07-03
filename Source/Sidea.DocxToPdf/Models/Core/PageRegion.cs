@@ -14,7 +14,6 @@ namespace Sidea.DocxToPdf.Models
         }
 
         public PagePosition PagePosition { get; }
-        // public PageNumber PageNumber { get; }
         public Rectangle Region { get; }
     }
 }

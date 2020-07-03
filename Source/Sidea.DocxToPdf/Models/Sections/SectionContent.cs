@@ -86,14 +86,14 @@ namespace Sidea.DocxToPdf.Models.Sections
             {
                 case SectionBreak.Column:
                     {
-                        this.LastPagePosition = _columnsConfiguration.GetNextPagePosition(previousContentPosition);
+                        this.LastPagePosition = previousContentPosition.Next();
                         return this.CreateContextForPagePosition(this.LastPagePosition, Rectangle.Empty, pageFactory);
                     }
                 case SectionBreak.Page:
                 case SectionBreak.None:
                     {
                         var pn = previousContentPosition.PageNumber.Next();
-                        this.LastPagePosition = new PagePosition(pn, 0);
+                        this.LastPagePosition = new PagePosition(pn, 0, _columnsConfiguration.ColumnsCount);
                         return this.CreateContextForPagePosition(this.LastPagePosition, Rectangle.Empty, pageFactory);
                     }
                 default:
@@ -105,7 +105,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             PagePosition pagePosition,
             Func<PageNumber, IPage> pageFactory)
         {
-            var nextPosition = _columnsConfiguration.GetNextPagePosition(pagePosition);
+            var nextPosition = pagePosition.Next();
             var context = this.CreateContextForPagePosition(nextPosition, Rectangle.Empty, pageFactory);
             return context;
         }

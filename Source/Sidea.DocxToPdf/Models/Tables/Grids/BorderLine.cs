@@ -1,10 +1,11 @@
 ﻿using Sidea.DocxToPdf.Core;
+using Drawing = System.Drawing;
 
-namespace Sidea.DocxToPdf.Models.Tables.Borders
+namespace Sidea.DocxToPdf.Models.Tables.Grids
 {
-    internal class BorderCoordinates
+    internal class BorderLine
     {
-        public BorderCoordinates(PageNumber pageNumber, Point start, Point end)
+        public BorderLine(PageNumber pageNumber, Point start, Point end)
         {
             this.PageNumber = pageNumber;
             this.Start = start;
@@ -14,5 +15,8 @@ namespace Sidea.DocxToPdf.Models.Tables.Borders
         public PageNumber PageNumber { get; }
         public Point Start { get; }
         public Point End { get; }
+
+        public Line ToLine(Drawing.Pen pen)
+            => new Line(this.Start, this.End, pen);
     }
 }

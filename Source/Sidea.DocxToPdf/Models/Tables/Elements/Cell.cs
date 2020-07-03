@@ -17,7 +17,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 
         private Cell(IEnumerable<ContainerElement> childs, GridPosition gridPosition, BorderStyle borderStyle)
         {
-            _contentMargin = new Margin(0.5, 4, 0.5, 4);
+            _contentMargin = new Margin(5, 4, 15, 4);
             _childs = childs.ToArray();
 
             this.GridPosition = gridPosition;
@@ -27,14 +27,14 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
         public GridPosition GridPosition { get; }
         public BorderStyle BorderStyle { get; }
 
-        public override void Prepare(PageContext pageContext, Func<PageNumber, ContainerElement, PageContext> pageFactory)
+        public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
         {
             var currentPageContext = pageContext
-                .Crop(_contentMargin.Top, _contentMargin.Right, 0, _contentMargin.Left);
+                   .Crop(_contentMargin.Top, _contentMargin.Right, 0, _contentMargin.Left);
 
-            Func<PageNumber, ContainerElement, PageContext> onNewPage = (pageNumber, childElement) =>
+            Func<PagePosition, ContainerElement, PageContext> onNewPage = (pagePosition, childElement) =>
             {
-                currentPageContext = pageFactory(pageNumber, this);
+                currentPageContext = nextPageContextFactory(pagePosition, this);
                 return currentPageContext.Crop(0, _contentMargin.Right, 0, _contentMargin.Left);
             };
 
@@ -42,7 +42,9 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 
             foreach (var child in _childs)
             {
-                child.Prepare(new PageContext(currentPageContext.PagePosition, availableRegion, currentPageContext.PageVariables), onNewPage);
+                var context = new PageContext(currentPageContext.PagePosition, availableRegion, currentPageContext.PageVariables);
+                child.Prepare(context, onNewPage);
+
                 var lastPage = child.LastPageRegion.Region;
 
                 availableRegion = currentPageContext
@@ -72,11 +74,6 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
             var borderStyle = wordCell.GetBorderStyle();
 
             return new Cell(childs, gridPosition, borderStyle);
-        }
-
-        public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
-using Sidea.DocxToPdf.Models.Tables.Borders;
 using Sidea.DocxToPdf.Models.Tables.Elements;
 using Sidea.DocxToPdf.Models.Tables.Grids;
 
@@ -27,38 +26,31 @@ namespace Sidea.DocxToPdf.Models.Tables
             .ThenBy(c => c.GridPosition.Row)      // from top
             .ThenBy(c => c.GridPosition.Column);  // from left
 
-        public override void Prepare(
-            PageContext pageContext,
-            Func<PageNumber, ContainerElement, PageContext> pageFactory)
+        public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
         {
             _grid.ResetPageContexts(pageContext);
-            _grid.PageFactory = (PageNumber pn) => pageFactory(pn, this);
+            _grid.PageContextFactory = (PagePosition currentPagePosition) => nextPageContextFactory(currentPagePosition, this);
 
-            Func<PageNumber, ContainerElement, PageContext> onNewPage = (pageNumber, childElement)
-                => _grid.CreatePageContextForCell(((Cell)childElement).GridPosition, pageNumber);
+            Func<PagePosition, ContainerElement, PageContext> onNextPageContext = (currentPagePosition, childElement)
+                => _grid.CreateNextPageContextForCell(currentPagePosition, ((Cell)childElement).GridPosition);
 
             Rectangle availableRegion = pageContext.Region;
             foreach (var cell in this.PreparationOrderedCells)
             {
-                var cellPageContext = _grid.CreatePageContextForCell(cell.GridPosition);
-                cell.Prepare(cellPageContext, onNewPage);
+                var cellPageContext = _grid.CreateStartPageContextForCell(cell.GridPosition);
+                cell.Prepare(cellPageContext, onNextPageContext);
 
                 _grid.JustifyGridRows(cell.GridPosition, cell.PageRegions);
             }
 
-            _grid.PageFactory = null;
-            this.ResetPageRegionsFrom(_cells);
-        }
-
-        public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
-        {
-            throw new NotImplementedException();
+            _grid.PageContextFactory = null;
+            this.ResetPageRegions(_grid.GetPageRegions());
         }
 
         public override void Render(IRenderer renderer)
         {
             _cells.Render(renderer);
-            new Border(_tableBorder, _grid).Render(_cells, renderer);
+            new GridBorder(_tableBorder, _grid).Render(_cells, renderer);
         }
     }
 }

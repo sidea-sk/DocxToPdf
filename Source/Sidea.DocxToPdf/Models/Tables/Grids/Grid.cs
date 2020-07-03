@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
-using Sidea.DocxToPdf.Models.Tables.Borders;
 
 namespace Sidea.DocxToPdf.Models.Tables.Grids
 {
@@ -21,11 +20,34 @@ namespace Sidea.DocxToPdf.Models.Tables.Grids
             _gridRows = rowHeights.ToArray();
         }
 
-        public Func<PageNumber, PageContext> PageFactory { get; set; }
+        public Func<PagePosition, PageContext> PageContextFactory { get; set; }
 
         public int ColumnCount => _columnWidths.Length;
 
         public int RowCount => _gridRows.Length;
+
+        public IEnumerable<PageRegion> GetPageRegions()
+        {
+            var space = this.CalculateHorizontalCellSpace(new GridPosition(0, _columnWidths.Length, 0, 0, true));
+            
+            var pageRegions = Enumerable
+                .Range(0, _gridRows.Length)
+                .SelectMany(i =>
+                {
+                    var regs = this.FindPageRegionsOfRow(i);
+                    var pageRegions = regs
+                        .Select(pair =>
+                        {
+                            var rect = new Rectangle(pair.region.TopLeft, new Size(space.Width, pair.region.Height));
+                            return new PageRegion(pair.page, rect);
+                        });
+
+                    return pageRegions;
+                })
+                .ToArray();
+
+            return pageRegions;
+        }
 
         public void ResetPageContexts(PageContext startOn)
         {
@@ -33,33 +55,17 @@ namespace Sidea.DocxToPdf.Models.Tables.Grids
             _pageContexts.Add(startOn);
         }
 
-        public void RegisterPageContext(PageContext pageContext)
+        public PageContext CreateStartPageContextForCell(GridPosition position)
         {
-            if (_pageContexts.Any(pg => pg.PagePosition == pageContext.PagePosition))
-            {
-                return;
-            }
-
-            _pageContexts.Add(pageContext);
-        }
-
-        public PageContext CreatePageContextForCell(GridPosition position)
-        {
-            var rowPageContext = this.CreateRowPageContext(position);
-            var horizontalSpace = this.CalculateCellSpace(position);
-
+            var rowPageContext = this.GetOrCreateRowPageContext(position);
+            var horizontalSpace = this.CalculateHorizontalCellSpace(position);
             return rowPageContext.Crop(horizontalSpace);
         }
 
-        public PageContext CreatePageContextForCell(GridPosition position, PageNumber onPage)
+        public PageContext CreateNextPageContextForCell(PagePosition currentPagePosition, GridPosition position)
         {
-            var rowPageContext = this.CreateRowPageContext(position);
-            while (rowPageContext.PageNumber != onPage)
-            {
-                rowPageContext = this.GetOrCreatePageContext(rowPageContext.PageNumber.Next());
-            }
-
-            var horizontalSpace = this.CalculateCellSpace(position);
+            var rowPageContext = this.GetOrCreateNextPageContext(currentPagePosition);
+            var horizontalSpace = this.CalculateHorizontalCellSpace(position);
             return rowPageContext.Crop(horizontalSpace);
         }
 
@@ -89,7 +95,49 @@ namespace Sidea.DocxToPdf.Models.Tables.Grids
             }
         }
 
-        private HorizontalSpace CalculateCellSpace(GridPosition position)
+        public CellBorder GetBorder(GridPosition position)
+        {
+            var space = this.CalculateHorizontalCellSpace(position);
+            var lx = new Point(space.X, 0);
+            var rx = new Point(space.RightX, 0);
+
+            BorderLine topLine = null;
+            BorderLine bottomLine = null;
+            var leftLines = new List<BorderLine>();
+            var rightLines = new List<BorderLine>();
+
+            for (var i = position.Row; i < position.Row + position.RowSpan; i++)
+            {
+                var regions = this.FindPageRegionsOfRow(i);
+                if(i == position.Row)
+                {
+                    var (pagePosition, region) = regions.First();
+                    var start = region.TopLeft + lx;
+                    var end = region.TopLeft + rx;
+
+                    topLine = new BorderLine(pagePosition.PageNumber, start, end);
+                }
+
+                foreach(var reg in regions)
+                {
+                    leftLines.Add(new BorderLine(reg.page.PageNumber, reg.region.TopLeft + lx, reg.region.BottomLeft + lx));
+                    rightLines.Add(new BorderLine(reg.page.PageNumber, reg.region.TopLeft + rx, reg.region.BottomLeft + rx));
+                }
+
+                if(i == position.Row + position.RowSpan - 1)
+                {
+                    var (pagePosition, region) = regions.Last();
+                    var start = new Point(region.X + space.X, region.BottomY);
+                    var end = new Point(region.X + space.RightX, region.BottomY);
+
+                    bottomLine = new BorderLine(pagePosition.PageNumber, start, end);
+                }
+            }
+
+            return new CellBorder(topLine, bottomLine, leftLines, rightLines);
+        }
+
+        private HorizontalSpace CalculateHorizontalCellSpace(GridPosition position)
         {
             var offset = _columnWidths
                .Take(position.Column)
@@ -103,48 +151,6 @@ namespace Sidea.DocxToPdf.Models.Tables.Grids
             return new HorizontalSpace(offset, width);
         }
 
-        public HorizontalSpace CalculateAbsoluteCellSpace(GridPosition position)
-        {
-            var space = this.CalculateCellSpace(position);
-            var baseX = _pageContexts.FirstOrDefault()?.Region.X ?? 0.0;
-
-            return new HorizontalSpace(baseX + space.X, space.Width);
-        }
-
-        public IEnumerable<VerticalSpace> CalcualteAbsouluteVerticalSpaces(GridPosition position)
-        {
-            var rows = this
-                .GetRowsInPosition(position)
-                .ToArray();
-
-            var offset = this.RowAbsoluteOffset(position.RowIndeces.ElementAt(0));
-            var remainingHeight = rows.Sum(r => r.Height);
-
-            var coordinates = new List<VerticalSpace>();
-            foreach (var pg in _pageContexts)
-            {
-                if (pg.Region.Height < offset)
-                {
-                    offset -= pg.Region.Height;
-                    continue;
-                }
-
-                var regionHeight = pg.Region.Height - offset;
-                var h = Math.Min(regionHeight, remainingHeight);
-                coordinates.Add(new VerticalSpace(pg.PageNumber, pg.Region.Y + offset, h));
-
-                offset = 0;
-                remainingHeight -= h;
-
-                if (remainingHeight == 0)
-                {
-                    break;
-                }
-            }
-
-            return coordinates;
-        }
-
         private double RowAbsoluteOffset(GridPosition position)
             => this.RowAbsoluteOffset(position.Row);
 
@@ -152,36 +158,6 @@ namespace Sidea.DocxToPdf.Models.Tables.Grids
                 => _gridRows
                     .Take(rowIndex)
                     .Sum(gr => gr.Height);
-
-        private PageContext CreateRowPageContext(GridPosition position)
-        {
-            var rowOffset = this.RowAbsoluteOffset(position);
-
-            var pc = _pageContexts.First();
-            do
-            {
-                if (pc.Region.Height > rowOffset)
-                {
-                    return pc.Crop(rowOffset, 0, 0, 0);
-                }
-
-                rowOffset -= pc.Region.Height;
-                pc = this.GetOrCreatePageContext(pc.PageNumber.Next());
-            } while (true);
-        }
-
-        private PageContext GetOrCreatePageContext(PageNumber fromPageNumber)
-        {
-            var pageContext = _pageContexts.FirstOrDefault(pg => pg.PageNumber == fromPageNumber);
-            if (pageContext != null)
-            {
-                return pageContext;
-            }
-
-            pageContext = this.PageFactory(fromPageNumber);
-            _pageContexts.Add(pageContext);
-            return pageContext;
-        }
 
         private static double[] Distribute(IReadOnlyCollection<double> currentValues, double totalValueToDistribute)
         {
@@ -211,6 +187,64 @@ namespace Sidea.DocxToPdf.Models.Tables.Grids
                 .Take(position.RowSpan);
         }
 
-       
+        private PageContext GetOrCreateRowPageContext(GridPosition position)
+        {
+            var rowOffset = this.RowAbsoluteOffset(position);
+            var pc = _pageContexts.First();
+            do
+            {
+                if (pc.Region.Height > rowOffset)
+                {
+                    return pc.Crop(rowOffset, 0, 0, 0);
+                }
+
+                rowOffset -= pc.Region.Height;
+                pc = this.GetOrCreateNextPageContext(pc.PagePosition);
+            } while (true);
+        }
+
+        private PageContext GetOrCreateNextPageContext(PagePosition currentPagePosition)
+        {
+            var nextPageContext = _pageContexts.FirstOrDefault(pc => pc.PagePosition == currentPagePosition.Next());
+            if(nextPageContext != null)
+            {
+                return nextPageContext;
+            }
+
+            nextPageContext = this.PageContextFactory(currentPagePosition);
+            _pageContexts.Add(nextPageContext);
+            return nextPageContext;
+        }
+
+        private IEnumerable<(PagePosition page, Rectangle region)> FindPageRegionsOfRow(int rowIndex)
+        {
+            var offset = this.RowAbsoluteOffset(rowIndex);
+            var remainingHeight = _gridRows[rowIndex].Height;
+
+            var regions = new List<(PagePosition, Rectangle)>();
+
+            foreach (var pg in _pageContexts)
+            {
+                if (pg.Region.Height < offset)
+                {
+                    offset -= pg.Region.Height;
+                    continue;
+                }
+
+                var availableHeight = pg.Region.Height - offset;
+
+                var h = Math.Min(availableHeight, remainingHeight);
+                var region = pg.Region.Crop(offset, 0, pg.Region.Height - offset - h, 0);
+                regions.Add((pg.PagePosition, region));
+                offset = 0;
+                remainingHeight -= h;
+                if (remainingHeight == 0)
+                {
+                    break;
+                }
+            }
+
+            return regions;
+        }
     }
 }

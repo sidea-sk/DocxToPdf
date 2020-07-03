@@ -73,7 +73,19 @@ namespace Sidea.DocxToPdf.Models.Sections
 
         public void Render(IRenderer renderer)
         {
-            foreach(var content in _contents)
+            foreach (var p in _pages)
+            {
+                var r = p.GetContentRegion();
+                var rp = renderer.Get(p.PageNumber);
+                var pen = new System.Drawing.Pen(System.Drawing.Color.Orange, 0.5f);
+
+                rp.RenderLine(r.TopLine(pen));
+                rp.RenderLine(r.RightLine(pen));
+                rp.RenderLine(r.BottomLine(pen));
+                rp.RenderLine(r.LeftLine(pen));
+            }
+
+            foreach (var content in _contents)
             {
                 content.Render(renderer);
             }

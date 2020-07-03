@@ -23,7 +23,6 @@ namespace Sidea.DocxToPdf.Models
 
         public DocumentPosition TopLeft { get; }
         public PagePosition PagePosition { get; }
-        public Rectangle Rectangle { get; }
         public DocumentVariables Variables { get; }
 
         public PageContext Crop(Margin margin)

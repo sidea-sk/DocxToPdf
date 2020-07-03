@@ -31,32 +31,6 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public double SpaceAfter => this.ParagraphStyle.Spacing.After;
 
-        public override void Prepare(
-            PageContext startOn,
-            Func<PageNumber, ContainerElement, PageContext> pageFactory)
-        {
-            throw new RendererException("Not supported anymore");
-            //ExecuteResult execResult;
-            //int continueOnLineIndex = 0;
-
-            //var context = startOn;
-            //do
-            //{
-            //    (execResult, continueOnLineIndex) = this.ExecutePrepare(context, continueOnLineIndex);
-            //    if(execResult == ExecuteResult.RequestNextPage)
-            //    {
-            //        this.SetPageRegion(new PageRegion(context.PagePosition, context.Region));
-            //        context = pageFactory(context.PageNumber.Next(), this);
-            //    }
-            //} while (execResult != ExecuteResult.Done);
-
-            //var heightInLastRegion = _lines
-            //    .Where(l => l.Position.PageNumber == context.PageNumber)
-            //    .Sum(l => l.HeightWithSpacing);
-
-            //this.SetPageRegion(new PageRegion(context.PagePosition, new Rectangle(context.Region.TopLeft, context.Region.Width, heightInLastRegion)));
-        }
-
         public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
         {
             ExecuteResult execResult;
