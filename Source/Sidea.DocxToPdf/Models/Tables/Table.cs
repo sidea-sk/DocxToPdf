@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 using Sidea.DocxToPdf.Models.Tables.Borders;
 using Sidea.DocxToPdf.Models.Tables.Elements;
 using Sidea.DocxToPdf.Models.Tables.Grids;
@@ -47,6 +48,11 @@ namespace Sidea.DocxToPdf.Models.Tables
 
             _grid.PageFactory = null;
             this.ResetPageRegionsFrom(_cells);
+        }
+
+        public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
+        {
+            throw new NotImplementedException();
         }
 
         public override void Render(IRenderer renderer)

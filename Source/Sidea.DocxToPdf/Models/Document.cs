@@ -47,10 +47,10 @@ namespace Sidea.DocxToPdf.Models
             {
                 foreach (var section in _sections)
                 {
-                    section.Prepare(lastPage, occupiedSpace, new Variables(lastPageNumber));
+                    section.Prepare(lastPage, occupiedSpace, new DocumentVariables(lastPageNumber));
 
                     lastPage = section.Pages.Last();
-                    occupiedSpace = section.PageRegions.Last().Region;
+                    occupiedSpace = Rectangle.Empty; // section.PageRegions.Last().Region;
                 }
 
                 var secionLastPage = _sections.Last()

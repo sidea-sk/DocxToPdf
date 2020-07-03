@@ -42,7 +42,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 
             foreach (var child in _childs)
             {
-                child.Prepare(new PageContext(currentPageContext.PageNumber, availableRegion, currentPageContext.PageVariables), onNewPage);
+                child.Prepare(new PageContext(currentPageContext.PagePosition, availableRegion, currentPageContext.PageVariables), onNewPage);
                 var lastPage = child.LastPageRegion.Region;
 
                 availableRegion = currentPageContext
@@ -72,6 +72,11 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
             var borderStyle = wordCell.GetBorderStyle();
 
             return new Cell(childs, gridPosition, borderStyle);
+        }
+
+        public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
+        {
+            throw new NotImplementedException();
         }
     }
 }

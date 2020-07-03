@@ -59,22 +59,22 @@ namespace Sidea.DocxToPdf.Core
         public Point BottomRight { get; }
         public Point BottomLeft { get; }
 
-        public Line TopLine(Drawing.Pen? pen)
+        public Line TopLine(Drawing.Pen pen = null)
             => new Line(this.TopLeft, this.TopRight, pen: pen);
 
-        public Line RightLine(Drawing.Pen? pen)
+        public Line RightLine(Drawing.Pen pen = null)
             => new Line(this.TopRight, this.BottomRight, pen: pen);
 
-        public Line BottomLine(Drawing.Pen? pen)
+        public Line BottomLine(Drawing.Pen pen = null)
             => new Line(this.BottomRight, this.BottomLeft, pen: pen);
 
-        public Line LeftLine(Drawing.Pen? pen)
+        public Line LeftLine(Drawing.Pen pen = null)
             => new Line(this.BottomLeft, this.TopLeft, pen: pen);
 
-        public Line TopLeftBottomRightDiagonal(Drawing.Pen? pen)
+        public Line TopLeftBottomRightDiagonal(Drawing.Pen pen = null)
             => new Line(this.TopLeft, this.BottomRight, pen: pen);
 
-        public Line BottomLeftTopRightDiagonal(Drawing.Pen? pen)
+        public Line BottomLeftTopRightDiagonal(Drawing.Pen pen = null)
             => new Line(this.BottomLeft, this.TopRight, pen: pen);
 
         public Size Size { get; }

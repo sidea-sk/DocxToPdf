@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Sections.Columns;
 using Sidea.DocxToPdf.Models.Styles;
 
 using OpenXml = DocumentFormat.OpenXml;
@@ -34,6 +35,8 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
 
             var sectionElements = new List<OpenXml.OpenXmlCompositeElement>();
             var headerFooterConfiguration = HeaderFooterConfiguration.Empty;
+            Word.SectionProperties wordSectionProperties;
+
             foreach (var e in body.RenderableChildren())
             {
                 sectionElements.Add(e);
@@ -42,40 +45,52 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                     continue;
                 }
 
-                var sp = paragraph.GetSectionProperties();
-                if (sp == null)
+                wordSectionProperties = paragraph.GetSectionProperties();
+                if (wordSectionProperties == null)
                 {
                     continue;
                 }
 
-                var sectionParts = sectionElements.SplitToSectionColumns(styleFactory);
-                var sd = new Data(sp.ToModel(mainDocumentPart, sectionData.Count == 0, headerFooterConfiguration), sectionParts);
-
-                headerFooterConfiguration = sd.Properties.HeaderFooterConfiguration;
-                sectionData.Add(sd);
-
+                var data = CreateData(wordSectionProperties, sectionElements, mainDocumentPart, headerFooterConfiguration, sectionData.Count == 0, styleFactory);
+                headerFooterConfiguration = data.Properties.HeaderFooterConfiguration;
+                sectionData.Add(data);
                 sectionElements.Clear();
             }
 
-            var lastSectionProperties = body
+            wordSectionProperties = body
                .ChildsOfType<Word.SectionProperties>()
                .Single();
 
-            var lastSectionParts = sectionElements.SplitToSectionColumns(styleFactory);
-
-            var prop = lastSectionProperties.ToModel(mainDocumentPart, sectionData.Count == 0, headerFooterConfiguration);
-            sectionData.Add(new Data(prop, lastSectionParts));
+            var lastData = CreateData(wordSectionProperties, sectionElements, mainDocumentPart, headerFooterConfiguration, sectionData.Count == 0, styleFactory);
+            sectionData.Add(lastData);
             return sectionData;
         }
 
-        private static IEnumerable<SectionColumn> SplitToSectionColumns(
-            this IEnumerable<OpenXml.OpenXmlCompositeElement> xmlElements,
+        private static Data CreateData(
+            Word.SectionProperties wordSectionProperties,
+            IReadOnlyCollection<OpenXml.OpenXmlCompositeElement> xmlElements,
+            Pack.MainDocumentPart mainDocumentPart,
+            HeaderFooterConfiguration headerFooterConfiguration,
+            bool isFirst,
             IStyleFactory styleFactory)
         {
-            var sectionParts = new List<SectionColumn>();
+            var sectionProperties = wordSectionProperties.CreateSectionProperties(mainDocumentPart, isFirst, headerFooterConfiguration);
+            var columnsConfiguration = wordSectionProperties.CreateColumnsConfiguration(sectionProperties.PageConfiguration, sectionProperties.Margin);
+            var sectionContents = xmlElements.SplitToSectionContents(columnsConfiguration, styleFactory);
+            var sd = new Data(sectionProperties, sectionContents);
+
+            return sd;
+        }
+
+        private static IEnumerable<SectionContent> SplitToSectionContents(
+            this IEnumerable<OpenXml.OpenXmlCompositeElement> xmlElements,
+            ColumnsConfiguration columnsConfiguration,
+            IStyleFactory styleFactory)
+        {
+            var sectionContents = new List<SectionContent>();
 
             var stack = xmlElements.ToStack();
-            var partElements = new List<OpenXml.OpenXmlCompositeElement>();
+            var contentElements = new List<OpenXml.OpenXmlCompositeElement>();
 
             while (stack.Count > 0)
             {
@@ -87,7 +102,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                             var (begin, @break, end) = p.SplitByNextBreak();
                             if (@break == SectionBreak.None)
                             {
-                                partElements.Add(p);
+                                contentElements.Add(p);
                             }
                             else
                             {
@@ -96,26 +111,26 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                                     stack.Push(end);
                                 }
 
-                                partElements.Add(begin);
-                                var childElements = partElements.CreateInitializeElements(styleFactory);
-                                sectionParts.Add(new SectionColumn(childElements, @break));
-                                partElements.Clear();
+                                contentElements.Add(begin);
+                                var childElements = contentElements.CreateInitializeElements(styleFactory);
+                                sectionContents.Add(new SectionContent(childElements, columnsConfiguration, @break));
+                                contentElements.Clear();
                             }
                         }
                         break;
                     default:
-                        partElements.Add(e);
+                        contentElements.Add(e);
                         break;
                 }
             }
 
-            if (partElements.Count > 0)
+            if (contentElements.Count > 0)
             {
-                var childElements = partElements.CreateInitializeElements(styleFactory);
-                sectionParts.Add(new SectionColumn(childElements, SectionBreak.None));
+                var childElements = contentElements.CreateInitializeElements(styleFactory);
+                sectionContents.Add(new SectionContent(childElements, columnsConfiguration, SectionBreak.None));
             }
 
-            return sectionParts;
+            return sectionContents;
         }
 
         private static Word.SectionProperties GetSectionProperties(this Word.Paragraph paragraph)
@@ -123,7 +138,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
             return paragraph.ParagraphProperties?.SectionProperties;
         }
 
-        private static SectionProperties ToModel(
+        private static SectionProperties CreateSectionProperties(
             this Word.SectionProperties wordSectionProperties,
             Pack.MainDocumentPart mainDocument,
             bool isFirstSection,
@@ -136,16 +151,13 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
 
             var requiresNewPage = isFirstSection || sectionMark == Word.SectionMarkValues.NextPage;
 
-            var columns = wordSectionProperties.GetSectionColumnConfigs(pageCongifuration, pageMargin);
             var headerFooterConfiguration = wordSectionProperties
                 .GetHeaderFooterConfiguration(mainDocument, inheritHeaderFooterConfiguration);
-
 
             return new SectionProperties(
                 pageCongifuration,
                 headerFooterConfiguration,
                 pageMargin,
-                columns,
                 requiresNewPage);
         }
 
@@ -160,8 +172,6 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
             var orientation = (pageSize.Orient?.Value ?? Word.PageOrientationValues.Portrait) == Word.PageOrientationValues.Portrait
                 ? PageOrientation.Portrait
                 : PageOrientation.Landscape;
-
-            
 
             return new PageConfiguration(new Size(w, h), orientation);
         }
@@ -195,49 +205,6 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                 .Select(fr => new HeaderFooterRef(fr.Id, fr.Type));
 
             return previousHeaderFooterConfiguration.Inherited(mainDocument, hasTitlePage, headerRefs, footerRefs);
-        }
-
-        private static IEnumerable<SectionColumnConfig> GetSectionColumnConfigs(
-            this Word.SectionProperties wordSectionProperties,
-            PageConfiguration page,
-            PageMargin pageMargin)
-        {
-            var columns = wordSectionProperties
-                .ChildsOfType<Word.Columns>()
-                .SingleOrDefault();
-
-            var totalColumnsWidth = page.Width - pageMargin.HorizontalMargins;
-            var columnsCount = columns.ColumnCount?.Value ?? 1;
-            if (columnsCount == 1)
-            {
-                return new[] { new SectionColumnConfig(totalColumnsWidth, 0) };
-            }
-
-            if (columns.EqualWidth.IsOn(true))
-            {
-                var space = columns.Space.ToPoint();
-                var columnWidth = (totalColumnsWidth - space * (columnsCount - 1)) / columnsCount;
-
-                return Enumerable.Range(0, columnsCount)
-                    .Select(i =>
-                    {
-                        var s = i == columnsCount - 1
-                            ? 0
-                            : space;
-                        return new SectionColumnConfig(columnWidth, s);
-                    })
-                    .ToArray();
-            }
-
-            var cols = columns
-                .ChildsOfType<Word.Column>()
-                .Select(col =>
-                {
-                    var cw = col.Width.ToPoint();
-                    var space = col.Space.ToPoint();
-                    return new SectionColumnConfig(cw, space);
-                });
-            return cols;
         }
 
         private static (Word.Paragraph, SectionBreak, Word.Paragraph) SplitByNextBreak(this Word.Paragraph paragraph)
@@ -307,14 +274,14 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
         {
             public Data(
                 SectionProperties properties,
-                IEnumerable<SectionColumn> sectionColumns)
+                IEnumerable<SectionContent> sectionContents)
             {
                 this.Properties = properties;
-                this.SectionColumns = sectionColumns.ToArray();
+                this.SectionColumns = sectionContents.ToArray();
             }
 
             public SectionProperties Properties { get; }
-            public IReadOnlyCollection<SectionColumn> SectionColumns { get; }
+            public IReadOnlyCollection<SectionContent> SectionColumns { get; }
         }
     }
 }

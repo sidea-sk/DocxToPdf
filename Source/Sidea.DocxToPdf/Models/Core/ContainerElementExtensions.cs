@@ -14,7 +14,7 @@ namespace Sidea.DocxToPdf.Models
         {
             var pageRegions = elements
                 .SelectMany(c => c.PageRegions)
-                .GroupBy(pr => pr.PageNumber)
+                .GroupBy(pr => pr.PagePosition)
                 .Select(grp =>
                 {
                     var rectangle = Rectangle.Union(grp.Select(r => r.Region));
@@ -25,13 +25,13 @@ namespace Sidea.DocxToPdf.Models
                     var top = i == 0
                         ? contentMargin.Top
                         : 0;
-                    var npr = new PageRegion(pr.PageNumber, pr.Region.Inflate(top, contentMargin.Right, 0, contentMargin.Left));
+                    var npr = new PageRegion(pr.PagePosition, pr.Region.Inflate(top, contentMargin.Right, 0, contentMargin.Left));
                     return npr;
                 })
                 .ToArray();
 
             var last = pageRegions.Last();
-            pageRegions[pageRegions.Length - 1] = new PageRegion(last.PageNumber, last.Region.Inflate(0, 0, contentMargin.Bottom, 0));
+            pageRegions[pageRegions.Length - 1] = new PageRegion(last.PagePosition, last.Region.Inflate(0, 0, contentMargin.Bottom, 0));
 
             return pageRegions;
         }

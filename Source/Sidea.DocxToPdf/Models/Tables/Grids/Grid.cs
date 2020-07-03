@@ -35,7 +35,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Grids
 
         public void RegisterPageContext(PageContext pageContext)
         {
-            if (_pageContexts.Any(pg => pg.PageNumber == pageContext.PageNumber))
+            if (_pageContexts.Any(pg => pg.PagePosition == pageContext.PagePosition))
             {
                 return;
             }

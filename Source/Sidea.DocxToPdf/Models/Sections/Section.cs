@@ -12,7 +12,7 @@ namespace Sidea.DocxToPdf.Models.Sections
         private List<IPage> _pages = new List<IPage>();
 
         private readonly SectionProperties _properties;
-        private readonly SectionColumn[] _columns;
+        private readonly SectionContent[] _contents;
         private readonly IStyleFactory _styleFactory;
 
         public IReadOnlyCollection<PageRegion> PageRegions { get; private set; } = new PageRegion[0];
@@ -20,80 +20,104 @@ namespace Sidea.DocxToPdf.Models.Sections
 
         public Section(
             SectionProperties properties,
-            IEnumerable<SectionColumn> columns,
+            IEnumerable<SectionContent> sectionContents,
             IStyleFactory styleFactory)
         {
             _properties = properties;
-            _columns = columns.ToArray();
+            _contents = sectionContents.ToArray();
             _styleFactory = styleFactory;
         }
 
-        public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace, Variables documentVariables)
+        public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace, DocumentVariables documentVariables)
         {
             var pageNumber = lastPageOfPreviosSection.PageNumber.Next();
-            this.EnsurePage(pageNumber);
+            var contentLastPosition = PagePosition.None;
+            var sectionBreak = SectionBreak.Page;
 
-            for (var i = 0; i < _columns.Length; i++)
+            foreach (var content in _contents)
             {
-                // todo: handle column and page breaks
-                var context = this.CreateContextForColumn(pageNumber, Rectangle.Empty, i, documentVariables);
-                var column = _columns[i];
-                column.Prepare(context, this.OnNewPage);
-
-                switch (column.SectionBreak)
-                {
-                    case SectionBreak.None:
-                        break;
-                    case SectionBreak.Column:
-                        break;
-                    case SectionBreak.Page:
-                        // create new Page for the Next Column
-                        pageNumber = column.LastPageRegion.PageNumber.Next();
-                        this.EnsurePage(pageNumber);
-                        break;
-                }
+                content.Prepare(contentLastPosition, sectionBreak, this.OnNewPage);
+                contentLastPosition = content.LastPagePosition;
+                sectionBreak = content.SectionBreak;
             }
-
-            this.PageRegions = _columns.UnionPageRegions().ToArray();
         }
+
+        //public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace, Variables documentVariables)
+        //{
+        //    var pageNumber = lastPageOfPreviosSection.PageNumber.Next();
+        //    this.EnsurePage(pageNumber);
+
+        //    for (var i = 0; i < _contents.Length; i++)
+        //    {
+        //        // todo: handle column and page breaks
+        //        var context = this.CreateContextForColumn(pageNumber, Rectangle.Empty, i, documentVariables);
+        //        var column = _contents[i];
+        //        column.Prepare(context, this.OnNewPage);
+
+        //        switch (column.SectionBreak)
+        //        {
+        //            case SectionBreak.None:
+        //                break;
+        //            case SectionBreak.Column:
+        //                break;
+        //            case SectionBreak.Page:
+        //                // create new Page for the Next Column
+        //                pageNumber = column.LastPageRegion.PageNumber.Next();
+        //                this.EnsurePage(pageNumber);
+        //                break;
+        //        }
+        //    }
+
+        //    this.PageRegions = _contents.UnionPageRegions().ToArray();
+        //}
 
         public void Render(IRenderer renderer)
         {
-            _columns.Render(renderer);
+            foreach(var content in _contents)
+            {
+                content.Render(renderer);
+            }
         }
 
-        private PageContext OnNewPage(PageNumber pageNumber, ContainerElement requestingColumn)
+        private IPage OnNewPage(PageNumber pageNumber)
         {
             this.EnsurePage(pageNumber);
-
-            var index = _columns.IndexOf(c => c == requestingColumn);
-            if(index == -1)
-            {
-                throw new RendererException("Column not found");
-            }
-
             var page = _pages.Single(p => p.PageNumber == pageNumber);
-
-            return new PageContext(pageNumber, page.GetContentRegion(), new Variables(totalPages: _pages.Count));
+            return page;
         }
 
-        private PageContext CreateContextForColumn(
-            PageNumber pageNumber,
-            Rectangle occupiedRegion,
-            int columnIndex,
-            Variables documentVariables)
-        {
-            var page = _pages.Single(p => p.PageNumber == pageNumber);
-            var columnSpace = _properties.CalculateColumnSpace(columnIndex);
+        //private PageContext OnNewPage(PageNumber pageNumber, SectionContent requestingColumn)
+        //{
+        //    this.EnsurePage(pageNumber);
 
-            var y = Math.Max(page.Margin.Top, occupiedRegion.BottomY);
+        //    var index = _contents.IndexOf(c => c == requestingColumn);
+        //    if(index == -1)
+        //    {
+        //        throw new RendererException("Column not found");
+        //    }
 
-            var content = page
-                .GetContentRegion()
-                .CropHorizontal(columnSpace.X, columnSpace.Width);
+        //    var page = _pages.Single(p => p.PageNumber == pageNumber);
 
-            return new PageContext(pageNumber, content, documentVariables);
-        }
+        //    return new PageContext(pageNumber, 0, page.GetContentRegion(), new DocumentVariables(totalPages: _pages.Count));
+        //}
+
+        //private PageContext CreateContextForColumn(
+        //    PageNumber pageNumber,
+        //    Rectangle occupiedRegion,
+        //    int columnIndex,
+        //    Variables documentVariables)
+        //{
+        //    var page = _pages.Single(p => p.PageNumber == pageNumber);
+        //    var columnSpace = _properties.CalculateColumnSpace(columnIndex);
+
+        //    var y = Math.Max(page.Margin.Top, occupiedRegion.BottomY);
+
+        //    var content = page
+        //        .GetContentRegion()
+        //        .CropHorizontal(columnSpace.X, columnSpace.Width);
+
+        //    return new PageContext(pageNumber, 0, content, documentVariables);
+        //}
 
         private void EnsurePage(PageNumber pageNumber)
         {

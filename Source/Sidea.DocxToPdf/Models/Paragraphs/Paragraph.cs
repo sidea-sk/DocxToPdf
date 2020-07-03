@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 using Sidea.DocxToPdf.Models.Paragraphs.Builders;
 using Sidea.DocxToPdf.Models.Styles;
 
@@ -34,25 +35,49 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             PageContext startOn,
             Func<PageNumber, ContainerElement, PageContext> pageFactory)
         {
+            throw new RendererException("Not supported anymore");
+            //ExecuteResult execResult;
+            //int continueOnLineIndex = 0;
+
+            //var context = startOn;
+            //do
+            //{
+            //    (execResult, continueOnLineIndex) = this.ExecutePrepare(context, continueOnLineIndex);
+            //    if(execResult == ExecuteResult.RequestNextPage)
+            //    {
+            //        this.SetPageRegion(new PageRegion(context.PagePosition, context.Region));
+            //        context = pageFactory(context.PageNumber.Next(), this);
+            //    }
+            //} while (execResult != ExecuteResult.Done);
+
+            //var heightInLastRegion = _lines
+            //    .Where(l => l.Position.PageNumber == context.PageNumber)
+            //    .Sum(l => l.HeightWithSpacing);
+
+            //this.SetPageRegion(new PageRegion(context.PagePosition, new Rectangle(context.Region.TopLeft, context.Region.Width, heightInLastRegion)));
+        }
+
+        public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
+        {
             ExecuteResult execResult;
             int continueOnLineIndex = 0;
 
-            var context = startOn;
+            var context = pageContext;
             do
             {
                 (execResult, continueOnLineIndex) = this.ExecutePrepare(context, continueOnLineIndex);
-                if(execResult == ExecuteResult.RequestNextPage)
+                if (execResult == ExecuteResult.RequestNextPage)
                 {
-                    this.SetPageRegion(new PageRegion(context.PageNumber, context.Region));
-                    context = pageFactory(context.PageNumber.Next(), this);
+                    this.SetPageRegion(new PageRegion(context.PagePosition, context.Region));
+                    context = nextPageContextFactory(context.PagePosition, this);
                 }
             } while (execResult != ExecuteResult.Done);
 
             var heightInLastRegion = _lines
-                .Where(l => l.Position.PageNumber == context.PageNumber)
+                .Where(l => l.Position.Page == context.PagePosition)
                 .Sum(l => l.HeightWithSpacing);
 
-            this.SetPageRegion(new PageRegion(context.PageNumber, new Rectangle(context.Region.TopLeft, context.Region.Width, heightInLastRegion)));
+            this.SetPageRegion(new PageRegion(context.PagePosition, new Rectangle(context.Region.TopLeft, context.Region.Width, heightInLastRegion)));
         }
 
         private (ExecuteResult, int) ExecutePrepare(PageContext context, int fromLineIndex)
@@ -113,7 +138,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         {
             foreach(var line in _lines)
             {
-                var page = renderer.Get(line.Position.PageNumber);
+                var page = renderer.Get(line.Position.Page.PageNumber);
                 line.Render(page);
             }
 

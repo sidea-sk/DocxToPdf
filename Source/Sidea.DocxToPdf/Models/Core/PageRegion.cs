@@ -1,18 +1,20 @@
 ﻿using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models
 {
     internal class PageRegion
     {
-        public static readonly PageRegion None = new PageRegion(PageNumber.None, Rectangle.Empty);
+        public static readonly PageRegion None = new PageRegion(PagePosition.None, Rectangle.Empty);
 
-        public PageRegion(PageNumber pageNumber, Rectangle region)
+        public PageRegion(PagePosition pagePosition, Rectangle region)
         {
-            this.PageNumber = pageNumber;
+            this.PagePosition = pagePosition;
             this.Region = region;
         }
 
-        public PageNumber PageNumber { get; }
+        public PagePosition PagePosition { get; }
+        // public PageNumber PageNumber { get; }
         public Rectangle Region { get; }
     }
 }

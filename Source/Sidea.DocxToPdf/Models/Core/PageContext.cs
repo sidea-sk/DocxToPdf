@@ -6,27 +6,34 @@ namespace Sidea.DocxToPdf.Models
     internal class PageContext
     {
         public PageContext(
-            PageNumber pageNumber,
+            PagePosition pagePosition,
             Rectangle region,
-            Variables variables)
+            DocumentVariables variables)
         {
-            this.PageNumber = pageNumber;
             this.Region = region;
-            this.PageVariables = new PageVariables(this.PageNumber, variables.TotalPages);
-            this.TopLeft = new DocumentPosition(this.PageNumber, this.Region.TopLeft);
+            this.PagePosition = pagePosition;
+            this.PageVariables = new PageVariables(pagePosition.PageNumber, variables.TotalPages);
+            this.TopLeft = new DocumentPosition(pagePosition, this.Region.TopLeft);
         }
 
-        public PageNumber PageNumber { get; }
+        public PageNumber PageNumber => this.PagePosition.PageNumber;
+        public int PageColumn => this.PagePosition.PageColumn;
         public Rectangle Region { get; }
         public PageVariables PageVariables { get; }
 
         public DocumentPosition TopLeft { get; }
+        public PagePosition PagePosition { get; }
+        public Rectangle Rectangle { get; }
+        public DocumentVariables Variables { get; }
 
         public PageContext Crop(Margin margin)
             => this.Crop(margin.Top, margin.Right, margin.Bottom, margin.Left);
 
         public PageContext Crop(HorizontalSpace space)
             => this.Crop(0, this.Region.Width - space.X - space.Width, 0, space.X);
+
+        public PageContext CropFromTop(double top)
+            => this.Crop(top, 0, 0, 0);
 
         public PageContext Crop(double top, double right, double bottom, double left)
         {
@@ -36,7 +43,7 @@ namespace Sidea.DocxToPdf.Models
 
         private PageContext WithRegion(Rectangle region)
         {
-            return new PageContext(this.PageNumber, region, this.PageVariables);
+            return new PageContext(this.PagePosition, region, this.PageVariables);
         }
     }
 }

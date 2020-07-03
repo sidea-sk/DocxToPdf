@@ -4,16 +4,22 @@ namespace Sidea.DocxToPdf.Models.Common
 {
     internal class DocumentPosition
     {
-        public static readonly DocumentPosition None = new DocumentPosition(PageNumber.None, Point.Zero);
+        public static readonly DocumentPosition None = new DocumentPosition(PagePosition.None, Point.Zero);
 
-        public DocumentPosition(PageNumber pageNumber, Point offset)
+        public DocumentPosition(PagePosition pagePosition, Point offset)
         {
-            this.PageNumber = pageNumber;
+            this.Page = pagePosition;
             this.Offset = offset;
         }
+        //public DocumentPosition(PageNumber pageNumber, Point offset)
+        //{
+        //    this.PageNumber = pageNumber;
+        //    this.Offset = offset;
+        //}
 
-        public PageNumber PageNumber { get; }
+        // public PageNumber PageNumber { get; }
         public Point Offset { get; }
+        public PagePosition Page { get; }
 
         public DocumentPosition Move(Point offset)
             => this + offset;
@@ -26,7 +32,7 @@ namespace Sidea.DocxToPdf.Models.Common
 
         public static DocumentPosition operator+(DocumentPosition position, Point offset)
         {
-            return new DocumentPosition(position.PageNumber, position.Offset + offset);
+            return new DocumentPosition(position.Page, position.Offset + offset);
         }
     }
 }

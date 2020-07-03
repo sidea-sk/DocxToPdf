@@ -11,21 +11,21 @@ namespace Sidea.DocxToPdf.Models.Sections
             PageConfiguration.Empty,
             HeaderFooterConfiguration.Empty,
             PageMargin.None,
-            new SectionColumnConfig[0],
+            // new SectionColumnConfig[0],
             false);
 
         public SectionProperties(
             PageConfiguration pageConfiguration,
             HeaderFooterConfiguration headerFooterConfiguration,
             PageMargin margin,
-            IEnumerable<SectionColumnConfig> columnConfigs,
+            // IEnumerable<SectionColumnConfig> columnConfigs,
             bool requiresNewPage)
         {
             this.PageConfiguration = pageConfiguration;
             this.HeaderFooterConfiguration = headerFooterConfiguration;
             this.Margin = margin;
             this.RequiresNewPage = requiresNewPage;
-            this.ColumnConfigs = columnConfigs.ToArray();
+            // this.ColumnConfigs = columnConfigs.ToArray();
         }
 
         public PageConfiguration PageConfiguration { get; }
@@ -33,34 +33,34 @@ namespace Sidea.DocxToPdf.Models.Sections
         public PageMargin Margin { get; }
         public bool RequiresNewPage { get; }
         public bool HasTitlePage { get; }
-        public IReadOnlyCollection<SectionColumnConfig> ColumnConfigs { get; }
+        // public IReadOnlyCollection<SectionColumnConfig> ColumnConfigs { get; }
 
-        public HorizontalSpace CalculateColumnSpace(int columnIndex)
-        {
-            var xOffset = this.ColumnOffset(columnIndex);
-            var width = this.ColumnWidth(columnIndex);
+        //public HorizontalSpace CalculateColumnSpace(int columnIndex)
+        //{
+        //    var xOffset = this.ColumnOffset(columnIndex);
+        //    var width = this.ColumnWidth(columnIndex);
 
-            return new HorizontalSpace(xOffset, width);
-        }
+        //    return new HorizontalSpace(xOffset, width);
+        //}
 
-        public double ColumnOffset(int columnIndex)
-        {
-            var columnConfigIndex = columnIndex % this.ColumnConfigs.Count;
+        //public double ColumnOffset(int columnIndex)
+        //{
+        //    var columnConfigIndex = columnIndex % this.ColumnConfigs.Count;
 
-            var result = this.ColumnConfigs
-                .Take(columnConfigIndex)
-                .Aggregate(0.0, (acc, column) =>
-                {
-                    return acc + column.Width + column.Space;
-                });
+        //    var result = this.ColumnConfigs
+        //        .Take(columnConfigIndex)
+        //        .Aggregate(0.0, (acc, column) =>
+        //        {
+        //            return acc + column.Width + column.Space;
+        //        });
 
-            return result;
-        }
+        //    return result;
+        //}
 
-        public double ColumnWidth(int columnIndex)
-        {
-            var columnConfigIndex = columnIndex % this.ColumnConfigs.Count;
-            return this.ColumnConfigs.ElementAt(columnConfigIndex).Width;
-        }
+        //public double ColumnWidth(int columnIndex)
+        //{
+        //    var columnConfigIndex = columnIndex % this.ColumnConfigs.Count;
+        //    return this.ColumnConfigs.ElementAt(columnConfigIndex).Width;
+        //}
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Sidea.DocxToPdf.Models.Common
 {
-    internal class PageVariables : Variables
+    internal class PageVariables : DocumentVariables
     {
         public static PageVariables Empty = new PageVariables(PageNumber.None, 0);
 

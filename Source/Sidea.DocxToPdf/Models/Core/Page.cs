@@ -7,7 +7,9 @@ namespace Sidea.DocxToPdf.Models
     {
         public static readonly Page None = new Page(PageNumber.None, new PageConfiguration(Size.Zero, PageOrientation.Portrait));
 
-        public Page(PageNumber pageNumber, PageConfiguration configuration)
+        public Page(
+            PageNumber pageNumber,
+            PageConfiguration configuration)
         {
             this.PageNumber = pageNumber;
             this.Configuration = configuration;

@@ -1,8 +1,8 @@
 ﻿namespace Sidea.DocxToPdf.Models.Common
 {
-    internal class Variables
+    internal class DocumentVariables
     {
-        public Variables(int totalPages)
+        public DocumentVariables(int totalPages)
         {
             this.TotalPages = totalPages;
         }

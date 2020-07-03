@@ -1,8 +1,8 @@
-﻿namespace Sidea.DocxToPdf.Models.Sections
+﻿namespace Sidea.DocxToPdf.Models.Sections.Columns
 {
-    internal class SectionColumnConfig
+    internal class ColumnConfig
     {
-        public SectionColumnConfig(double width, double space)
+        public ColumnConfig(double width, double space)
         {
             this.Width = width;
             this.Space = space;
