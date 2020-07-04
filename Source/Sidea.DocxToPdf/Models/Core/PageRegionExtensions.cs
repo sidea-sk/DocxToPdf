@@ -7,7 +7,7 @@ namespace Sidea.DocxToPdf.Models
 {
     internal static class PageRegionExtensions
     {
-        public static IEnumerable<PageRegion> UnionPageRegionsCore(
+        public static IEnumerable<PageRegion> UnionPageRegions(
             this IEnumerable<PageRegion> pageRegions,
             Margin contentMargin)
         {
