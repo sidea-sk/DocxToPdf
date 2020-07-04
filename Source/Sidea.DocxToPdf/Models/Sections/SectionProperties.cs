@@ -14,18 +14,18 @@ namespace Sidea.DocxToPdf.Models.Sections
             PageConfiguration pageConfiguration,
             HeaderFooterConfiguration headerFooterConfiguration,
             PageMargin margin,
-            bool requiresNewPage)
+            bool StartOnNextPage)
         {
             this.PageConfiguration = pageConfiguration;
             this.HeaderFooterConfiguration = headerFooterConfiguration;
             this.Margin = margin;
-            this.RequiresNewPage = requiresNewPage;
+            this.StartOnNextPage = StartOnNextPage;
         }
 
         public PageConfiguration PageConfiguration { get; }
         public HeaderFooterConfiguration HeaderFooterConfiguration { get; }
         public PageMargin Margin { get; }
-        public bool RequiresNewPage { get; }
+        public bool StartOnNextPage { get; }
         public bool HasTitlePage { get; }
     }
 }

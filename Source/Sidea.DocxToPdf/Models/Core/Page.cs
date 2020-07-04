@@ -5,7 +5,9 @@ namespace Sidea.DocxToPdf.Models
 {
     internal class Page : IPage
     {
-        public static readonly Page None = new Page(PageNumber.None, new PageConfiguration(Size.Zero, PageOrientation.Portrait));
+        public static readonly Page None = new Page(
+            PageNumber.None,
+            new PageConfiguration(Size.Zero, PageOrientation.Portrait));
 
         public Page(
             PageNumber pageNumber,
@@ -19,6 +21,8 @@ namespace Sidea.DocxToPdf.Models
         public PageConfiguration Configuration { get; }
 
         public Margin Margin { get; set; } = Margin.None;
+
+        public DocumentVariables DocumentVariables { get; set; } = new DocumentVariables(0);
 
         public Rectangle GetContentRegion()
         {

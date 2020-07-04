@@ -7,6 +7,8 @@ namespace Sidea.DocxToPdf.Models
     {
         PageNumber PageNumber { get; }
 
+        DocumentVariables DocumentVariables { get; }
+
         PageConfiguration Configuration { get; }
 
         Margin Margin { get; }

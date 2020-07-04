@@ -50,7 +50,7 @@ namespace Sidea.DocxToPdf.Models
                     section.Prepare(lastPage, occupiedSpace, new DocumentVariables(lastPageNumber));
 
                     lastPage = section.Pages.Last();
-                    occupiedSpace = Rectangle.Empty; // section.PageRegions.Last().Region;
+                    occupiedSpace = section.PageRegions.Last().Region;
                 }
 
                 var secionLastPage = _sections.Last()

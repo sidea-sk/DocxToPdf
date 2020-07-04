@@ -96,7 +96,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             var context = new PageContext(
                 pagePosition,
                 region,
-                new DocumentVariables(totalPages: page.PageNumber));
+                page.DocumentVariables);
 
             var cropY = occupiedRegion.BottomY == 0
                 ? 0

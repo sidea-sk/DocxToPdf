@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
@@ -8,7 +9,7 @@ namespace Sidea.DocxToPdf.Models.Sections
 {
     internal class Section : PageElement
     {
-        private List<IPage> _pages = new List<IPage>();
+        private List<Page> _pages = new List<Page>();
 
         private readonly SectionProperties _properties;
         private readonly SectionContent[] _contents;
@@ -26,15 +27,21 @@ namespace Sidea.DocxToPdf.Models.Sections
             _styleFactory = styleFactory;
         }
 
-        public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace, DocumentVariables documentVariables)
+        public void Prepare(
+            IPage lastPageOfPreviosSection,
+            Rectangle occupiedSpace,
+            DocumentVariables documentVariables)
         {
             var pageNumber = lastPageOfPreviosSection.PageNumber.Next();
             var contentLastPosition = PagePosition.None;
             var sectionBreak = SectionBreak.Page;
 
+            Func<PageNumber, IPage> contentPageRequest = (pageNumber) =>
+                this.OnNewPage(pageNumber, documentVariables);
+
             foreach (var content in _contents)
             {
-                content.Prepare(contentLastPosition, sectionBreak, this.OnNewPage);
+                content.Prepare(contentLastPosition, sectionBreak, contentPageRequest);
                 contentLastPosition = content.LastPageRegion.PagePosition;
                 sectionBreak = content.SectionBreak;
             }
@@ -69,10 +76,11 @@ namespace Sidea.DocxToPdf.Models.Sections
             this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries);
         }
 
-        private IPage OnNewPage(PageNumber pageNumber)
+        private IPage OnNewPage(PageNumber pageNumber, DocumentVariables documentVariables)
         {
             this.EnsurePage(pageNumber);
             var page = _pages.Single(p => p.PageNumber == pageNumber);
+            page.DocumentVariables = documentVariables;
             return page;
         }
 
@@ -87,6 +95,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             {
                 Margin = new Margin(80, _properties.Margin.Right, 80, _properties.Margin.Left)
             };
+            
             _pages.Add(newPage);
         }
     }
