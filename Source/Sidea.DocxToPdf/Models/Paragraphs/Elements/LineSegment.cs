@@ -9,7 +9,7 @@ using static Sidea.DocxToPdf.Models.FieldUpdateResult;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
-    internal class LineSegment : ElementBase
+    internal class LineSegment : ParagraphElementBase
     {
         private readonly LineElement[] _elements;
         private readonly LineElement[] _trimmedElements;

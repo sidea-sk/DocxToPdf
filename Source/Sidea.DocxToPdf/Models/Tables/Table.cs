@@ -8,7 +8,7 @@ using Sidea.DocxToPdf.Models.Tables.Grids;
 
 namespace Sidea.DocxToPdf.Models.Tables
 {
-    internal class Table : ContainerElement
+    internal class Table : PageContextElement
     {
         private readonly Cell[] _cells = new Cell[0];
         private readonly Grid _grid;
@@ -26,12 +26,12 @@ namespace Sidea.DocxToPdf.Models.Tables
             .ThenBy(c => c.GridPosition.Row)      // from top
             .ThenBy(c => c.GridPosition.Column);  // from left
 
-        public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
+        public override void Prepare(PageContext pageContext, Func<PagePosition, PageContextElement, PageContext> nextPageContextFactory)
         {
             _grid.ResetPageContexts(pageContext);
             _grid.PageContextFactory = (PagePosition currentPagePosition) => nextPageContextFactory(currentPagePosition, this);
 
-            Func<PagePosition, ContainerElement, PageContext> onNextPageContext = (currentPagePosition, childElement)
+            Func<PagePosition, PageContextElement, PageContext> onNextPageContext = (currentPagePosition, childElement)
                 => _grid.CreateNextPageContextForCell(currentPagePosition, ((Cell)childElement).GridPosition);
 
             Rectangle availableRegion = pageContext.Region;

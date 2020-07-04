@@ -7,6 +7,9 @@ namespace Sidea.DocxToPdf.Tests
     {
         public SectionTests() : base("Sections", useNextGeneration: true)
         {
+            this.Options = new RenderingOptions(
+                hiddenChars: true,
+                sectionRegionBoundaries: true);
         }
 
         [TestMethod]

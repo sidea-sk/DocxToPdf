@@ -10,7 +10,7 @@ using static Sidea.DocxToPdf.Models.FieldUpdateResult;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
-    internal class Paragraph : ContainerElement
+    internal class Paragraph : PageContextElement
     {
         private readonly IStyleFactory _styleFactory;
 
@@ -31,7 +31,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public double SpaceAfter => this.ParagraphStyle.Spacing.After;
 
-        public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
+        public override void Prepare(PageContext pageContext, Func<PagePosition, PageContextElement, PageContext> nextPageContextFactory)
         {
             ExecuteResult execResult;
             int continueOnLineIndex = 0;

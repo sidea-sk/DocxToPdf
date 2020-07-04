@@ -10,12 +10,12 @@ using Word = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Sidea.DocxToPdf.Models.Tables.Elements
 {
-    internal class Cell : ContainerElement
+    internal class Cell : PageContextElement
     {
         private readonly Margin _contentMargin;
-        private ContainerElement[] _childs = new ContainerElement[0];
+        private PageContextElement[] _childs = new PageContextElement[0];
 
-        private Cell(IEnumerable<ContainerElement> childs, GridPosition gridPosition, BorderStyle borderStyle)
+        private Cell(IEnumerable<PageContextElement> childs, GridPosition gridPosition, BorderStyle borderStyle)
         {
             _contentMargin = new Margin(0.5, 4, 0.5, 4);
             _childs = childs.ToArray();
@@ -27,12 +27,12 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
         public GridPosition GridPosition { get; }
         public BorderStyle BorderStyle { get; }
 
-        public override void Prepare(PageContext pageContext, Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory)
+        public override void Prepare(PageContext pageContext, Func<PagePosition, PageContextElement, PageContext> nextPageContextFactory)
         {
             var currentPageContext = pageContext
                    .Crop(_contentMargin.Top, _contentMargin.Right, 0, _contentMargin.Left);
 
-            Func<PagePosition, ContainerElement, PageContext> onNewPage = (pagePosition, childElement) =>
+            Func<PagePosition, PageContextElement, PageContext> onNewPage = (pagePosition, childElement) =>
             {
                 currentPageContext = nextPageContextFactory(pagePosition, this);
                 return currentPageContext.Crop(0, _contentMargin.Right, 0, _contentMargin.Left);

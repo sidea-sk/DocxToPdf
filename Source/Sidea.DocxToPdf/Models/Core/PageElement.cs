@@ -1,37 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models
 {
-    internal abstract class ContainerElement : IRenderable
+    internal abstract class PageElement : IRenderable
     {
-        private PageRegion[] _pageRegions = new PageRegion[0];
-
-        public IReadOnlyCollection<PageRegion> PageRegions => _pageRegions;
-        public PageRegion LastPageRegion => _pageRegions.LastOrDefault() ?? PageRegion.None;
-
-        //[Obsolete]
-        //public abstract void Prepare(
-        //    PageContext pageContext,
-        //    Func<PageNumber, ContainerElement, PageContext> pageFactory);
-
-        public abstract void Prepare(
-            PageContext pageContext,
-            Func<PagePosition, ContainerElement, PageContext> nextPageContextFactory);
+        public IReadOnlyCollection<PageRegion> PageRegions { get; private set; } = new PageRegion[0];
+        public PageRegion LastPageRegion => this.PageRegions.LastOrDefault() ?? PageRegion.None;
 
         public abstract void Render(IRenderer renderer);
 
         protected void ClearPageRegions()
         {
-            _pageRegions = new PageRegion[0];
+            this.PageRegions = new PageRegion[0];
         }
 
         protected void SetPageRegion(PageRegion pageRegion)
         {
-            _pageRegions = _pageRegions
+            this.PageRegions = this.PageRegions
                 .Where(pr => pr.PagePosition != pageRegion.PagePosition)
                 .Union(new[] { pageRegion })
                 .OrderBy(pr => pr.PagePosition)
@@ -40,12 +28,12 @@ namespace Sidea.DocxToPdf.Models
 
         protected void ResetPageRegions(IEnumerable<PageRegion> pageRegions)
         {
-            _pageRegions = pageRegions.ToArray();
+            this.PageRegions = pageRegions.ToArray();
         }
 
-        protected void ResetPageRegionsFrom(IEnumerable<ContainerElement> children, Margin contentMargin = null)
+        protected void ResetPageRegionsFrom(IEnumerable<PageContextElement> children, Margin contentMargin = null)
         {
-            _pageRegions = children
+            this.PageRegions = children
                 .UnionPageRegions(contentMargin)
                 .ToArray();
         }
@@ -58,11 +46,11 @@ namespace Sidea.DocxToPdf.Models
             }
 
             var index = -1;
-            foreach(var pageRegion in _pageRegions)
+            foreach (var pageRegion in this.PageRegions)
             {
                 index++;
                 var page = renderer.Get(pageRegion.PagePosition.PageNumber);
-                this.RenderBorder(page, pageRegion.Region, index == 0, index == _pageRegions.Length - 1);
+                this.RenderBorder(page, pageRegion.Region, index == 0, index == this.PageRegions.Count - 1);
             }
         }
 

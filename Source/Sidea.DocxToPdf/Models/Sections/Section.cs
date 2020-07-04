@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
@@ -7,7 +6,7 @@ using Sidea.DocxToPdf.Models.Styles;
 
 namespace Sidea.DocxToPdf.Models.Sections
 {
-    internal class Section
+    internal class Section : PageElement
     {
         private List<IPage> _pages = new List<IPage>();
 
@@ -15,7 +14,6 @@ namespace Sidea.DocxToPdf.Models.Sections
         private readonly SectionContent[] _contents;
         private readonly IStyleFactory _styleFactory;
 
-        public IReadOnlyCollection<PageRegion> PageRegions { get; private set; } = new PageRegion[0];
         public IReadOnlyCollection<IPage> Pages => _pages;
 
         public Section(
@@ -37,58 +35,38 @@ namespace Sidea.DocxToPdf.Models.Sections
             foreach (var content in _contents)
             {
                 content.Prepare(contentLastPosition, sectionBreak, this.OnNewPage);
-                contentLastPosition = content.LastPagePosition;
+                contentLastPosition = content.LastPageRegion.PagePosition;
                 sectionBreak = content.SectionBreak;
             }
+
+            var pr = _contents
+                .SelectMany(c => c.PageRegions)
+                .UnionThroughColumns()
+                .ToArray();
+            this.ResetPageRegions(pr);
         }
 
-        //public void Prepare(IPage lastPageOfPreviosSection, Rectangle occupiedSpace, Variables documentVariables)
-        //{
-        //    var pageNumber = lastPageOfPreviosSection.PageNumber.Next();
-        //    this.EnsurePage(pageNumber);
-
-        //    for (var i = 0; i < _contents.Length; i++)
-        //    {
-        //        // todo: handle column and page breaks
-        //        var context = this.CreateContextForColumn(pageNumber, Rectangle.Empty, i, documentVariables);
-        //        var column = _contents[i];
-        //        column.Prepare(context, this.OnNewPage);
-
-        //        switch (column.SectionBreak)
-        //        {
-        //            case SectionBreak.None:
-        //                break;
-        //            case SectionBreak.Column:
-        //                break;
-        //            case SectionBreak.Page:
-        //                // create new Page for the Next Column
-        //                pageNumber = column.LastPageRegion.PageNumber.Next();
-        //                this.EnsurePage(pageNumber);
-        //                break;
-        //        }
-        //    }
-
-        //    this.PageRegions = _contents.UnionPageRegions().ToArray();
-        //}
-
-        public void Render(IRenderer renderer)
+        public override void Render(IRenderer renderer)
         {
-            foreach (var p in _pages)
-            {
-                var r = p.GetContentRegion();
-                var rp = renderer.Get(p.PageNumber);
-                var pen = new System.Drawing.Pen(System.Drawing.Color.Orange, 0.5f);
+            //// page content borders
+            //foreach (var p in _pages)
+            //{
+            //    var r = p.GetContentRegion();
+            //    var rp = renderer.Get(p.PageNumber);
+            //    var pen = new System.Drawing.Pen(System.Drawing.Color.Orange, 0.5f);
 
-                rp.RenderLine(r.TopLine(pen));
-                rp.RenderLine(r.RightLine(pen));
-                rp.RenderLine(r.BottomLine(pen));
-                rp.RenderLine(r.LeftLine(pen));
-            }
+            //    rp.RenderLine(r.TopLine(pen));
+            //    rp.RenderLine(r.RightLine(pen));
+            //    rp.RenderLine(r.BottomLine(pen));
+            //    rp.RenderLine(r.LeftLine(pen));
+            //}
 
             foreach (var content in _contents)
             {
                 content.Render(renderer);
             }
+
+            this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries);
         }
 
         private IPage OnNewPage(PageNumber pageNumber)
@@ -97,39 +75,6 @@ namespace Sidea.DocxToPdf.Models.Sections
             var page = _pages.Single(p => p.PageNumber == pageNumber);
             return page;
         }
-
-        //private PageContext OnNewPage(PageNumber pageNumber, SectionContent requestingColumn)
-        //{
-        //    this.EnsurePage(pageNumber);
-
-        //    var index = _contents.IndexOf(c => c == requestingColumn);
-        //    if(index == -1)
-        //    {
-        //        throw new RendererException("Column not found");
-        //    }
-
-        //    var page = _pages.Single(p => p.PageNumber == pageNumber);
-
-        //    return new PageContext(pageNumber, 0, page.GetContentRegion(), new DocumentVariables(totalPages: _pages.Count));
-        //}
-
-        //private PageContext CreateContextForColumn(
-        //    PageNumber pageNumber,
-        //    Rectangle occupiedRegion,
-        //    int columnIndex,
-        //    Variables documentVariables)
-        //{
-        //    var page = _pages.Single(p => p.PageNumber == pageNumber);
-        //    var columnSpace = _properties.CalculateColumnSpace(columnIndex);
-
-        //    var y = Math.Max(page.Margin.Top, occupiedRegion.BottomY);
-
-        //    var content = page
-        //        .GetContentRegion()
-        //        .CropHorizontal(columnSpace.X, columnSpace.Width);
-
-        //    return new PageContext(pageNumber, 0, content, documentVariables);
-        //}
 
         private void EnsurePage(PageNumber pageNumber)
         {

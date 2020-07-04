@@ -2,7 +2,7 @@
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
-    internal abstract class LineElement : ElementBase
+    internal abstract class LineElement : ParagraphElementBase
     {
         public abstract void Justify(DocumentPosition position, double baseLineOffset, double lineHeight);
 

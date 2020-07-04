@@ -3,7 +3,7 @@ using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
-    internal abstract class ElementBase : IPageRenderable
+    internal abstract class ParagraphElementBase : IPageRenderable
     {
         public DocumentPosition Position { get; private set; } = DocumentPosition.None;
 

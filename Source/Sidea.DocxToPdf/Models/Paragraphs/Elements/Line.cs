@@ -7,7 +7,7 @@ using static Sidea.DocxToPdf.Models.FieldUpdateResult;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
-    internal class Line: ElementBase
+    internal class Line: ParagraphElementBase
     {
         private readonly LineSegment[] _segments;
         private readonly LineSpacing _lineSpacing;
