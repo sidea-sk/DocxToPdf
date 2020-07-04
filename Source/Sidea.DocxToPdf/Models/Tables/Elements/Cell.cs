@@ -17,7 +17,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 
         private Cell(IEnumerable<ContainerElement> childs, GridPosition gridPosition, BorderStyle borderStyle)
         {
-            _contentMargin = new Margin(5, 4, 15, 4);
+            _contentMargin = new Margin(0.5, 4, 0.5, 4);
             _childs = childs.ToArray();
 
             this.GridPosition = gridPosition;
