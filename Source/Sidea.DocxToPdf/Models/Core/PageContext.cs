@@ -16,14 +16,11 @@ namespace Sidea.DocxToPdf.Models
             this.TopLeft = new DocumentPosition(pagePosition, this.Region.TopLeft);
         }
 
-        public PageNumber PageNumber => this.PagePosition.PageNumber;
-        public int PageColumn => this.PagePosition.PageColumn;
         public Rectangle Region { get; }
         public PageVariables PageVariables { get; }
 
         public DocumentPosition TopLeft { get; }
         public PagePosition PagePosition { get; }
-        public DocumentVariables Variables { get; }
 
         public PageContext Crop(Margin margin)
             => this.Crop(margin.Top, margin.Right, margin.Bottom, margin.Left);

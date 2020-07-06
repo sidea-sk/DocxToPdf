@@ -15,19 +15,19 @@ namespace Sidea.DocxToPdf.Models.Sections
         public SectionContent(
             IEnumerable<PageContextElement> childs,
             ColumnsConfiguration columnsConfiguration,
-            SectionBreak sectionBreak)
+            SectionContentBreak sectionBreak)
         {
             _childs = childs.ToArray();
             _columnsConfiguration = columnsConfiguration;
             this.SectionBreak = sectionBreak;
         }
 
-        public SectionBreak SectionBreak { get; }
+        public SectionContentBreak SectionBreak { get; }
 
         public void Prepare(
             PageRegion previousSection,
             PageRegion previousContent,
-            SectionBreak previousBreak,
+            SectionContentBreak previousBreak,
             Func<PageNumber, IPage> pageFactory)
         {
             var context = this.CreateInitialPageContext(previousSection, previousContent, previousBreak, pageFactory);
@@ -54,12 +54,17 @@ namespace Sidea.DocxToPdf.Models.Sections
         private PageContext CreateInitialPageContext(
             PageRegion previousSection,
             PageRegion previousContent,
-            SectionBreak previousBreak,
+            SectionContentBreak previousBreak,
             Func<PageNumber, IPage> pageFactory)
         {
             switch (previousBreak)
             {
-                case SectionBreak.Column:
+                case SectionContentBreak.None:
+                    {
+                        var pp = previousSection.PagePosition.SamePage(PageColumn.First, _columnsConfiguration.ColumnsCount);
+                        return this.CreateContextForPagePosition(pp, previousSection.Region, pageFactory);
+                    }
+                case SectionContentBreak.Column:
                     {
                         var pp = previousContent.PagePosition.Next();
                         var occupiedRegion = pp.PageNumber == previousSection.PagePosition.PageNumber
@@ -68,16 +73,10 @@ namespace Sidea.DocxToPdf.Models.Sections
 
                         return this.CreateContextForPagePosition(pp, occupiedRegion, pageFactory);
                     }
-                case SectionBreak.Page:
+                case SectionContentBreak.Page:
                     {
-                        var pp = previousContent.PagePosition.NextPage(0, _columnsConfiguration.ColumnsCount);
+                        var pp = previousSection.PagePosition.NextPage(PageColumn.First, _columnsConfiguration.ColumnsCount);
                         return this.CreateContextForPagePosition(pp, Rectangle.Empty, pageFactory);
-                    }
-                case SectionBreak.None:
-                    {
-
-                        var pp = previousContent.PagePosition.SamePage(0, _columnsConfiguration.ColumnsCount);
-                        return this.CreateContextForPagePosition(pp, previousContent.Region, pageFactory);
                     }
                 default:
                     throw new RendererException("unhandled section break;");
@@ -99,7 +98,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             Func<PageNumber, IPage> pageFactory)
         {
             var page = pageFactory(pagePosition.PageNumber);
-            var columnSpace = _columnsConfiguration.CalculateColumnSpace(pagePosition.PageColumn);
+            var columnSpace = _columnsConfiguration.CalculateColumnSpace(pagePosition.PageColumnIndex);
             var region = page
                 .GetContentRegion()
                 .CropHorizontal(columnSpace.X, columnSpace.Width);

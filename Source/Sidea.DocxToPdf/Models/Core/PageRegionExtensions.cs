@@ -42,7 +42,7 @@ namespace Sidea.DocxToPdf.Models
                 .Select(grp =>
                 {
                     var rectangle = Rectangle.Union(grp.Select(r => r.Region));
-                    return new PageRegion(new PagePosition(grp.Key, 0, 1), rectangle);
+                    return new PageRegion(new PagePosition(grp.Key, PageColumn.First, new PageColumn(1)), rectangle);
                 })
                 .ToArray();
 

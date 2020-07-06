@@ -1,23 +1,27 @@
 ﻿using System;
+using System.Diagnostics;
 using Sidea.DocxToPdf.Core;
 
 namespace Sidea.DocxToPdf.Models.Common
 {
+    [DebuggerDisplay("PN: {PageNumber}, {PageColumn}/{_totalColumns}")]
     internal class PagePosition : IEquatable<PagePosition>, IComparable<PagePosition>
     {
-        public static readonly PagePosition None = new PagePosition(PageNumber.None, -1, 0);
-        private readonly int _totalColumns;
+        public static readonly PagePosition None = new PagePosition(PageNumber.None, Common.PageColumn.None, Common.PageColumn.None);
+        private readonly PageColumn _totalColumns;
 
-        public PagePosition(PageNumber pageNumber, int column, int totalColumns)
+        public PagePosition(PageNumber pageNumber, PageColumn column, PageColumn totalColumns)
         {
             this.PageNumber = pageNumber;
-            this.PageColumn = column;
+            this.Column = column;
             _totalColumns = totalColumns;
         }
 
         public PageNumber PageNumber { get; }
 
-        public int PageColumn { get; }
+        public PageColumn Column { get; }
+
+        public int PageColumnIndex => this.Column - 1;
 
         public PagePosition Next()
         {
@@ -26,22 +30,22 @@ namespace Sidea.DocxToPdf.Models.Common
                 throw new Exception("Total Columns is zero");
             }
 
-            return this.PageColumn == _totalColumns - 1
+            return this.Column == _totalColumns
                 ? this.NewPage()
                 : this.NextColumn();
         }
 
-        public PagePosition NextPage(int column, int totalColumns)
+        public PagePosition NextPage(PageColumn column, PageColumn totalColumns)
             => new PagePosition(this.PageNumber.Next(), column, totalColumns);
 
-        public PagePosition SamePage(int column, int totalColumns)
+        public PagePosition SamePage(PageColumn column, PageColumn totalColumns)
             => new PagePosition(this.PageNumber, column, totalColumns);
 
         private PagePosition NextColumn()
-            => new PagePosition(this.PageNumber, this.PageColumn + 1, _totalColumns);
+            => new PagePosition(this.PageNumber, this.Column.Next(), _totalColumns);
 
         private PagePosition NewPage()
-            => new PagePosition(this.PageNumber.Next(), 0, _totalColumns);
+            => new PagePosition(this.PageNumber.Next(), PageColumn.First, _totalColumns);
 
         public int CompareTo(PagePosition other)
         {
@@ -51,12 +55,12 @@ namespace Sidea.DocxToPdf.Models.Common
                 return pnSign;
             }
 
-            return this.PageColumn - other.PageColumn;
+            return this.Column.CompareTo(other.Column);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(this.PageNumber.GetHashCode(), this.PageColumn.GetHashCode());
+            return HashCode.Combine(this.PageNumber.GetHashCode(), this.Column.GetHashCode());
         }
 
         public override bool Equals(object obj)
@@ -68,7 +72,7 @@ namespace Sidea.DocxToPdf.Models.Common
         {
             return other is object
                 && other.PageNumber == this.PageNumber
-                && other.PageColumn == this.PageColumn;
+                && other.Column == this.Column;
         }
 
         public static bool operator ==(PagePosition p1, PagePosition p2)

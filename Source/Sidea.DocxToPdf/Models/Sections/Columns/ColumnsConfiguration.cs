@@ -11,9 +11,10 @@ namespace Sidea.DocxToPdf.Models.Sections.Columns
         public ColumnsConfiguration(IEnumerable<ColumnConfig> columns)
         {
             _columns = columns.ToArray();
+            this.ColumnsCount = new PageColumn(_columns.Length);
         }
 
-        public int ColumnsCount => _columns.Length;
+        public PageColumn ColumnsCount { get; }
 
         public HorizontalSpace CalculateColumnSpace(int columnIndex)
         {

@@ -99,7 +99,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                     case Word.Paragraph p:
                         {
                             var (begin, @break, end) = p.SplitByNextBreak();
-                            if (@break == SectionBreak.None)
+                            if (@break == SectionContentBreak.None)
                             {
                                 contentElements.Add(p);
                             }
@@ -126,7 +126,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
             if (contentElements.Count > 0)
             {
                 var childElements = contentElements.CreateInitializeElements(styleFactory);
-                sectionContents.Add(new SectionContent(childElements, columnsConfiguration, SectionBreak.None));
+                sectionContents.Add(new SectionContent(childElements, columnsConfiguration, SectionContentBreak.None));
             }
 
             return sectionContents;
@@ -206,7 +206,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
             return previousHeaderFooterConfiguration.Inherited(mainDocument, hasTitlePage, headerRefs, footerRefs);
         }
 
-        private static (Word.Paragraph, SectionBreak, Word.Paragraph) SplitByNextBreak(this Word.Paragraph paragraph)
+        private static (Word.Paragraph, SectionContentBreak, Word.Paragraph) SplitByNextBreak(this Word.Paragraph paragraph)
         {
             var index = paragraph
                 .ChildElements
@@ -214,7 +214,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
 
             if (index == -1)
             {
-                return (paragraph, SectionBreak.None, null);
+                return (paragraph, SectionContentBreak.None, null);
             }
 
             var beginElements = paragraph
@@ -252,15 +252,15 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                 .Type;
 
 
-            var @break = SectionBreak.None;
+            var @break = SectionContentBreak.None;
             switch (breakType.Value)
             {
                 case Word.BreakValues.Column:
-                    @break = SectionBreak.Column;
+                    @break = SectionContentBreak.Column;
                     break;
 
                 case Word.BreakValues.Page:
-                    @break = SectionBreak.Page;
+                    @break = SectionContentBreak.Page;
                     break;
                 default:
                     throw new System.Exception("Unexpected value");

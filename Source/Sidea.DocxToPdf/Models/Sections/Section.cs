@@ -33,10 +33,10 @@ namespace Sidea.DocxToPdf.Models.Sections
             DocumentVariables documentVariables)
         {
             var sectionBreak = _properties.StartOnNextPage
-                ? SectionBreak.Page
-                : SectionBreak.None;
+                ? SectionContentBreak.Page
+                : SectionContentBreak.None;
 
-            Func<PageNumber, IPage> contentPageRequest = (pageNumber) =>
+            IPage contentPageRequest(PageNumber pageNumber) =>
                 this.OnNewPage(pageNumber, documentVariables);
 
             var contentLastPosition = PageRegion.None;
