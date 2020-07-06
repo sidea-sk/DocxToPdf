@@ -6,6 +6,6 @@
 
         void CreatePage(PageNumber pageNumber, PageConfiguration configuration);
 
-        IRendererPage Get(PageNumber pageNumber);
+        IRendererPage GetPage(PageNumber pageNumber);
     }
 }

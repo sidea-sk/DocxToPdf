@@ -1,4 +1,6 @@
-﻿namespace Sidea.DocxToPdf.Models.Common
+﻿using Sidea.DocxToPdf.Core;
+
+namespace Sidea.DocxToPdf.Models.Common
 {
     public class Margin
     {
@@ -19,5 +21,8 @@
 
         public double HorizontalMargins => this.Left + this.Right;
         public double VerticalMargins => this.Top + this.Bottom;
+
+        public Point TopLeftReverseOffset()
+            => new Point(-this.Left, -this.Top);
     }
 }

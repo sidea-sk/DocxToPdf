@@ -60,7 +60,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Grids
             BorderLine borderLine,
             Pen pen)
         {
-            var page = renderer.Get(borderLine.PageNumber);
+            var page = renderer.GetPage(borderLine.PageNumber);
             var line = borderLine.ToLine(pen);
             page.RenderLine(line);
         }

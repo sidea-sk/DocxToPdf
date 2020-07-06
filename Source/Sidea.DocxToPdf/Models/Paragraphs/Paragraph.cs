@@ -36,6 +36,8 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             ExecuteResult execResult;
             int continueOnLineIndex = 0;
 
+            this.PrepareFixedDrawings(pageContext, nextPageContextFactory);
+
             var context = pageContext;
             do
             {
@@ -52,6 +54,39 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                 .Sum(l => l.HeightWithSpacing);
 
             this.SetPageRegion(new PageRegion(context.PagePosition, new Rectangle(context.Region.TopLeft, context.Region.Width, heightInLastRegion)));
+        }
+
+        private void PrepareFixedDrawings(PageContext context, Func<PagePosition, PageContextElement, PageContext> nextPageContextFactory)
+        {
+            var currentContext = context;
+            var unprocessed = _fixedDrawings.ToList();
+
+            var paragraphYOffset = 0.0;
+            while(unprocessed.Count > 0)
+            {
+                var fitsInContext = unprocessed
+                    .Where(fd => fd.OffsetFromParent.Y < currentContext.Region.BottomY
+                              && fd.OffsetFromParent.Y + fd.Size.Height < currentContext.Region.BottomY)
+                    .ToArray();
+
+                foreach(var fd in fitsInContext)
+                {
+                    var y = Math.Max(0, fd.OffsetFromParent.Y - paragraphYOffset);
+                    var position = currentContext
+                        .TopLeft
+                        .MoveX(fd.OffsetFromParent.X)
+                        .MoveY(y);
+
+                    fd.SetPosition(position);
+                }
+
+                unprocessed.RemoveAll(fd => fitsInContext.Any(f => f == fd));
+                if(unprocessed.Count > 0)
+                {
+                    paragraphYOffset += currentContext.Region.Height;
+                    currentContext = nextPageContextFactory(context.PagePosition.Next(), this);
+                }
+            }
         }
 
         private (ExecuteResult, int) ExecutePrepare(PageContext context, int fromLineIndex)
@@ -82,13 +117,13 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             }
 
             var defaultLineHeight = _styleFactory.TextStyle.Font.Height;
-            var relativeYOffset = _lines.Sum(l => l.HeightWithSpacing);
+            yOffset = _lines.Sum(l => l.HeightWithSpacing);
 
             while (_unprocessedElements.Count > 0)
             {
                 var line = _unprocessedElements.CreateLine(
                     this.ParagraphStyle.LineAlignment,
-                    relativeYOffset,
+                    yOffset,
                     _fixedDrawings,
                     context.Region.Width,
                     defaultLineHeight,
@@ -112,12 +147,13 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         {
             foreach(var fixedDrawing in _fixedDrawings)
             {
-
+                var page = renderer.GetPage(fixedDrawing.Position.Page.PageNumber);
+                fixedDrawing.Render(page);
             }
 
             foreach(var line in _lines)
             {
-                var page = renderer.Get(line.Position.Page.PageNumber);
+                var page = renderer.GetPage(line.Position.Page.PageNumber);
                 line.Render(page);
             }
 

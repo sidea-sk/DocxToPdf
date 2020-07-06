@@ -3,34 +3,34 @@ using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
-    internal class FixedDrawing
+    internal class FixedDrawing : ParagraphElementBase
     {
         private readonly string _imageId;
-        private readonly Point _offsetFromParent;
-        private readonly Size _size;
+        private readonly Margin _margin;
         private readonly IImageAccessor _imageAccessor;
 
         public FixedDrawing(
             string imageId,
-            Point position,
+            Point offsetFromParent,
             Size size,
             Margin margin,
             IImageAccessor imageAccessor)
         {
             _imageId = imageId;
-            _offsetFromParent = position;
-            _size = size;
+            this.OffsetFromParent = offsetFromParent;
+            _margin = margin;
             _imageAccessor = imageAccessor;
-            var p = new Point(_offsetFromParent.X - margin.Left, _offsetFromParent.Y - margin.Top);
-            this.BoundingBox = new Rectangle(p, size.Expand(margin.HorizontalMargins, margin.VerticalMargins));
+
+            this.Size = size;
         }
 
-        public Rectangle BoundingBox { get; }
+        public Rectangle BoundingBox => new Rectangle(this.OffsetFromParent + _margin.TopLeftReverseOffset(), this.Size.Expand(_margin.HorizontalMargins, _margin.VerticalMargins));
+        public Point OffsetFromParent { get; }
 
-        public void Render(IRendererPage page)
+        public override void Render(IRendererPage page)
         {
             var stream = _imageAccessor.GetImageStream(_imageId);
-            page.RenderImage(stream, _offsetFromParent, _size);
+            page.RenderImage(stream, this.Position.Offset, this.Size);
         }
     }
 }

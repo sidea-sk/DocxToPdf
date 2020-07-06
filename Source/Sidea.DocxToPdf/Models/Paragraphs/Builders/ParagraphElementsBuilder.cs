@@ -4,6 +4,7 @@ using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Styles;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 using WDrawing = DocumentFormat.OpenXml.Drawing.Wordprocessing;
+using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
 {
@@ -135,11 +136,22 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             var size = anchor.Extent.ToSize();
             var blipElement = anchor.Descendants<DocumentFormat.OpenXml.Drawing.Blip>().First();
 
+            var margin = anchor.ToAnchorMargin();
             var position = anchor.SimplePos.Value
                 ? new Point(anchor.SimplePosition.X.Value, anchor.SimplePosition.Y.Value)
                 : new Point(anchor.HorizontalPosition.PositionOffset.ToPoint(), anchor.VerticalPosition.PositionOffset.ToPoint());
 
-            return new FixedDrawing(blipElement.Embed.Value, position, size, new Common.Margin(0,10,0,10), imageAccessor);
+            return new FixedDrawing(blipElement.Embed.Value, position, size, margin, imageAccessor);
+        }
+
+        private static Margin ToAnchorMargin(this WDrawing.Anchor anchor)
+        {
+            var top = anchor.DistanceFromTop.EmuToPoint();
+            var right = anchor.DistanceFromRight.EmuToPoint();
+            var bottom = anchor.DistanceFromBottom.EmuToPoint();
+            var left = anchor.DistanceFromLeft.EmuToPoint();
+
+            return new Margin(top, right, bottom, left);
         }
     }
 }

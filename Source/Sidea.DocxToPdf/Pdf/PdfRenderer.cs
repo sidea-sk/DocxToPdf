@@ -38,7 +38,7 @@ namespace Sidea.DocxToPdf.Pdf
             _pages.Add(pageNumber, new PdfRendererPage(pageNumber, XGraphics.FromPdfPage(pdfPage), this.Options));
         }
 
-        public IRendererPage Get(PageNumber pageNumber)
+        public IRendererPage GetPage(PageNumber pageNumber)
         {
             return _pages[pageNumber];
         }

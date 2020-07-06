@@ -49,7 +49,7 @@ namespace Sidea.DocxToPdf.Models
             foreach (var pageRegion in this.PageRegions)
             {
                 index++;
-                var page = renderer.Get(pageRegion.PagePosition.PageNumber);
+                var page = renderer.GetPage(pageRegion.PagePosition.PageNumber);
                 this.RenderBorder(page, pageRegion.Region, index == 0, index == this.PageRegions.Count - 1);
             }
         }
