@@ -35,11 +35,13 @@ namespace Sidea.DocxToPdf.Models.Sections
             Func<PagePosition, PageContextElement, PageContext> childContextRequest = (pagePosition, child)
                 => this.OnChildPageContextRequest(pagePosition, pageFactory);
 
+            var spaceAfterPrevious = 0.0;
             foreach(var child in _childs)
             {
                 child.Prepare(context, childContextRequest);
                 var lastRegion = child.LastPageRegion;
-                context = this.CreateContextForPagePosition(lastRegion.PagePosition, lastRegion.Region, pageFactory);
+                spaceAfterPrevious = this.CalculateSpaceAfter(child);
+                context = this.CreateContextForPagePosition(lastRegion.PagePosition, lastRegion.Region, spaceAfterPrevious, pageFactory);
             }
 
             this.ResetPageRegionsFrom(_childs);
@@ -57,12 +59,13 @@ namespace Sidea.DocxToPdf.Models.Sections
             SectionContentBreak previousBreak,
             Func<PageNumber, IPage> pageFactory)
         {
+            var spaceAfterPrevious = 0;
             switch (previousBreak)
             {
                 case SectionContentBreak.None:
                     {
                         var pp = previousSection.PagePosition.SamePage(PageColumn.First, _columnsConfiguration.ColumnsCount);
-                        return this.CreateContextForPagePosition(pp, previousSection.Region, pageFactory);
+                        return this.CreateContextForPagePosition(pp, previousSection.Region, spaceAfterPrevious, pageFactory);
                     }
                 case SectionContentBreak.Column:
                     {
@@ -71,12 +74,12 @@ namespace Sidea.DocxToPdf.Models.Sections
                             ? previousSection.Region
                             : Rectangle.Empty;
 
-                        return this.CreateContextForPagePosition(pp, occupiedRegion, pageFactory);
+                        return this.CreateContextForPagePosition(pp, occupiedRegion, spaceAfterPrevious, pageFactory);
                     }
                 case SectionContentBreak.Page:
                     {
                         var pp = previousSection.PagePosition.NextPage(PageColumn.First, _columnsConfiguration.ColumnsCount);
-                        return this.CreateContextForPagePosition(pp, Rectangle.Empty, pageFactory);
+                        return this.CreateContextForPagePosition(pp, Rectangle.Empty, spaceAfterPrevious, pageFactory);
                     }
                 default:
                     throw new RendererException("unhandled section break;");
@@ -88,13 +91,14 @@ namespace Sidea.DocxToPdf.Models.Sections
             Func<PageNumber, IPage> pageFactory)
         {
             var nextPosition = pagePosition.Next();
-            var context = this.CreateContextForPagePosition(nextPosition, Rectangle.Empty, pageFactory);
+            var context = this.CreateContextForPagePosition(nextPosition, Rectangle.Empty, 0, pageFactory);
             return context;
         }
 
         private PageContext CreateContextForPagePosition(
             PagePosition pagePosition,
             Rectangle occupiedRegion,
+            double spaceAfterPrevious,
             Func<PageNumber, IPage> pageFactory)
         {
             var page = pageFactory(pagePosition.PageNumber);
@@ -109,11 +113,18 @@ namespace Sidea.DocxToPdf.Models.Sections
                 page.DocumentVariables);
 
             var cropY = occupiedRegion.BottomY == 0
-                ? 0
-                : occupiedRegion.BottomY - page.Margin.Top;
+                ? spaceAfterPrevious
+                : occupiedRegion.BottomY + spaceAfterPrevious - page.Margin.Top;
 
             context = context.CropFromTop(cropY);
             return context;
+        }
+
+        private double CalculateSpaceAfter(PageContextElement element)
+        {
+            var index = _childs.IndexOf(e => e == element);
+            var spaceBetween = Paragraphs.Tools.CalculateSpaceBetween(element, _childs.SkipWhile(e => e != element).Skip(1).FirstOrDefault());
+            return spaceBetween;
         }
     }
 }
