@@ -5,24 +5,32 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 {
     internal class FixedDrawing
     {
-        private readonly string _id;
-        private readonly Point _position;
+        private readonly string _imageId;
+        private readonly Point _offsetFromParent;
         private readonly Size _size;
+        private readonly IImageAccessor _imageAccessor;
 
         public FixedDrawing(
-            string id,
+            string imageId,
             Point position,
             Size size,
-            Margin margin)
+            Margin margin,
+            IImageAccessor imageAccessor)
         {
-            _id = id;
-            _position = position;
+            _imageId = imageId;
+            _offsetFromParent = position;
             _size = size;
-
-            var p = new Point(_position.X - margin.Left, _position.Y - margin.Top);
+            _imageAccessor = imageAccessor;
+            var p = new Point(_offsetFromParent.X - margin.Left, _offsetFromParent.Y - margin.Top);
             this.BoundingBox = new Rectangle(p, size.Expand(margin.HorizontalMargins, margin.VerticalMargins));
         }
 
         public Rectangle BoundingBox { get; }
+
+        public void Render(IRendererPage page)
+        {
+            var stream = _imageAccessor.GetImageStream(_imageId);
+            page.RenderImage(stream, _offsetFromParent, _size);
+        }
     }
 }

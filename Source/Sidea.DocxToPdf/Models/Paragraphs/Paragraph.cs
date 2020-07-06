@@ -110,6 +110,11 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public override void Render(IRenderer renderer)
         {
+            foreach(var fixedDrawing in _fixedDrawings)
+            {
+
+            }
+
             foreach(var line in _lines)
             {
                 var page = renderer.Get(line.Position.Page.PageNumber);

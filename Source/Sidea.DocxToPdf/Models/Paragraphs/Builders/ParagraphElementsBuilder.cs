@@ -45,12 +45,12 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             return elements.Union(new[] { ParagraphCharElement.Create(styleFactory.TextStyle) });
         }
 
-        public static IEnumerable<FixedDrawing> CreateFixedDrawingElements(this Word.Paragraph paragraph)
+        public static IEnumerable<FixedDrawing> CreateFixedDrawingElements(this Word.Paragraph paragraph, IImageAccessor imageAccessor)
         {
             var drawings = paragraph
                 .Descendants<Word.Drawing>()
                 .Where(d => d.Anchor != null)
-                .Select(d => d.Anchor.ToFixedDrawing())
+                .Select(d => d.Anchor.ToFixedDrawing(imageAccessor))
                 .ToArray();
 
             return drawings;
@@ -130,7 +130,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             return new InilineDrawing(blipElement.Embed.Value, size, imageAccessor);
         }
 
-        private static FixedDrawing ToFixedDrawing(this WDrawing.Anchor anchor)
+        private static FixedDrawing ToFixedDrawing(this WDrawing.Anchor anchor, IImageAccessor imageAccessor)
         {
             var size = anchor.Extent.ToSize();
             var blipElement = anchor.Descendants<DocumentFormat.OpenXml.Drawing.Blip>().First();
@@ -139,7 +139,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
                 ? new Point(anchor.SimplePosition.X.Value, anchor.SimplePosition.Y.Value)
                 : new Point(anchor.HorizontalPosition.PositionOffset.ToPoint(), anchor.VerticalPosition.PositionOffset.ToPoint());
 
-            return new FixedDrawing(blipElement.Embed.Value, position, size, new Common.Margin(0,10,0,10));
+            return new FixedDrawing(blipElement.Embed.Value, position, size, new Common.Margin(0,10,0,10), imageAccessor);
         }
     }
 }

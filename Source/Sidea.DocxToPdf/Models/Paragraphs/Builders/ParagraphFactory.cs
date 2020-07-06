@@ -11,7 +11,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
         {
             var paragraphStyleFactory = styleFactory.ForParagraph(paragraph.ParagraphProperties);
             var fixedDrawings = paragraph
-                .CreateFixedDrawingElements()
+                .CreateFixedDrawingElements(imageAccessor)
                 .OrderBy(d => d.BoundingBox.Y)
                 .ToArray();
 
