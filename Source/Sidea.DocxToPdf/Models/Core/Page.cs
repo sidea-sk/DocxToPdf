@@ -20,7 +20,7 @@ namespace Sidea.DocxToPdf.Models
         public PageNumber PageNumber { get; }
         public PageConfiguration Configuration { get; }
 
-        public Margin Margin { get; set; } = Margin.None;
+        public PageMargin Margin { get; private set; } = PageMargin.PageNone;
 
         public DocumentVariables DocumentVariables { get; set; } = new DocumentVariables(0);
 
@@ -35,5 +35,20 @@ namespace Sidea.DocxToPdf.Models
 
         public Rectangle GetPageRegion()
             => new Rectangle(0, 0, this.Configuration.Width, this.Configuration.Height);
+
+        public void SetBottomMargins(double footer, double bottom)
+        {
+            this.Margin = this.Margin.WithBottom(footer, bottom);
+        }
+
+        public void SetHorizontalMargins(double left, double right)
+        {
+            this.Margin = this.Margin.WithHorizontal(left, right);
+        }
+
+        public void SetTopMargins(double header, double top)
+        {
+            this.Margin = this.Margin.WithTop(header, top);
+        }
     }
 }

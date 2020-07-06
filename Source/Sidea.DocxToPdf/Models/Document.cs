@@ -44,7 +44,7 @@ namespace Sidea.DocxToPdf.Models
             do
             {
                 var previousSection = PageRegion.None;
-                var previousSectionMargin = Margin.None;
+                var previousSectionMargin = PageMargin.PageNone;
 
                 foreach (var section in _sections)
                 {

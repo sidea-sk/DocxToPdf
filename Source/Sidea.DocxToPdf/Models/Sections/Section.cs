@@ -2,6 +2,8 @@
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
+using Sidea.DocxToPdf.Models.Footers;
+using Sidea.DocxToPdf.Models.Footers.Builders;
 using Sidea.DocxToPdf.Models.Headers;
 using Sidea.DocxToPdf.Models.Headers.Builders;
 using Sidea.DocxToPdf.Models.Styles;
@@ -12,6 +14,7 @@ namespace Sidea.DocxToPdf.Models.Sections
     {
         private List<Page> _pages = new List<Page>();
         private Dictionary<PageNumber, HeaderBase> _headers = new Dictionary<PageNumber, HeaderBase>();
+        private Dictionary<PageNumber, FooterBase> _footers = new Dictionary<PageNumber, FooterBase>();
 
         private readonly SectionProperties _properties;
         private readonly IImageAccessor _imageAccessor;
@@ -35,7 +38,7 @@ namespace Sidea.DocxToPdf.Models.Sections
 
         public void Prepare(
             PageRegion previousSection,
-            Margin previousSectionMargin,
+            PageMargin previousSectionMargin,
             DocumentVariables documentVariables)
         {
             var sectionBreak = _properties.StartOnNextPage
@@ -80,6 +83,11 @@ namespace Sidea.DocxToPdf.Models.Sections
                 header.Render(renderer);
             }
 
+            foreach (var footer in _footers.Values)
+            {
+                footer.Render(renderer);
+            }
+
             foreach (var content in _contents)
             {
                 content.Render(renderer);
@@ -91,7 +99,7 @@ namespace Sidea.DocxToPdf.Models.Sections
         private IPage OnNewPage(
             PageNumber pageNumber,
             PageNumber previousSectionLastPage,
-            Margin previousSectionMargin,
+            PageMargin previousSectionMargin,
             DocumentVariables documentVariables)
         {
             this.EnsurePage(pageNumber, previousSectionLastPage, previousSectionMargin);
@@ -100,7 +108,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             return page;
         }
 
-        private void EnsurePage(PageNumber pageNumber, PageNumber previousSectionLastPage, Margin previousSectionMargin)
+        private void EnsurePage(PageNumber pageNumber, PageNumber previousSectionLastPage, PageMargin previousSectionMargin)
         {
             if(_pages.Any(p => p.PageNumber == pageNumber))
             {
@@ -108,7 +116,10 @@ namespace Sidea.DocxToPdf.Models.Sections
             }
 
             var newPage = new Page(pageNumber, _properties.PageConfiguration);
+            newPage.SetHorizontalMargins(_properties.Margin.Left, _properties.Margin.Right);
+
             this.CreateHeader(newPage, previousSectionLastPage);
+            this.CreateFooter(newPage, previousSectionLastPage, previousSectionMargin);
 
             var topMargin = previousSectionMargin.Top;
             if (_headers.ContainsKey(pageNumber))
@@ -116,8 +127,10 @@ namespace Sidea.DocxToPdf.Models.Sections
                 topMargin = _headers[pageNumber].BottomY;
             }
 
-            newPage.Margin = new Margin(topMargin, _properties.Margin.Right, 80, _properties.Margin.Left);
+            newPage.SetTopMargins(_properties.Margin.Header, topMargin);
 
+            var footer = _footers[pageNumber];
+            newPage.SetBottomMargins(footer.FooterMargin, footer.HeightWithFooterMargin);
             _pages.Add(newPage);
         }
 
@@ -134,6 +147,18 @@ namespace Sidea.DocxToPdf.Models.Sections
 
             header.Prepare(page);
             _headers.Add(page.PageNumber, header);
+        }
+
+        private void CreateFooter(IPage page, PageNumber previousSectionLastPage, PageMargin previousSectionMargin)
+        {
+            var footer = previousSectionLastPage == page.PageNumber
+                ? FooterFactory.CreateInheritedFooter(previousSectionMargin)
+                : _properties.HeaderFooterConfiguration
+                     .FindFooter(page.PageNumber)
+                     .CreateFooter(_properties.Margin, _imageAccessor, _styleFactory);
+
+            footer.Prepare(page);
+            _footers.Add(page.PageNumber, footer);
         }
     }
 }

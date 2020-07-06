@@ -4,10 +4,11 @@ using Sidea.DocxToPdf.Core;
 
 namespace Sidea.DocxToPdf.Models.Common
 {
-    [DebuggerDisplay("PN: {PageNumber}, {PageColumn}/{_totalColumns}")]
+    [DebuggerDisplay("PN: {PageNumber}, {Column}/{_totalColumns}")]
     internal class PagePosition : IEquatable<PagePosition>, IComparable<PagePosition>
     {
-        public static readonly PagePosition None = new PagePosition(PageNumber.None, Common.PageColumn.None, Common.PageColumn.None);
+        public static readonly PagePosition None = new PagePosition(PageNumber.None, PageColumn.None, PageColumn.None);
+
         private readonly PageColumn _totalColumns;
 
         public PagePosition(PageNumber pageNumber) : this(pageNumber, PageColumn.First, PageColumn.One)
