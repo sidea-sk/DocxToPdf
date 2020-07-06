@@ -38,7 +38,7 @@ namespace Sidea.DocxToPdf.Models
                 .ToArray();
         }
 
-        protected void RenderBordersIf(IRenderer renderer, bool condition)
+        protected void RenderBordersIf(IRenderer renderer, bool condition, Point pageOffset = null)
         {
             if (!condition)
             {
@@ -49,7 +49,7 @@ namespace Sidea.DocxToPdf.Models
             foreach (var pageRegion in this.PageRegions)
             {
                 index++;
-                var page = renderer.GetPage(pageRegion.PagePosition.PageNumber);
+                var page = renderer.GetPage(pageRegion.PagePosition.PageNumber, pageOffset ?? Point.Zero);
                 this.RenderBorder(page, pageRegion.Region, index == 0, index == this.PageRegions.Count - 1);
             }
         }

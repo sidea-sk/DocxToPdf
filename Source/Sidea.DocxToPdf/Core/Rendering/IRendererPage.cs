@@ -11,5 +11,7 @@ namespace Sidea.DocxToPdf.Core
         void RenderRectangle(Rectangle rectangle, Drawing.Color brush);
         void RenderLine(Line line);
         void RenderImage(Stream imageStream, Point position, Size size);
+
+        IRendererPage Offset(Point vector);
     }
 }

@@ -8,12 +8,19 @@ namespace Sidea.DocxToPdf.Pdf
     internal class PdfRendererPage : IRendererPage
     {
         private readonly XGraphics _graphics;
+        private readonly Point _offset;
 
-        public PdfRendererPage(PageNumber pageNumber, XGraphics graphics, RenderingOptions options)
+        private PdfRendererPage(PageNumber pageNumber, XGraphics graphics, RenderingOptions options, Point offset)
         {
             this.PageNumber = pageNumber;
             _graphics = graphics;
             this.Options = options;
+            _offset = offset;
+        }
+
+        public PdfRendererPage(PageNumber pageNumber, XGraphics graphics, RenderingOptions options)
+            : this(pageNumber, graphics, options, Point.Zero)
+        {
         }
 
         public PageNumber PageNumber { get; }
@@ -21,18 +28,20 @@ namespace Sidea.DocxToPdf.Pdf
 
         public void RenderText(string text, TextStyle textStyle, Rectangle layout)
         {
-            _graphics.DrawString(text, textStyle.ToXFont(), textStyle.ToXBrush(), layout.ToXRect(), XStringFormats.TopLeft);
+            var rect = layout.Pan(_offset).ToXRect();
+            _graphics.DrawString(text, textStyle.ToXFont(), textStyle.ToXBrush(), rect, XStringFormats.TopLeft);
         }
 
         public void RenderRectangle(Rectangle rectangle, Drawing.Color brush)
         {
-            _graphics.DrawRectangle(brush.ToXBrush(), rectangle.ToXRect());
+            var rect = rectangle.Pan(_offset).ToXRect();
+            _graphics.DrawRectangle(brush.ToXBrush(), rect);
         }
 
         public void RenderLine(Line line)
         {
-            var start = line.Start.ToXPoint();
-            var end = line.End.ToXPoint();
+            var start = (line.Start + _offset).ToXPoint();
+            var end = (line.End + _offset).ToXPoint();
 
             _graphics.DrawLine(line.GetXPen(), start, end);
         }
@@ -50,13 +59,14 @@ namespace Sidea.DocxToPdf.Pdf
             {
                 bmp.Save(ms, bmp.RawFormat);
                 var image = XImage.FromStream(ms);
-                _graphics.DrawImage(image, position.X, position.Y, size.Width, size.Height);
+                var offsetPosition = position + _offset;
+                _graphics.DrawImage(image, offsetPosition.X, offsetPosition.Y, size.Width, size.Height);
             }
         }
 
         private void RenderNoImagePlaceholder(Point position, Size size)
         {
-            var rect = new Rectangle(position, size);
+            var rect = new Rectangle(position, size).Pan(_offset);
             var pen = new Drawing.Pen(Drawing.Color.Red, 0.5f);
 
             this.RenderLine(rect.TopLine(pen));
@@ -66,5 +76,8 @@ namespace Sidea.DocxToPdf.Pdf
             this.RenderLine(rect.TopLeftBottomRightDiagonal(pen));
             this.RenderLine(rect.BottomLeftTopRightDiagonal(pen));
         }
+
+        public IRendererPage Offset(Point vector)
+            => new PdfRendererPage(this.PageNumber, _graphics, Options, vector);
     }
 }

@@ -8,6 +8,8 @@ namespace Sidea.DocxToPdf.Models
 {
     internal abstract class PageContextElement : PageElement
     {
+        public abstract void SetPageOffset(Point pageOffset);
+
         public abstract void Prepare(
             PageContext pageContext,
             Func<PagePosition, PageContextElement, PageContext> nextPageContextFactory);

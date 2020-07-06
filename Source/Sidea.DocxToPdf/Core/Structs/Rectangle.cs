@@ -85,6 +85,11 @@ namespace Sidea.DocxToPdf.Core
 
         public Rectangle Pan(double dx, double dy)
         {
+            if(dx == 0 && dy == 0)
+            {
+                return this;
+            }
+
             return new Rectangle(this.X + dx, this.Y + dy, this.Width, this.Height);
         }
 

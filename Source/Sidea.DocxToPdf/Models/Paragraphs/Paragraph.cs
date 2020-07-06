@@ -17,6 +17,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         private List<Line> _lines = new List<Line>();
         private FixedDrawing[] _fixedDrawings = new FixedDrawing[0];
         private Stack<LineElement> _unprocessedElements = new Stack<LineElement>();
+        private Point _pageOffset = Point.Zero;
 
         public Paragraph(IEnumerable<LineElement> elements, IEnumerable<FixedDrawing> fixedDrawings, IStyleFactory styleFactory)
         {
@@ -147,13 +148,13 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         {
             foreach(var fixedDrawing in _fixedDrawings)
             {
-                var page = renderer.GetPage(fixedDrawing.Position.Page.PageNumber);
+                var page = renderer.GetPage(fixedDrawing.Position.Page.PageNumber).Offset(_pageOffset);
                 fixedDrawing.Render(page);
             }
 
             foreach(var line in _lines)
             {
-                var page = renderer.GetPage(line.Position.Page.PageNumber);
+                var page = renderer.GetPage(line.Position.Page.PageNumber).Offset(_pageOffset);
                 line.Render(page);
             }
 
@@ -173,6 +174,11 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                 .ToList();
 
             _unprocessedElements.Push(elements);
+        }
+
+        public override void SetPageOffset(Point pageOffset)
+        {
+            _pageOffset = pageOffset;
         }
 
         private enum ExecuteResult

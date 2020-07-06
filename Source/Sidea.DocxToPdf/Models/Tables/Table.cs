@@ -14,6 +14,8 @@ namespace Sidea.DocxToPdf.Models.Tables
         private readonly Grid _grid;
         private readonly TableBorderStyle _tableBorder;
 
+        private Point _pageOffset = Point.Zero;
+
         public Table(IEnumerable<Cell> cells, Grid grid, TableBorderStyle tableBorder)
         {
             _cells = cells.ToArray();
@@ -50,7 +52,16 @@ namespace Sidea.DocxToPdf.Models.Tables
         public override void Render(IRenderer renderer)
         {
             _cells.Render(renderer);
-            new GridBorder(_tableBorder, _grid).Render(_cells, renderer);
+            new GridBorder(_tableBorder, _grid).Render(_cells, _pageOffset, renderer);
+        }
+
+        public override void SetPageOffset(Point pageOffset)
+        {
+            _pageOffset = pageOffset;
+            foreach(var cell in _cells)
+            {
+                cell.SetPageOffset(pageOffset);
+            }
         }
     }
 }

@@ -39,8 +39,14 @@ namespace Sidea.DocxToPdf.Pdf
         }
 
         public IRendererPage GetPage(PageNumber pageNumber)
+            => this.GetPage(pageNumber, Point.Zero);
+        
+        public IRendererPage GetPage(PageNumber pageNumber, Point offsetRendering)
         {
-            return _pages[pageNumber];
+            var page = _pages[pageNumber];
+            return offsetRendering == Point.Zero
+                ? page
+                : page.Offset(offsetRendering);
         }
     }
 }

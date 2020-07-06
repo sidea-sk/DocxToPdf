@@ -10,6 +10,7 @@ namespace Sidea.DocxToPdf.Models.Footers
     internal class Footer : FooterBase
     {
         private readonly PageContextElement[] _childs;
+        private Point _pageOffset = Point.Zero;
 
         public Footer(
             IEnumerable<PageContextElement> childs,
@@ -49,16 +50,15 @@ namespace Sidea.DocxToPdf.Models.Footers
                 .ToArray()
                 .Single();
 
-            //if (boundingRegion.Region.BottomY < this.PageMargin.Top)
-            //{
-            //    var resized = new Rectangle(
-            //        boundingRegion.Region.TopLeft,
-            //        boundingRegion.Region.Width,
-            //        this.PageMargin.MinimalHeaderHeight);
+            var offsetY = page.Configuration.Height
+                - boundingRegion.Region.BottomY
+                - this.PageMargin.Footer;
 
-            //    boundingRegion = new PageRegion(
-            //        boundingRegion.PagePosition, resized);
-            //}
+            _pageOffset = new Point(0, offsetY);
+            foreach(var child in _childs)
+            {
+                child.SetPageOffset(_pageOffset);
+            }
 
             this.ResetPageRegions(new[] { boundingRegion });
         }
@@ -66,7 +66,7 @@ namespace Sidea.DocxToPdf.Models.Footers
         public override void Render(IRenderer renderer)
         {
             _childs.Render(renderer);
-            this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries);
+            this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries, pageOffset: _pageOffset);
         }
 
         private PageContext OutOfPageContextFactory(IPage page)

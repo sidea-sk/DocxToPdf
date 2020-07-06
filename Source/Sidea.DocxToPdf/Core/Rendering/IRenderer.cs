@@ -7,5 +7,7 @@
         void CreatePage(PageNumber pageNumber, PageConfiguration configuration);
 
         IRendererPage GetPage(PageNumber pageNumber);
+
+        IRendererPage GetPage(PageNumber pageNumber, Point offsetRendering);
     }
 }

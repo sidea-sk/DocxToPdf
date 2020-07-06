@@ -76,5 +76,13 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
 
             return new Cell(childs, gridPosition, borderStyle);
         }
+
+        public override void SetPageOffset(Point pageOffset)
+        {
+            foreach(var child in _childs)
+            {
+                child.SetPageOffset(pageOffset);
+            }
+        }
     }
 }
