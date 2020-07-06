@@ -1,6 +1,4 @@
-﻿using Sidea.DocxToPdf.Models.Common;
-
-namespace Sidea.DocxToPdf.Models.Sections
+﻿namespace Sidea.DocxToPdf.Models.Common
 {
     internal class PageMargin : Margin
     {
@@ -14,5 +12,7 @@ namespace Sidea.DocxToPdf.Models.Sections
 
         public double Header { get; }
         public double Footer { get; }
+
+        public double MinimalHeaderHeight => this.Top - this.Header;
     }
 }

@@ -69,7 +69,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
         {
             var childs = wordCell
                 .RenderableChildren()
-                .CreateInitializeElements(imageAccessor, styleFactory)
+                .CreatePageElements(imageAccessor, styleFactory)
                 .ToArray();
 
             var borderStyle = wordCell.GetBorderStyle();

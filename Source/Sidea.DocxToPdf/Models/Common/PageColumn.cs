@@ -8,6 +8,7 @@ namespace Sidea.DocxToPdf.Models.Common
     {
         public static readonly PageColumn None = new PageColumn(0);
         public static readonly PageColumn First = new PageColumn(1);
+        public static readonly PageColumn One = new PageColumn(1);
 
         private readonly int _column;
 

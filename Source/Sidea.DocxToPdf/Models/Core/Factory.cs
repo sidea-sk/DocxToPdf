@@ -9,7 +9,7 @@ namespace Sidea.DocxToPdf.Models
 {
     internal static class Factory
     {
-        public static IEnumerable<PageContextElement> CreateInitializeElements(
+        public static IEnumerable<PageContextElement> CreatePageElements(
             this IEnumerable<OpenXmlCompositeElement> openXmlComposites,
             IImageAccessor imageAccessor,
             IStyleFactory styleFactory)
@@ -22,7 +22,7 @@ namespace Sidea.DocxToPdf.Models
                 });
         }
 
-        private static PageContextElement CreateElement(
+        public static PageContextElement CreateElement(
             this OpenXmlCompositeElement openXmlComposite,
             IImageAccessor imageAccessor,
             IStyleFactory styleFactory)

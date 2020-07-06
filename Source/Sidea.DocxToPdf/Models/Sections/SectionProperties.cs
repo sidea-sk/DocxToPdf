@@ -1,4 +1,5 @@
 ﻿using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 
 namespace Sidea.DocxToPdf.Models.Sections
 {

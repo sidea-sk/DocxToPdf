@@ -13,6 +13,8 @@ namespace Sidea.DocxToPdf.Models
 
         Margin Margin { get; }
 
+        Rectangle GetPageRegion();
+
         Rectangle GetContentRegion();
     }
 }

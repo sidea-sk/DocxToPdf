@@ -32,5 +32,8 @@ namespace Sidea.DocxToPdf.Models
                 this.Configuration.Width - this.Margin.HorizontalMargins,
                 this.Configuration.Height - this.Margin.VerticalMargins);
         }
+
+        public Rectangle GetPageRegion()
+            => new Rectangle(0, 0, this.Configuration.Width, this.Configuration.Height);
     }
 }

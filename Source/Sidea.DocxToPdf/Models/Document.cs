@@ -38,23 +38,25 @@ namespace Sidea.DocxToPdf.Models
 
         private void PrepareSections()
         {
-            var previousSection = PageRegion.None;
+            bool isFinished;
             var lastPageNumber = PageNumber.None;
 
-            bool isFinished;
             do
             {
+                var previousSection = PageRegion.None;
+                var previousSectionMargin = Margin.None;
+
                 foreach (var section in _sections)
                 {
-                    section.Prepare(previousSection, new DocumentVariables(lastPageNumber));
+                    section.Prepare(previousSection, previousSectionMargin, new DocumentVariables(lastPageNumber));
                     previousSection = section.PageRegions.Last();
+                    previousSectionMargin = section.Pages.Last().Margin;
                 }
 
                 var secionLastPage = _sections.Last()
                     .Pages
                     .Last();
 
-                previousSection = PageRegion.None;
                 isFinished = lastPageNumber == secionLastPage.PageNumber;
                 lastPageNumber = secionLastPage.PageNumber;
             } while (!isFinished);

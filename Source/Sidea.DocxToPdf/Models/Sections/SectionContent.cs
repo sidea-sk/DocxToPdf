@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
+using Sidea.DocxToPdf.Models.Paragraphs;
 using Sidea.DocxToPdf.Models.Sections.Columns;
 
 namespace Sidea.DocxToPdf.Models.Sections
@@ -40,7 +41,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             {
                 child.Prepare(context, childContextRequest);
                 var lastRegion = child.LastPageRegion;
-                spaceAfterPrevious = this.CalculateSpaceAfter(child);
+                spaceAfterPrevious = child.CalculateSpaceAfter(_childs);
                 context = this.CreateContextForPagePosition(lastRegion.PagePosition, lastRegion.Region, spaceAfterPrevious, pageFactory);
             }
 
@@ -112,19 +113,13 @@ namespace Sidea.DocxToPdf.Models.Sections
                 region,
                 page.DocumentVariables);
 
-            var cropY = occupiedRegion.BottomY == 0
+            var cropTop = occupiedRegion.BottomY == 0
                 ? spaceAfterPrevious
                 : occupiedRegion.BottomY + spaceAfterPrevious - page.Margin.Top;
 
-            context = context.CropFromTop(cropY);
+            // TODO: check -0.001
+            context = context.CropFromTop(Math.Min(cropTop, context.Region.Height - 0.001));
             return context;
-        }
-
-        private double CalculateSpaceAfter(PageContextElement element)
-        {
-            var index = _childs.IndexOf(e => e == element);
-            var spaceBetween = Paragraphs.Tools.CalculateSpaceBetween(element, _childs.SkipWhile(e => e != element).Skip(1).FirstOrDefault());
-            return spaceBetween;
         }
     }
 }

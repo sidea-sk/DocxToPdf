@@ -10,6 +10,10 @@ namespace Sidea.DocxToPdf.Models.Common
         public static readonly PagePosition None = new PagePosition(PageNumber.None, Common.PageColumn.None, Common.PageColumn.None);
         private readonly PageColumn _totalColumns;
 
+        public PagePosition(PageNumber pageNumber) : this(pageNumber, PageColumn.First, PageColumn.One)
+        {
+        }
+
         public PagePosition(PageNumber pageNumber, PageColumn column, PageColumn totalColumns)
         {
             this.PageNumber = pageNumber;

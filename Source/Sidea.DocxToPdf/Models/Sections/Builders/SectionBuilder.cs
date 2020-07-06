@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Sidea.DocxToPdf.Core;
+using Sidea.DocxToPdf.Models.Common;
 using Sidea.DocxToPdf.Models.Sections.Columns;
 using Sidea.DocxToPdf.Models.Styles;
 
@@ -16,8 +17,6 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
             this Pack.MainDocumentPart mainDocument,
             IStyleFactory styleFactory)
         {
-            // var useEvenOdd = mainDocument.DocumentSettingsPart.EvenOddHeadersAndFooters();
-
             var sections = mainDocument.Document.Body
                 .SplitToSectionsCore(mainDocument, styleFactory)
                 .ToArray();
@@ -74,10 +73,11 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
             IStyleFactory styleFactory)
         {
             var imageAccessor = new ImageAccessor(mainDocumentPart);
+
             var sectionProperties = wordSectionProperties.CreateSectionProperties(mainDocumentPart, isFirst, headerFooterConfiguration);
             var columnsConfiguration = wordSectionProperties.CreateColumnsConfiguration(sectionProperties.PageConfiguration, sectionProperties.Margin);
             var sectionContents = xmlElements.SplitToSectionContents(columnsConfiguration, imageAccessor, styleFactory);
-            var sd = new Section(sectionProperties, sectionContents, styleFactory);
+            var sd = new Section(sectionProperties, sectionContents, imageAccessor, styleFactory);
 
             return sd;
         }
@@ -113,7 +113,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                                 }
 
                                 contentElements.Add(begin);
-                                var childElements = contentElements.CreateInitializeElements(imageAccessor, styleFactory);
+                                var childElements = contentElements.CreatePageElements(imageAccessor, styleFactory);
                                 sectionContents.Add(new SectionContent(childElements, columnsConfiguration, @break));
                                 contentElements.Clear();
                             }
@@ -127,7 +127,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
 
             if (contentElements.Count > 0)
             {
-                var childElements = contentElements.CreateInitializeElements(imageAccessor, styleFactory);
+                var childElements = contentElements.CreatePageElements(imageAccessor, styleFactory);
                 sectionContents.Add(new SectionContent(childElements, columnsConfiguration, SectionContentBreak.None));
             }
 
