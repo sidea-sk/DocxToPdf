@@ -15,8 +15,6 @@ namespace Sidea.DocxToPdf.Models.Sections
         private readonly SectionContent[] _contents;
         private readonly IStyleFactory _styleFactory;
 
-        public IReadOnlyCollection<IPage> Pages => _pages;
-
         public Section(
             SectionProperties properties,
             IEnumerable<SectionContent> sectionContents,
@@ -27,22 +25,25 @@ namespace Sidea.DocxToPdf.Models.Sections
             _styleFactory = styleFactory;
         }
 
+        public IReadOnlyCollection<IPage> Pages => _pages;
+        public HeaderFooterConfiguration HeaderFooterConfiguration => _properties.HeaderFooterConfiguration;
+
         public void Prepare(
-            IPage lastPageOfPreviosSection,
-            Rectangle occupiedSpace,
+            PageRegion previousSection,
             DocumentVariables documentVariables)
         {
-            var pageNumber = lastPageOfPreviosSection.PageNumber.Next();
-            var contentLastPosition = PagePosition.None;
-            var sectionBreak = SectionBreak.Page;
+            var sectionBreak = _properties.StartOnNextPage
+                ? SectionBreak.Page
+                : SectionBreak.None;
 
             Func<PageNumber, IPage> contentPageRequest = (pageNumber) =>
                 this.OnNewPage(pageNumber, documentVariables);
 
+            var contentLastPosition = PageRegion.None;
             foreach (var content in _contents)
             {
-                content.Prepare(contentLastPosition, sectionBreak, contentPageRequest);
-                contentLastPosition = content.LastPageRegion.PagePosition;
+                content.Prepare(previousSection, contentLastPosition, sectionBreak, contentPageRequest);
+                contentLastPosition = content.LastPageRegion;
                 sectionBreak = content.SectionBreak;
             }
 
@@ -73,7 +74,7 @@ namespace Sidea.DocxToPdf.Models.Sections
                 content.Render(renderer);
             }
 
-            this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries);
+            // this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries);
         }
 
         private IPage OnNewPage(PageNumber pageNumber, DocumentVariables documentVariables)

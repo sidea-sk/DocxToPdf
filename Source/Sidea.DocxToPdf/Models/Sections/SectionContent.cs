@@ -25,11 +25,12 @@ namespace Sidea.DocxToPdf.Models.Sections
         public SectionBreak SectionBreak { get; }
 
         public void Prepare(
-            PagePosition previousContentPosition,
+            PageRegion previousSection,
+            PageRegion previousContent,
             SectionBreak previousBreak,
             Func<PageNumber, IPage> pageFactory)
         {
-            var context = this.CreateInitialPageContenxt(previousContentPosition, previousBreak, pageFactory);
+            var context = this.CreateInitialPageContext(previousSection, previousContent, previousBreak, pageFactory);
 
             Func<PagePosition, PageContextElement, PageContext> childContextRequest = (pagePosition, child)
                 => this.OnChildPageContextRequest(pagePosition, pageFactory);
@@ -50,8 +51,9 @@ namespace Sidea.DocxToPdf.Models.Sections
             this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries);
         }
 
-        private PageContext CreateInitialPageContenxt(
-            PagePosition previousContentPosition,
+        private PageContext CreateInitialPageContext(
+            PageRegion previousSection,
+            PageRegion previousContent,
             SectionBreak previousBreak,
             Func<PageNumber, IPage> pageFactory)
         {
@@ -59,14 +61,23 @@ namespace Sidea.DocxToPdf.Models.Sections
             {
                 case SectionBreak.Column:
                     {
-                        var pp = previousContentPosition.Next();
-                        return this.CreateContextForPagePosition(pp, Rectangle.Empty, pageFactory);
+                        var pp = previousContent.PagePosition.Next();
+                        var occupiedRegion = pp.PageNumber == previousSection.PagePosition.PageNumber
+                            ? previousSection.Region
+                            : Rectangle.Empty;
+
+                        return this.CreateContextForPagePosition(pp, occupiedRegion, pageFactory);
                     }
                 case SectionBreak.Page:
+                    {
+                        var pp = previousContent.PagePosition.NextPage(0, _columnsConfiguration.ColumnsCount);
+                        return this.CreateContextForPagePosition(pp, Rectangle.Empty, pageFactory);
+                    }
                 case SectionBreak.None:
                     {
-                        var pn = previousContentPosition.PageNumber.Next();
-                        return this.CreateContextForPagePosition(new PagePosition(pn, 0, _columnsConfiguration.ColumnsCount), Rectangle.Empty, pageFactory);
+
+                        var pp = previousContent.PagePosition.SamePage(0, _columnsConfiguration.ColumnsCount);
+                        return this.CreateContextForPagePosition(pp, previousContent.Region, pageFactory);
                     }
                 default:
                     throw new RendererException("unhandled section break;");

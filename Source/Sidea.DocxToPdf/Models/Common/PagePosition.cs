@@ -31,6 +31,12 @@ namespace Sidea.DocxToPdf.Models.Common
                 : this.NextColumn();
         }
 
+        public PagePosition NextPage(int column, int totalColumns)
+            => new PagePosition(this.PageNumber.Next(), column, totalColumns);
+
+        public PagePosition SamePage(int column, int totalColumns)
+            => new PagePosition(this.PageNumber, column, totalColumns);
+
         private PagePosition NextColumn()
             => new PagePosition(this.PageNumber, this.PageColumn + 1, _totalColumns);
 

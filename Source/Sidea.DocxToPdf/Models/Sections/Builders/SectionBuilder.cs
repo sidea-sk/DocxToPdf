@@ -16,22 +16,21 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
             this Pack.MainDocumentPart mainDocument,
             IStyleFactory styleFactory)
         {
-            var useEvenOdd = mainDocument.DocumentSettingsPart.EvenOddHeadersAndFooters();
+            // var useEvenOdd = mainDocument.DocumentSettingsPart.EvenOddHeadersAndFooters();
 
             var sections = mainDocument.Document.Body
-                .GetSectionData(mainDocument, styleFactory)
-                .Select(data => new Section(data.Properties, data.SectionColumns, styleFactory))
+                .SplitToSectionsCore(mainDocument, styleFactory)
                 .ToArray();
 
             return sections;
         }
 
-        private static IEnumerable<Data> GetSectionData(
+        private static IEnumerable<Section> SplitToSectionsCore(
             this Word.Body body,
             Pack.MainDocumentPart mainDocumentPart,
             IStyleFactory styleFactory)
         {
-            var sectionData = new List<Data>();
+            var sections = new List<Section>();
 
             var sectionElements = new List<OpenXml.OpenXmlCompositeElement>();
             var headerFooterConfiguration = HeaderFooterConfiguration.Empty;
@@ -51,9 +50,9 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                     continue;
                 }
 
-                var data = CreateData(wordSectionProperties, sectionElements, mainDocumentPart, headerFooterConfiguration, sectionData.Count == 0, styleFactory);
-                headerFooterConfiguration = data.Properties.HeaderFooterConfiguration;
-                sectionData.Add(data);
+                var section = sectionElements.CreateSection(wordSectionProperties, mainDocumentPart, headerFooterConfiguration, sections.Count == 0, styleFactory);
+                headerFooterConfiguration = section.HeaderFooterConfiguration;
+                sections.Add(section);
                 sectionElements.Clear();
             }
 
@@ -61,14 +60,14 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                .ChildsOfType<Word.SectionProperties>()
                .Single();
 
-            var lastData = CreateData(wordSectionProperties, sectionElements, mainDocumentPart, headerFooterConfiguration, sectionData.Count == 0, styleFactory);
-            sectionData.Add(lastData);
-            return sectionData;
+            var lastSection = sectionElements.CreateSection(wordSectionProperties, mainDocumentPart, headerFooterConfiguration, sections.Count == 0, styleFactory);
+            sections.Add(lastSection);
+            return sections;
         }
 
-        private static Data CreateData(
+        private static Section CreateSection(
+            this IReadOnlyCollection<OpenXml.OpenXmlCompositeElement> xmlElements,
             Word.SectionProperties wordSectionProperties,
-            IReadOnlyCollection<OpenXml.OpenXmlCompositeElement> xmlElements,
             Pack.MainDocumentPart mainDocumentPart,
             HeaderFooterConfiguration headerFooterConfiguration,
             bool isFirst,
@@ -77,7 +76,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
             var sectionProperties = wordSectionProperties.CreateSectionProperties(mainDocumentPart, isFirst, headerFooterConfiguration);
             var columnsConfiguration = wordSectionProperties.CreateColumnsConfiguration(sectionProperties.PageConfiguration, sectionProperties.Margin);
             var sectionContents = xmlElements.SplitToSectionContents(columnsConfiguration, styleFactory);
-            var sd = new Data(sectionProperties, sectionContents);
+            var sd = new Section(sectionProperties, sectionContents, styleFactory);
 
             return sd;
         }
@@ -268,20 +267,6 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
             };
 
             return (begin, @break, end);
-        }
-
-        private class Data
-        {
-            public Data(
-                SectionProperties properties,
-                IEnumerable<SectionContent> sectionContents)
-            {
-                this.Properties = properties;
-                this.SectionColumns = sectionContents.ToArray();
-            }
-
-            public SectionProperties Properties { get; }
-            public IReadOnlyCollection<SectionContent> SectionColumns { get; }
         }
     }
 }

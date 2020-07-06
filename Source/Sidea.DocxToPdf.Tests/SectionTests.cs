@@ -71,5 +71,11 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Generate(nameof(SameHeaderDifferentFooterForSections));
         }
+
+        [TestMethod]
+        public void ContinuousSectionsWithMultipleColumns()
+        {
+            this.Generate(nameof(ContinuousSectionsWithMultipleColumns));
+        }
     }
 }
