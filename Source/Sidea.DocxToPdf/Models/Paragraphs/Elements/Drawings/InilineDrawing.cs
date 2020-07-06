@@ -6,11 +6,13 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
     internal class InilineDrawing : LineElement
     {
         private readonly string _imageId;
+        private readonly IImageAccessor _imageAccessor;
 
         // size defined in document
-        public InilineDrawing(string imageId, Size size)
+        public InilineDrawing(string imageId, Size size, IImageAccessor imageAccessor)
         {
             _imageId = imageId;
+            _imageAccessor = imageAccessor;
             this.Size = size;
         }
 
@@ -24,12 +26,8 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public override void Render(IRendererPage page)
         {
-
+            var stream = _imageAccessor.GetImageStream(_imageId);
+            page.RenderImage(stream, this.Position.Offset, this.Size);
         }
-
-        //public override void Render()
-        //{
-        //    this.Renderer.RenderImage(_imageId, this.BoundingBox.TopLeft, this.BoundingBox.Size);
-        //}
     }
 }

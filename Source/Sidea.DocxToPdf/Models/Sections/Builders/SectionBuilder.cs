@@ -73,9 +73,10 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
             bool isFirst,
             IStyleFactory styleFactory)
         {
+            var imageAccessor = new ImageAccessor(mainDocumentPart);
             var sectionProperties = wordSectionProperties.CreateSectionProperties(mainDocumentPart, isFirst, headerFooterConfiguration);
             var columnsConfiguration = wordSectionProperties.CreateColumnsConfiguration(sectionProperties.PageConfiguration, sectionProperties.Margin);
-            var sectionContents = xmlElements.SplitToSectionContents(columnsConfiguration, styleFactory);
+            var sectionContents = xmlElements.SplitToSectionContents(columnsConfiguration, imageAccessor, styleFactory);
             var sd = new Section(sectionProperties, sectionContents, styleFactory);
 
             return sd;
@@ -84,6 +85,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
         private static IEnumerable<SectionContent> SplitToSectionContents(
             this IEnumerable<OpenXml.OpenXmlCompositeElement> xmlElements,
             ColumnsConfiguration columnsConfiguration,
+            IImageAccessor imageAccessor,
             IStyleFactory styleFactory)
         {
             var sectionContents = new List<SectionContent>();
@@ -111,7 +113,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
                                 }
 
                                 contentElements.Add(begin);
-                                var childElements = contentElements.CreateInitializeElements(styleFactory);
+                                var childElements = contentElements.CreateInitializeElements(imageAccessor, styleFactory);
                                 sectionContents.Add(new SectionContent(childElements, columnsConfiguration, @break));
                                 contentElements.Clear();
                             }
@@ -125,7 +127,7 @@ namespace Sidea.DocxToPdf.Models.Sections.Builders
 
             if (contentElements.Count > 0)
             {
-                var childElements = contentElements.CreateInitializeElements(styleFactory);
+                var childElements = contentElements.CreateInitializeElements(imageAccessor, styleFactory);
                 sectionContents.Add(new SectionContent(childElements, columnsConfiguration, SectionContentBreak.None));
             }
 

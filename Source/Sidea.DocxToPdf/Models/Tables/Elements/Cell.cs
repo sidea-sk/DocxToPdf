@@ -64,11 +64,12 @@ namespace Sidea.DocxToPdf.Models.Tables.Elements
         public static Cell From(
             Word.TableCell wordCell,
             GridPosition gridPosition,
+            IImageAccessor imageAccessor,
             IStyleFactory styleFactory)
         {
             var childs = wordCell
                 .RenderableChildren()
-                .CreateInitializeElements(styleFactory)
+                .CreateInitializeElements(imageAccessor, styleFactory)
                 .ToArray();
 
             var borderStyle = wordCell.GetBorderStyle();

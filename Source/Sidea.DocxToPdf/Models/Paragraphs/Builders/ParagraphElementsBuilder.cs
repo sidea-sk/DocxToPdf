@@ -11,6 +11,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
     {
         public static IEnumerable<LineElement> CreateParagraphElements(
             this Word.Paragraph paragraph,
+            IImageAccessor imageAccessor,
             IStyleFactory styleFactory)
         {
             var runs = paragraph
@@ -36,7 +37,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
                 }
                 else
                 {
-                    var runElements = run.CreateParagraphElements(styleFactory);
+                    var runElements = run.CreateParagraphElements(imageAccessor, styleFactory);
                     elements.AddRange(runElements);
                 }
             }
@@ -57,6 +58,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
 
         private static IEnumerable<LineElement> CreateParagraphElements(
             this Word.Run run,
+            IImageAccessor imageAccessor,
             IStyleFactory styleAccessor)
         {
             var textStyle = styleAccessor.EffectiveTextStyle(run.RunProperties);
@@ -69,7 +71,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
                     {
                         Word.Text t => t.SplitTextToElements(textStyle),
                         Word.TabChar t => new LineElement[] { new TabElement(textStyle) },
-                        Word.Drawing d => d.CreateInlineDrawing(),
+                        Word.Drawing d => d.CreateInlineDrawing(imageAccessor),
                         Word.CarriageReturn _ => new LineElement[] { new NewLineElement(textStyle) },
                         Word.Break b => b.CreateBreakElement(textStyle),
                         _ => throw new RendererException("unprocessed child")
@@ -109,23 +111,23 @@ namespace Sidea.DocxToPdf.Models.Paragraphs.Builders
             return elements;
         }
 
-        private static InilineDrawing[] CreateInlineDrawing(this Word.Drawing drawing)
+        private static InilineDrawing[] CreateInlineDrawing(this Word.Drawing drawing, IImageAccessor imageAccessor)
         {
             if (drawing.Inline == null)
             {
                 return new InilineDrawing[0];
             }
 
-            var inlineDrawing = drawing.Inline.ToInilineDrawing();
+            var inlineDrawing = drawing.Inline.ToInilineDrawing(imageAccessor);
             return new[] { inlineDrawing };
         }
 
-        private static InilineDrawing ToInilineDrawing(this WDrawing.Inline inline)
+        private static InilineDrawing ToInilineDrawing(this WDrawing.Inline inline, IImageAccessor imageAccessor)
         {
             var size = inline.Extent.ToSize();
             var blipElement = inline.Descendants<DocumentFormat.OpenXml.Drawing.Blip>().First();
 
-            return new InilineDrawing(blipElement.Embed.Value, size);
+            return new InilineDrawing(blipElement.Embed.Value, size, imageAccessor);
         }
 
         private static FixedDrawing ToFixedDrawing(this WDrawing.Anchor anchor)

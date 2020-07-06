@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Styles;
 using Sidea.DocxToPdf.Models.Tables.Elements;
 using Sidea.DocxToPdf.Models.Tables.Grids;
@@ -9,14 +10,17 @@ namespace Sidea.DocxToPdf.Models.Tables.Builders
 {
     internal static class CellBuilder
     {
-        public static IEnumerable<Cell> InitializeCells(this Word.Table table, IStyleFactory styleFactory)
+        public static IEnumerable<Cell> InitializeCells(
+            this Word.Table table,
+            IImageAccessor imageAccessor,
+            IStyleFactory styleFactory)
         {
             var spans = table.PrepareCellSpans();
             var cells = table
                 .Rows()
                 .SelectMany((row, index) =>
                 {
-                    var rowCells = row.InitializeCells(index, spans, styleFactory);
+                    var rowCells = row.InitializeCells(index, spans, imageAccessor, styleFactory);
                     return rowCells;
                 })
                 .Where(c => !c.GridPosition.IsRowMergedCell)
@@ -28,6 +32,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Builders
             this Word.TableRow row,
             int rowIndex,
             List<GridSpanInfo[]> spans,
+            IImageAccessor imageAccessor,
             IStyleFactory styleFactory)
         {
             var cells = row
@@ -35,7 +40,7 @@ namespace Sidea.DocxToPdf.Models.Tables.Builders
                 .Select((cell, index) =>
                 {
                     var gridPosition = GetCellGridPosition(rowIndex, index, spans);
-                    var c = Cell.From(cell, gridPosition, styleFactory);
+                    var c = Cell.From(cell, gridPosition, imageAccessor, styleFactory);
                     return c;
                 })
                 .ToArray();
