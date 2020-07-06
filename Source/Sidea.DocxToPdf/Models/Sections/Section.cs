@@ -48,7 +48,7 @@ namespace Sidea.DocxToPdf.Models.Sections
             IPage contentPageRequest(PageNumber pageNumber) =>
                 this.OnNewPage(pageNumber, previousSection.PagePosition.PageNumber, previousSectionMargin, documentVariables);
 
-            var contentLastPosition = PageRegion.None;
+            var contentLastPosition = previousSection;
             foreach (var content in _contents)
             {
                 content.Prepare(previousSection, contentLastPosition, sectionBreak, contentPageRequest);

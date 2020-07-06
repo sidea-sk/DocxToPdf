@@ -79,7 +79,7 @@ namespace Sidea.DocxToPdf.Models.Sections
                     }
                 case SectionContentBreak.Page:
                     {
-                        var pp = previousSection.PagePosition.NextPage(PageColumn.First, _columnsConfiguration.ColumnsCount);
+                        var pp = previousContent.PagePosition.NextPage(PageColumn.First, _columnsConfiguration.ColumnsCount);
                         return this.CreateContextForPagePosition(pp, Rectangle.Empty, spaceAfterPrevious, pageFactory);
                     }
                 default:
