@@ -24,7 +24,7 @@ namespace Sidea.DocxToPdf.Models.Footers
             var pagePosition = new PagePosition(page.PageNumber);
             var region = page
                 .GetPageRegion()
-                .Crop(this.PageMargin.Top, this.PageMargin.Right, this.PageMargin.Footer, this.PageMargin.Left);
+                .Crop(page.Margin.Top, this.PageMargin.Right, this.PageMargin.Footer, this.PageMargin.Left);
 
             var context = new PageContext(pagePosition, region, page.DocumentVariables);
 
@@ -51,13 +51,19 @@ namespace Sidea.DocxToPdf.Models.Footers
                 .Single();
 
             var offsetY = page.Configuration.Height
-                - boundingRegion.Region.BottomY
+                - Math.Max(boundingRegion.Region.Height, this.PageMargin.FooterHeight)
                 - this.PageMargin.Footer;
 
             _pageOffset = new Point(0, offsetY);
             foreach(var child in _childs)
             {
                 child.SetPageOffset(_pageOffset);
+            }
+
+            if (boundingRegion.Region.Height < this.PageMargin.FooterHeight)
+            {
+                var resized = new Rectangle(boundingRegion.Region.TopLeft, boundingRegion.Region.Width, this.PageMargin.FooterHeight);
+                boundingRegion = new PageRegion(boundingRegion.PagePosition, resized);
             }
 
             this.ResetPageRegions(new[] { boundingRegion });

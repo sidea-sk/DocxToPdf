@@ -14,7 +14,7 @@
         public double Footer { get; }
 
         public double MinimalHeaderHeight => this.Top - this.Header;
-        public double FooterHeight => this.Top - this.Header;
+        public double FooterHeight => this.Bottom - this.Footer;
 
         public PageMargin WithHorizontal(double left, double right)
             => new PageMargin(this.Top, right, this.Bottom, left, this.Header, this.Footer);
