@@ -34,26 +34,11 @@ namespace Sidea.DocxToPdf.Tests
             }
 
             var inputFileName = $"{_samplesFolder}/{docxSampleFileName}.docx";
-            using var fileStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read);
+            using var docxStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read);
 
-            var pdf = _useNextGeneration
-                ? this.GenerateV2(fileStream, this.Options)
-                : this.GenerateV1(fileStream, this.Options);
-            pdf.Save(outputFileName);
-        }
-
-        private PdfSharp.Pdf.PdfDocument GenerateV1(Stream docxStream, RenderingOptions options)
-        {
-            var pdfGenerator = new PdfGeneratorX();
-            var pdf = pdfGenerator.Generate(docxStream, options);
-            return pdf;
-        }
-
-        private PdfSharp.Pdf.PdfDocument GenerateV2(Stream docxStream, RenderingOptions options)
-        {
             var pdfGenerator = new PdfGenerator();
-            var pdf = pdfGenerator.Generate(docxStream, options);
-            return pdf;
+            var pdf = pdfGenerator.Generate(docxStream, this.Options);
+            pdf.Save(outputFileName);
         }
     }
 }

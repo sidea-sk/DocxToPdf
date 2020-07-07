@@ -14,8 +14,7 @@ namespace Sidea.DocxToPdf
             Pen footerBorders = null,
             Pen paragraphBorders = null,
             Pen lineBorders = null,
-            Pen wordBorders = null,
-            bool sectionRegionBoundaries = false)
+            Pen wordBorders = null)
         {
             this.HiddenChars = hiddenChars;
             this.SectionBorders = sectionBorders;
@@ -24,8 +23,6 @@ namespace Sidea.DocxToPdf
             this.ParagraphBorders = paragraphBorders;
             this.LineBorders = lineBorders;
             this.WordBorders = wordBorders;
-
-            this.SectionRegionBoundaries = sectionRegionBoundaries;
         }
 
         /// <summary>
@@ -39,12 +36,6 @@ namespace Sidea.DocxToPdf
         public Pen ParagraphBorders { get; }
         public Pen LineBorders { get; }
         public Pen WordBorders { get; }
-
-        /// <summary>
-        /// Bounding rectangle of a section
-        /// </summary>
-        [Obsolete]
-        public bool SectionRegionBoundaries { get; }
 
         public static RenderingOptions WithDefaults(
             bool hiddenChars = true,
