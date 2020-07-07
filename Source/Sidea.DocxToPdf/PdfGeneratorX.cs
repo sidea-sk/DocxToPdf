@@ -5,7 +5,7 @@ using Sidea.DocxToPdf.Renderers;
 
 namespace Sidea.DocxToPdf
 {
-    public class PdfGenerator
+    public class PdfGeneratorX
     {
         public PdfDocument Generate(Stream docxStream, RenderingOptions options = null)
         {
