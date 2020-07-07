@@ -51,6 +51,7 @@ namespace Sidea.DocxToPdf.Models.Footers
                 .Single();
 
             var offsetY = page.Configuration.Height
+                - page.Margin.Top
                 - Math.Max(boundingRegion.Region.Height, this.PageMargin.FooterHeight)
                 - this.PageMargin.Footer;
 

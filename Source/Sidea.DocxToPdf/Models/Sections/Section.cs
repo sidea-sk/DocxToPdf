@@ -46,7 +46,7 @@ namespace Sidea.DocxToPdf.Models.Sections
                 : SectionContentBreak.None;
 
             IPage contentPageRequest(PageNumber pageNumber) =>
-                this.OnNewPage(pageNumber, previousSection.PagePosition.PageNumber, previousSectionMargin, documentVariables);
+                this.OnPageRequest(pageNumber, previousSection.PagePosition.PageNumber, previousSectionMargin, documentVariables);
 
             var contentLastPosition = previousSection;
             foreach (var content in _contents)
@@ -96,69 +96,63 @@ namespace Sidea.DocxToPdf.Models.Sections
             // this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries);
         }
 
-        private IPage OnNewPage(
+        private IPage OnPageRequest(
             PageNumber pageNumber,
             PageNumber previousSectionLastPage,
             PageMargin previousSectionMargin,
             DocumentVariables documentVariables)
         {
-            this.EnsurePage(pageNumber, previousSectionLastPage, previousSectionMargin);
-            var page = _pages.Single(p => p.PageNumber == pageNumber);
+            var page = _pages.SingleOrDefault(p => p.PageNumber == pageNumber);
+            if (page == null)
+            {
+                page = new Page(pageNumber, _properties.PageConfiguration);
+                page.SetHorizontalMargins(_properties.Margin.Left, _properties.Margin.Right);
+                _pages.Add(page);
+            }
+
             page.DocumentVariables = documentVariables;
+
+            this.CreateOrUpdateHeader(page, previousSectionLastPage, previousSectionMargin);
+            var header = _headers[pageNumber];
+            page.SetTopMargins(header.TopY, header.BottomY);
+
+            this.CreateOrUpdateFooter(page, previousSectionLastPage, previousSectionMargin);
+            var footer = _footers[pageNumber];
+            page.SetBottomMargins(footer.FooterMargin, footer.HeightWithFooterMargin);
+
             return page;
         }
 
-        private void EnsurePage(PageNumber pageNumber, PageNumber previousSectionLastPage, PageMargin previousSectionMargin)
+        private void CreateOrUpdateHeader(IPage page, PageNumber previousSectionLastPage, PageMargin previousSectionMargin)
         {
-            if(_pages.Any(p => p.PageNumber == pageNumber))
+            if (!_headers.ContainsKey(page.PageNumber))
             {
-                return;
+                var header = previousSectionLastPage == page.PageNumber
+                    ? HeaderFactory.CreateInheritedHeader(previousSectionMargin)
+                    : _properties.HeaderFooterConfiguration
+                        .FindHeader(page.PageNumber)
+                        .CreateHeader(_properties.Margin, _imageAccessor, _styleFactory);
+
+                _headers.Add(page.PageNumber, header);
             }
 
-            var newPage = new Page(pageNumber, _properties.PageConfiguration);
-            newPage.SetHorizontalMargins(_properties.Margin.Left, _properties.Margin.Right);
-
-            this.CreateHeader(newPage, previousSectionLastPage);
-            this.CreateFooter(newPage, previousSectionLastPage, previousSectionMargin);
-
-            var topMargin = previousSectionMargin.Top;
-            if (_headers.ContainsKey(pageNumber))
-            {
-                topMargin = _headers[pageNumber].BottomY;
-            }
-
-            newPage.SetTopMargins(_properties.Margin.Header, topMargin);
-
-            var footer = _footers[pageNumber];
-            newPage.SetBottomMargins(footer.FooterMargin, footer.HeightWithFooterMargin);
-            _pages.Add(newPage);
+            _headers[page.PageNumber].Prepare(page);
         }
 
-        private void CreateHeader(IPage page, PageNumber previousSectionLastPage)
+        private void CreateOrUpdateFooter(IPage page, PageNumber previousSectionLastPage, PageMargin previousSectionMargin)
         {
-            if(previousSectionLastPage == page.PageNumber)
+            if (!_footers.ContainsKey(page.PageNumber))
             {
-                return;
+                var footer = previousSectionLastPage == page.PageNumber
+                    ? FooterFactory.CreateInheritedFooter(previousSectionMargin)
+                    : _properties.HeaderFooterConfiguration
+                         .FindFooter(page.PageNumber)
+                         .CreateFooter(_properties.Margin, _imageAccessor, _styleFactory);
+
+                _footers.Add(page.PageNumber, footer);
             }
 
-            var header = _properties.HeaderFooterConfiguration
-                .FindHeader(page.PageNumber)
-                .CreateHeader(_properties.Margin, _imageAccessor, _styleFactory);
-
-            header.Prepare(page);
-            _headers.Add(page.PageNumber, header);
-        }
-
-        private void CreateFooter(IPage page, PageNumber previousSectionLastPage, PageMargin previousSectionMargin)
-        {
-            var footer = previousSectionLastPage == page.PageNumber
-                ? FooterFactory.CreateInheritedFooter(previousSectionMargin)
-                : _properties.HeaderFooterConfiguration
-                     .FindFooter(page.PageNumber)
-                     .CreateFooter(_properties.Margin, _imageAccessor, _styleFactory);
-
-            footer.Prepare(page);
-            _footers.Add(page.PageNumber, footer);
+            _footers[page.PageNumber].Prepare(page);
         }
     }
 }

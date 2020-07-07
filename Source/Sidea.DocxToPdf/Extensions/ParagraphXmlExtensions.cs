@@ -16,7 +16,7 @@ namespace Sidea.DocxToPdf
                     return child switch
                     {
                         Run r => new[] { r },
-                        SdtRun sdtRun => sdtRun.SdtContentRun.ChildElements.Cast<Run>(),
+                        SdtRun sdtRun => sdtRun.SdtContentRun.ChildElements.OfType<Run>(),
                         _ => new Run[0]
                     };
                 });

@@ -7,6 +7,11 @@ namespace Sidea.DocxToPdf.Models.Headers.Builders
 {
     internal static class HeaderFactory
     {
+        public static HeaderBase CreateInheritedHeader(PageMargin pageMargin)
+        {
+            return new NoHeader(pageMargin);
+        }
+
         public static HeaderBase CreateHeader(
             this Word.Header wordHeader,
             PageMargin pageMargin,
