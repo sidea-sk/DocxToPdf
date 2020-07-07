@@ -118,13 +118,13 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             }
 
             var defaultLineHeight = _styleFactory.TextStyle.Font.Height;
-            yOffset = _lines.Sum(l => l.HeightWithSpacing);
+            var relativeYOffset = _lines.Sum(l => l.HeightWithSpacing);
 
             while (_unprocessedElements.Count > 0)
             {
                 var line = _unprocessedElements.CreateLine(
                     this.ParagraphStyle.LineAlignment,
-                    yOffset,
+                    relativeYOffset,
                     _fixedDrawings,
                     context.Region.Width,
                     defaultLineHeight,

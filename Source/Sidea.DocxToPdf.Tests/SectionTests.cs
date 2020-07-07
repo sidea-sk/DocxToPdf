@@ -43,6 +43,12 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        public void TextOverMultipleColumnsOverPages()
+        {
+            this.Generate(nameof(TextOverMultipleColumnsOverPages));
+        }
+
+        [TestMethod]
         public void PageOrientation()
         {
             this.Generate(nameof(PageOrientation));
