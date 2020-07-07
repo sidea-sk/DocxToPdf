@@ -5,7 +5,7 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class SectionTests : TestBase
     {
-        public SectionTests() : base("Sections", useNextGeneration: true)
+        public SectionTests() : base("Sections")
         {
             this.Options = RenderingOptions.WithDefaults(
                 section: true,

@@ -5,7 +5,7 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class PageNumberTests : TestBase
     {
-        public PageNumberTests() : base("PageNumbers", useNextGeneration: true)
+        public PageNumberTests() : base("PageNumbers")
         {
         }
 

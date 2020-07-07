@@ -5,7 +5,7 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class FooterTests : TestBase
     {
-        public FooterTests() : base("Footers", useNextGeneration: true)
+        public FooterTests() : base("Footers")
         {
             this.Options = RenderingOptions.WithDefaults(
                 footer: true);
