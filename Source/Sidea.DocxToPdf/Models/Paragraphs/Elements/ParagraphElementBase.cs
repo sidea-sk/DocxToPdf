@@ -1,6 +1,8 @@
 ﻿using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
 
+using Drawing = System.Drawing;
+
 namespace Sidea.DocxToPdf.Models.Paragraphs
 {
     internal abstract class ParagraphElementBase : IPageRenderable
@@ -22,15 +24,14 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         public abstract void Render(IRendererPage page);
 
-        protected void RenderBorderIf(IRendererPage page, bool condition)
+        protected void RenderBorder(IRendererPage page, Drawing.Pen pen)
         {
-            if (!condition)
+            if (pen == null)
             {
                 return;
             }
 
             var region = this.PageRegion;
-            var pen = new System.Drawing.Pen(System.Drawing.Color.Orange, 0.5f);
 
             page.RenderLine(region.TopLine(pen));
             page.RenderLine(region.RightLine(pen));

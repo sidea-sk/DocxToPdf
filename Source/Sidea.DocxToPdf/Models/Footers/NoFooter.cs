@@ -23,6 +23,7 @@ namespace Sidea.DocxToPdf.Models.Footers
 
         public override void Render(IRenderer renderer)
         {
+            this.RenderBorders(renderer, renderer.Options.FooterBorders);
         }
     }
 }

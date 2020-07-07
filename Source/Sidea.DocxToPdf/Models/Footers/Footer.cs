@@ -73,7 +73,7 @@ namespace Sidea.DocxToPdf.Models.Footers
         public override void Render(IRenderer renderer)
         {
             _childs.Render(renderer);
-            this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries, pageOffset: _pageOffset);
+            this.RenderBorders(renderer, renderer.Options.FooterBorders, pageOffset: _pageOffset);
         }
 
         private PageContext OutOfPageContextFactory(IPage page)

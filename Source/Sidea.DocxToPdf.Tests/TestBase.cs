@@ -9,10 +9,7 @@ namespace Sidea.DocxToPdf.Tests
         private readonly string _outputFolder;
         private readonly bool _useNextGeneration;
 
-        protected RenderingOptions Options { get; set; } = new RenderingOptions(
-                hiddenChars: true,
-                sectionRegionBoundaries: true
-                );
+        protected RenderingOptions Options { get; set; } = new RenderingOptions(hiddenChars: true);
 
         protected TestBase(string samplesSubFolder, bool useNextGeneration = false)
         {
@@ -25,11 +22,6 @@ namespace Sidea.DocxToPdf.Tests
 
         protected void Generate(string docxSampleFileName)
         {
-            var options = new RenderingOptions(
-                paragraphRegionBoundaries: true,
-                sectionRegionBoundaries: true
-                );
-
             if (!Directory.Exists(_outputFolder))
             {
                 Directory.CreateDirectory(_outputFolder);

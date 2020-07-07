@@ -24,7 +24,7 @@ namespace Sidea.DocxToPdf.Models.Headers
 
         public override void Render(IRenderer renderer)
         {
-            this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries);
+            this.RenderBorders(renderer, renderer.Options.HeaderBorders);
         }
     }
 }

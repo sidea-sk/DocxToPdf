@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Drawing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Sidea.DocxToPdf.Tests
 {
@@ -7,11 +8,7 @@ namespace Sidea.DocxToPdf.Tests
     {
         public ParagraphTests(): base("Paragraphs", useNextGeneration: true)
         {
-            this.Options = new RenderingOptions(
-                hiddenChars: true,
-                paragraphRegionBoundaries: true,
-                lineRegionBoundaries: false,
-                wordRegionBoundaries: false);
+            this.Options = RenderingOptions.WithDefaults(hiddenChars: true, word: false);
         }
 
         [TestMethod]

@@ -159,7 +159,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                 line.Render(page);
             }
 
-            this.RenderBordersIf(renderer, renderer.Options.ParagraphRegionBoundaries);
+            this.RenderBorders(renderer, renderer.Options.ParagraphBorders);
         }
 
         private void ClearLinesFromIndex(int fromIndex)

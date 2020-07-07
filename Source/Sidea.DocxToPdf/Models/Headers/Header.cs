@@ -68,7 +68,7 @@ namespace Sidea.DocxToPdf.Models.Headers
         public override void Render(IRenderer renderer)
         {
             _childs.Render(renderer);
-            this.RenderBordersIf(renderer, renderer.Options.SectionRegionBoundaries);
+            this.RenderBorders(renderer, renderer.Options.HeaderBorders);
         }
 
         private PageContext OutOfPageContextFactory(IPage page)

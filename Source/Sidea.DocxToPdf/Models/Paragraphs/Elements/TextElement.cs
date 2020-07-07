@@ -54,7 +54,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
             var layout = new Rectangle(this.Position.Offset, this.Size);
             page.RenderText(s, _textStyle, layout);
 
-            this.RenderBorderIf(page, page.Options.WordRegionBoundaries);
+            this.RenderBorder(page, page.Options.WordBorders);
         }
     }
 }

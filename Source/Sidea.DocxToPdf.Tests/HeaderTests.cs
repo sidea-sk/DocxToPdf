@@ -7,6 +7,7 @@ namespace Sidea.DocxToPdf.Tests
     {
         public HeaderTests() : base("Headers", useNextGeneration: true)
         {
+            this.Options = RenderingOptions.WithDefaults(header: true);
         }
 
         [TestMethod]

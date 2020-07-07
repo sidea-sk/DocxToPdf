@@ -2,6 +2,7 @@
 using System.Linq;
 using Sidea.DocxToPdf.Core;
 using Sidea.DocxToPdf.Models.Common;
+using Drawing = System.Drawing;
 
 namespace Sidea.DocxToPdf.Models
 {
@@ -50,13 +51,28 @@ namespace Sidea.DocxToPdf.Models
             {
                 index++;
                 var page = renderer.GetPage(pageRegion.PagePosition.PageNumber, pageOffset ?? Point.Zero);
-                this.RenderBorder(page, pageRegion.Region, index == 0, index == this.PageRegions.Count - 1);
+                this.RenderBorder(page, pageRegion.Region, index == 0, index == this.PageRegions.Count - 1, new Drawing.Pen(Drawing.Color.Orange, 0.5f));
             }
         }
 
-        private void RenderBorder(IRendererPage page, Rectangle region, bool isFirst, bool isLast)
+        protected void RenderBorders(IRenderer renderer, Drawing.Pen pen, Point pageOffset = null)
         {
-            var pen = new System.Drawing.Pen(System.Drawing.Color.Orange, 0.5f);
+            if (pen == null)
+            {
+                return;
+            }
+
+            var index = -1;
+            foreach (var pageRegion in this.PageRegions)
+            {
+                index++;
+                var page = renderer.GetPage(pageRegion.PagePosition.PageNumber, pageOffset ?? Point.Zero);
+                this.RenderBorder(page, pageRegion.Region, index == 0, index == this.PageRegions.Count - 1, pen);
+            }
+        }
+
+        private void RenderBorder(IRendererPage page, Rectangle region, bool isFirst, bool isLast, Drawing.Pen pen)
+        {
             if (isFirst)
             {
                 page.RenderLine(region.TopLine(pen));

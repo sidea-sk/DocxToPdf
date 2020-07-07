@@ -9,7 +9,7 @@ namespace Sidea.DocxToPdf.Tests
         {
             this.Options = new RenderingOptions(
                 hiddenChars: true,
-                paragraphRegionBoundaries: true);
+                paragraphBorders: RenderingOptions.ParagraphDefault);
         }
 
         [TestMethod]

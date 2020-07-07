@@ -67,7 +67,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         public override void Render(IRendererPage page)
         {
             _trimmedElements.Render(page);
-            this.RenderBorderIf(page, page.Options.LineRegionBoundaries);
+            this.RenderBorder(page, page.Options.LineBorders);
         }
 
         public FieldUpdateResult Update(PageVariables pageVariables)
