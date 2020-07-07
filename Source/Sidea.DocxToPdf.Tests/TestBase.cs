@@ -7,17 +7,15 @@ namespace Sidea.DocxToPdf.Tests
     {
         private readonly string _samplesFolder;
         private readonly string _outputFolder;
-        private readonly bool _useNextGeneration;
 
         protected RenderingOptions Options { get; set; } = new RenderingOptions(hiddenChars: true);
 
-        protected TestBase(string samplesSubFolder, bool useNextGeneration = false)
+        protected TestBase(string samplesSubFolder)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             _samplesFolder = $"../../../../Samples/{samplesSubFolder}";
             _outputFolder = $"../../../../TestOutputs/{samplesSubFolder}";
-            _useNextGeneration = useNextGeneration;
         }
 
         protected void Generate(string docxSampleFileName)

@@ -6,7 +6,7 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class ParagraphTests : TestBase
     {
-        public ParagraphTests(): base("Paragraphs", useNextGeneration: true)
+        public ParagraphTests(): base("Paragraphs")
         {
             this.Options = RenderingOptions.WithDefaults(hiddenChars: true, word: false);
         }
