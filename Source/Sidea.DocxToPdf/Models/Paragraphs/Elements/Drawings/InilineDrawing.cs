@@ -19,7 +19,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
         public override double GetBaseLineOffset()
             => this.Size.Height;
 
-        public override void Justify(DocumentPosition position, double baseLineOffset, double lineHeight)
+        public override void Justify(DocumentPosition position, double baseLineOffset, Size lineSpace)
         {
             this.SetPosition(position);
         }

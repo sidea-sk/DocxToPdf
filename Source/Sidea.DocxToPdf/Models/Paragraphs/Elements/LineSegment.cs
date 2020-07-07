@@ -125,13 +125,13 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
         private void AlignElements(
             double startX,
-            double maxHeight,
+            double lineHeight,
             double baselineOffset)
         {
             var x = startX;
             foreach (var element in _trimmedElements)
             {
-                element.Justify(this.Position + new Point(x, 0), baselineOffset, maxHeight);
+                element.Justify(this.Position + new Point(x, 0), baselineOffset, new Size(element.Width, lineHeight));
                 x += element.Size.Width;
             }
         }
@@ -151,7 +151,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
                     ? sw + element.Size.Width
                     : element.Size.Width;
 
-                element.Justify(this.Position + new Point(x, 0), baselineOffset, lineHeight);
+                element.Justify(this.Position + new Point(x, 0), baselineOffset, new Size(width, lineHeight));
                 x += width;
             }
         }
