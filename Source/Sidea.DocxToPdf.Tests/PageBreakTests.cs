@@ -5,8 +5,11 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class PageBreakTests : TestBase
     {
-        public PageBreakTests() : base("PageBreaks")
+        public PageBreakTests() : base("PageBreaks", useNextGeneration: true)
         {
+            this.Options = new RenderingOptions(
+                hiddenChars: true,
+                paragraphBorders: RenderingOptions.ParagraphDefault);
         }
 
         [TestMethod]

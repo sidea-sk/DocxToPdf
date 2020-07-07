@@ -5,8 +5,9 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class TableTests : TestBase
     {
-        public TableTests() : base("Tables")
+        public TableTests() : base("Tables", useNextGeneration: true)
         {
+            this.Options = RenderingOptions.WithDefaults();
         }
 
         [TestMethod]
@@ -64,6 +65,25 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        public void TableInSectionColumns()
+        {
+            this.Generate(nameof(TableInSectionColumns));
+        }
+
+        [TestMethod]
+        public void TableOverSectionColumns()
+        {
+            this.Generate(nameof(TableOverSectionColumns));
+        }
+
+        [TestMethod]
+        public void TableOverSectionColumnsOverPages()
+        {
+            this.Generate(nameof(TableOverSectionColumnsOverPages));
+        }
+
+        [TestMethod]
+        [Ignore]
         public void TableAlignment()
         {
             this.Generate(nameof(TableAlignment));

@@ -1,12 +1,14 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Drawing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Sidea.DocxToPdf.Tests
 {
     [TestClass]
     public class ParagraphTests : TestBase
     {
-        public ParagraphTests(): base("Paragraphs")
+        public ParagraphTests(): base("Paragraphs", useNextGeneration: true)
         {
+            this.Options = RenderingOptions.WithDefaults(hiddenChars: true, word: false);
         }
 
         [TestMethod]
@@ -52,6 +54,7 @@ namespace Sidea.DocxToPdf.Tests
         }
 
         [TestMethod]
+        [Ignore]
         public void VeryLongTextWithoutSpaces()
         {
             this.Generate(nameof(VeryLongTextWithoutSpaces));

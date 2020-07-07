@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Text;
-using DocumentFormat.OpenXml.Packaging;
 
 namespace Sidea.DocxToPdf.Tests
 {
@@ -8,22 +7,21 @@ namespace Sidea.DocxToPdf.Tests
     {
         private readonly string _samplesFolder;
         private readonly string _outputFolder;
+        private readonly bool _useNextGeneration;
 
-        protected TestBase(string samplesSubFolder)
+        protected RenderingOptions Options { get; set; } = new RenderingOptions(hiddenChars: true);
+
+        protected TestBase(string samplesSubFolder, bool useNextGeneration = false)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             _samplesFolder = $"../../../../Samples/{samplesSubFolder}";
             _outputFolder = $"../../../../TestOutputs/{samplesSubFolder}";
+            _useNextGeneration = useNextGeneration;
         }
 
         protected void Generate(string docxSampleFileName)
         {
-            var options = new RenderingOptions(
-                renderParagraphCharacter: true,
-                renderSectionRegionBoundaries: true
-                );
-
             if (!Directory.Exists(_outputFolder))
             {
                 Directory.CreateDirectory(_outputFolder);
@@ -36,10 +34,10 @@ namespace Sidea.DocxToPdf.Tests
             }
 
             var inputFileName = $"{_samplesFolder}/{docxSampleFileName}.docx";
-            using var fileStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read);
-            var pdfGenerator = new PdfGenerator();
-            var pdf = pdfGenerator.Generate(fileStream, options);
+            using var docxStream = File.Open(inputFileName, FileMode.Open, FileAccess.Read);
 
+            var pdfGenerator = new PdfGenerator();
+            var pdf = pdfGenerator.Generate(docxStream, this.Options);
             pdf.Save(outputFileName);
         }
     }

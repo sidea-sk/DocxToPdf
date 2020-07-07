@@ -5,8 +5,24 @@ namespace Sidea.DocxToPdf.Tests
     [TestClass]
     public class SectionTests : TestBase
     {
-        public SectionTests() : base("Sections")
+        public SectionTests() : base("Sections", useNextGeneration: true)
         {
+            this.Options = RenderingOptions.WithDefaults(
+                section: true,
+                header: true,
+                footer: true);
+        }
+
+        [TestMethod]
+        public void DefaultMargins()
+        {
+            this.Generate(nameof(DefaultMargins));
+        }
+
+        [TestMethod]
+        public void ResizedMargins()
+        {
+            this.Generate(nameof(ResizedMargins));
         }
 
         [TestMethod]
@@ -19,6 +35,18 @@ namespace Sidea.DocxToPdf.Tests
         public void Columns()
         {
             this.Generate(nameof(Columns));
+        }
+
+        [TestMethod]
+        public void TextOverMultipleColumns()
+        {
+            this.Generate(nameof(TextOverMultipleColumns));
+        }
+
+        [TestMethod]
+        public void TextOverMultipleColumnsOverPages()
+        {
+            this.Generate(nameof(TextOverMultipleColumnsOverPages));
         }
 
         [TestMethod]
@@ -49,6 +77,12 @@ namespace Sidea.DocxToPdf.Tests
         public void SameHeaderDifferentFooterForSections()
         {
             this.Generate(nameof(SameHeaderDifferentFooterForSections));
+        }
+
+        [TestMethod]
+        public void ContinuousSectionsWithMultipleColumns()
+        {
+            this.Generate(nameof(ContinuousSectionsWithMultipleColumns));
         }
     }
 }
