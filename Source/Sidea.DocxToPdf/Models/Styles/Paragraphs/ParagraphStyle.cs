@@ -39,8 +39,8 @@ namespace Sidea.DocxToPdf.Models.Styles
 
         public static ParagraphStyle From(ParagraphPropertiesBaseStyle style)
         {
-            var spacing = style.SpacingBetweenLines.ToParagraphSpacing(ParagraphSpacing.Default);
-            var lineAlignment = style.Justification.GetLinesAlignment(LineAlignment.Left);
+            var spacing = style?.SpacingBetweenLines?.ToParagraphSpacing(ParagraphSpacing.Default) ?? ParagraphSpacing.Default;
+            var lineAlignment = style?.Justification?.GetLinesAlignment(LineAlignment.Left) ?? LineAlignment.Left;
 
             return new ParagraphStyle(lineAlignment, spacing);
         }

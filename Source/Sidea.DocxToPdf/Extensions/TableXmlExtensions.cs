@@ -26,7 +26,18 @@ namespace Sidea.DocxToPdf
 
         public static IEnumerable<TableCell> Cells(this TableRow row)
         {
-            return row.ChildElements.OfType<TableCell>();
+            return row.ChildElements
+                .Where(c => c is TableCell || c is SdtCell)
+                .Select(c =>
+                {
+                    return c switch
+                    {
+                        TableCell tc => tc,
+                        SdtCell sdt => sdt.SdtContentCell.ChildElements.OfType<TableCell>().First(),
+                        _ => throw new RendererException($"Unexpected element {c.GetType().Name} in table row")
+                    };
+                })
+                .Cast<TableCell>();
         }
 
         public static TableGrid Grid(this Table table)
