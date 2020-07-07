@@ -53,7 +53,7 @@ namespace Sidea.DocxToPdf.Runner
         private static void ExecuteConvert(string docxFilePath, string pdfOutputFilePath)
         {
             using var docxStream = File.Open(docxFilePath, FileMode.Open, FileAccess.Read);
-            var pdfGenerator = new PdfGeneratorGen2();
+            var pdfGenerator = new PdfGenerator();
             var pdf = pdfGenerator.GenerateAsByteArray(docxStream);
             File.WriteAllBytes(pdfOutputFilePath, pdf);
         }

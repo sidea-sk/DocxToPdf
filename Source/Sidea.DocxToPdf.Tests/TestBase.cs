@@ -51,7 +51,7 @@ namespace Sidea.DocxToPdf.Tests
 
         private PdfSharp.Pdf.PdfDocument GenerateV2(Stream docxStream, RenderingOptions options)
         {
-            var pdfGenerator = new PdfGeneratorGen2();
+            var pdfGenerator = new PdfGenerator();
             var pdf = pdfGenerator.Generate(docxStream, options);
             return pdf;
         }
