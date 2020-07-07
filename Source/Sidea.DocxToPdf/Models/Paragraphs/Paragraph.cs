@@ -139,6 +139,7 @@ namespace Sidea.DocxToPdf.Models.Paragraphs
 
                 line.SetPosition(context.TopLeft.MoveY(yOffset));
                 yOffset += line.HeightWithSpacing;
+                relativeYOffset += line.HeightWithSpacing;
             }
 
             return (ExecuteResult.Done, 0);
